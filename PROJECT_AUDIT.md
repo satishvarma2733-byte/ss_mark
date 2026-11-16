@@ -52,7 +52,7 @@ State management is server components plus small client components (`lib/use-act
 ### Design system and UI
 1. **The UI kit is barely adopted.** Only 5 files import `components/ui` (`layout.tsx`, `venues/[id]`, and the three new admin pages). The other ~42 pages still use the class-based markup in `globals.css`. Two parallel systems now exist.
 2. **Kit is incomplete against the plan:** `Tabs`, `FilterChip`, `Card`, `DatePicker`, `TimeSelector` and `QrBookingCard` are not built.
-3. **Dark mode is only partly safe.** `globals.css` has 61 hard-coded hex colours outside the token blocks (36 are `#ffffff`), so surfaces on un-migrated pages stay white in dark mode. No page has been visually checked in dark mode.
+3. **Dark mode** — resolved 16 Nov: hard-coded colours replaced with role tokens (only the QR, scanner and mock-gateway banner stay fixed), 30 routes pass axe contrast in dark, and the accessibility spec now has a dark-mode test. Not yet compared frame by frame with Figma page `12 — Dark Mode`.
 4. **Stylesheet size:** `globals.css` is 4,528 lines plus `ui.css` 640 lines, with layered overrides.
 
 ### Screens

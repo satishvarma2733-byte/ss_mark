@@ -20,7 +20,7 @@
 - Start local Supabase, re-run integration and e2e for a fresh baseline.
 - Environment template: already present at `config/.env.example` (no action needed).
 
-### B. Dark mode made real (1 day)
+### B. Dark mode made real — DONE 16 Nov (30 routes contrast-clean in dark; dark test added to the accessibility spec; e2e 49/49)
 - Replace the 61 hard-coded colours in `globals.css` with tokens.
 - Screenshot every route in light and dark at 390 and 1440; fix contrast failures; add dark mode to the accessibility scan.
 

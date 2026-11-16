@@ -58,8 +58,18 @@ test("finance refunds a finished visit, reconciles, and a second person approves
   await expect(a.getByTestId("fee-configs")).toContainText("awaiting another approver");
   await a.goto("/admin/finance");
 
-  await a.getByTestId("reconcile-from").fill(localInput(startedAt));
-  await a.getByTestId("reconcile-to").fill(localInput(Date.now() + 60_000));
+  // The fields are React-controlled: a value typed before hydration is replaced by the default 24-hour window, which
+  // would pull in other specs' payments. Wait for the page, then confirm both values held before running.
+  await a.waitForLoadState("networkidle");
+  const fromValue = localInput(startedAt);
+  const toValue = localInput(Date.now() + 60_000);
+  await expect(async () => {
+    await a.getByTestId("reconcile-from").fill(fromValue);
+    await a.getByTestId("reconcile-to").fill(toValue);
+    await a.waitForTimeout(250);
+    await expect(a.getByTestId("reconcile-from")).toHaveValue(fromValue, { timeout: 1000 });
+    await expect(a.getByTestId("reconcile-to")).toHaveValue(toValue, { timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
   await a.getByTestId("reconcile-run").click();
   await expect(a.getByTestId("reconcile-result")).toHaveText("Matched the provider.");
   await a.getByTestId(`draft-payout-${partnerId}`).click();

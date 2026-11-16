@@ -72,7 +72,7 @@
 
 .ss-btn--danger {
   background: var(--status-error);
-  color: #ffffff;
+  color: var(--on-brand);
 }
 
 .ss-icon-btn {

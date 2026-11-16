@@ -1,6 +1,7 @@
 // Admin console shell (Figma "Admin · Marketplace overview"): dark sidebar with role-filtered sections and a white
 // workspace bar. Pages render it inside their <main>; globals.css lays it out beside the content (portal-shell rules).
 // UI only: every admin page and API re-checks the caller's platform role.
+import { ThemeToggle } from "../components/theme-toggle";
 import {
   BadgeCheck, Bell, ChartColumn, CircleHelp, CircleUserRound, FileText, LayoutDashboard, ShieldCheck, Star, Tickets, ToggleRight, UserCog, Users, Wallet
 } from "lucide-react";
@@ -66,6 +67,7 @@ export function AdminNav({ roles, active }: { roles: Role[]; active: string }) {
         <p className="portal-breadcrumb">Marketplace / {current && current.path !== "/admin" ? current.label : "Operations"}</p>
         <div className="portal-utilities">
           <span>Asia/Kolkata · IST</span>
+          <ThemeToggle className="portal-theme-toggle" />
           <a href="/notifications" aria-label="Notifications">
             <Bell size={19} aria-hidden="true" />
           </a>

@@ -167,3 +167,39 @@ test("keyboard users see where focus is on every page they tab through", async (
   }
   expect([...new Set(missing)]).toEqual([]);
 });
+
+// Dark theme (16 Nov 2026): the same axe rules with the dark colour scheme, on customer, partner and admin pages.
+test("dark mode passes WCAG 2.2 A/AA checks on customer, partner and admin pages", async ({ page }) => {
+  test.setTimeout(300_000);
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const venue = await createQuickVenue({ tables: 2 });
+  const findings: Finding[] = [];
+  const dark = async (path: string, label: string) => {
+    await page.goto(path);
+    await page.waitForLoadState("networkidle");
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
+    findings.push(...await scan(page, `${label} (dark)`, 1440));
+  };
+  for (const [path, label] of [["/", "home"], ["/venues", "venues"], [`/venues/${venue.slug}`, "venue"], ["/sign-in", "sign-in"], ["/help", "help"]] as const) {
+    await dark(path, label);
+  }
+  const user = await createFixtureUser();
+  await db()`insert into public.venue_memberships (venue_id, user_id, role, status, accepted_at)
+             select ${venue.venueId}::uuid, p.id, 'OWNER', 'ACTIVE', now() from public.profiles p where p.auth_user_id = ${user.id}::uuid`;
+  await grantPlatformRole(user.id, "SUPERADMIN");
+  await signInWithMfa(page, user.email, `/partner?venue=${venue.venueId}`);
+  const q = `?venue=${venue.venueId}`;
+  for (const [path, label] of [
+    ["/bookings", "bookings"], ["/account", "account"], ["/notifications", "notifications"],
+    [`/partner${q}`, "partner today"], [`/partner/calendar${q}`, "partner calendar"], [`/partner/inventory${q}`, "partner inventory"],
+    [`/partner/payouts${q}`, "partner payouts"], [`/partner/staff${q}`, "partner staff"], [`/staff${q}`, "staff arrivals"],
+    ["/admin", "admin"], ["/admin/venues", "admin venues"], ["/admin/bookings", "admin bookings"], ["/admin/finance", "admin finance"],
+    ["/admin/finance/refunds", "admin refunds"], ["/admin/support", "admin support"], ["/admin/reviews", "admin reviews"],
+    ["/admin/metrics", "admin metrics"], ["/admin/release", "admin release switches"]
+  ] as const) {
+    await dark(path, label);
+  }
+  report(findings);
+  expect(findings).toEqual([]);
+});

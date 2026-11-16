@@ -18,9 +18,15 @@ export const metadata: Metadata = {
   description: "Reserve time at partner hospitality spaces. Synthetic data preview."
 };
 
+const THEME_SCRIPT = `try{var t=localStorage.getItem("ss-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en-IN" className={`${montserrat.variable} ${playfair.variable}`}>
+    <html lang="en-IN" className={`${montserrat.variable} ${playfair.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Applies a saved light/dark choice before first paint, so the page does not flash the other theme. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body>
         <a className="skip-link" href="#main">
           Skip to content

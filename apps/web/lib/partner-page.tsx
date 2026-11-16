@@ -1,5 +1,6 @@
 // Partner portal page context: signed in, TOTP-verified, and a venue chosen from the caller's own memberships
 // (?venue=, else the first). UI gating only; every API call and database function re-checks membership and role.
+import { ThemeToggle } from "../components/theme-toggle";
 import {
   Armchair, Bell, CalendarRange, CircleHelp, CircleUserRound, LayoutDashboard, ScanLine, Store, Users, Wallet
 } from "lucide-react";
@@ -88,6 +89,7 @@ export function PartnerNav({ current, memberships, active }: { current: Membersh
         <p className="portal-breadcrumb">{current.venue_name} / Workspace</p>
         <div className="portal-utilities">
           <span>Asia/Kolkata · IST</span>
+          <ThemeToggle className="portal-theme-toggle" />
           <a href="/notifications" aria-label="Notifications">
             <Bell size={19} aria-hidden="true" />
           </a>

@@ -105,3 +105,25 @@ Checks (local Supabase, MOCK providers, database NOT reset): `pnpm test:integrat
 `pnpm exec next build` OK; `npx playwright test` 46/48 on the full run (accessibility portals @320 failed: fixed above;
 `finance.spec.ts:17` failed once and passed on two re-runs - treat as flaky, cause not investigated); after the fix
 `accessibility.spec.ts` + `finance.spec.ts` 7/7 passed. The full 48-spec suite was not re-run after the fix.
+
+## Step B - dark mode (16 November 2026, web)
+
+- `apps/web/app/globals.css`: 60 hard-coded colours replaced with tokens. New role tokens: `--on-brand`, `--chrome-bg`,
+  `--chrome-bg-deep`, `--chrome-accent`, `--on-chrome`, `--on-chrome-soft`, `--chrome-line`, `--status-warm(-surface)`,
+  `--status-danger(-surface)`, `--status-neutral-surface`, `--status-error-hover`, `--row-hover`, `--skeleton-base`,
+  `--map-road-opacity`. Dark theme now also overrides `--brand-primary` (#dce3d2), its hover/active shades and
+  `--brand-sand` (#485344, used as the border colour). Header and portal sidebar stay dark olive in both themes.
+  Still fixed on purpose: QR code (white/dark), camera scanner (black), mock-gateway banner.
+- `components/theme-toggle.tsx`: reads the applied theme, keeps several toggles in step, tolerates blocked storage.
+  Toggle added to the partner and admin top bars (`lib/partner-page.tsx`, `lib/admin-nav.tsx`).
+- `app/layout.tsx`: small inline script applies a saved theme before first paint (no flash); `suppressHydrationWarning`
+  on `<html>` for the `data-theme` attribute it sets.
+- Portal top bar on narrow phones: time-zone note hidden and breadcrumb truncates, so the added toggle fits at 320 px.
+- `e2e/accessibility.spec.ts`: new test "dark mode passes WCAG 2.2 A/AA checks on customer, partner and admin pages"
+  (23 pages, 1440 px). `e2e/finance.spec.ts`: the reconciliation window is filled after hydration and verified - the
+  earlier "flake" was the React-controlled date fields resetting to the default 24-hour window.
+- Not done: no frame-by-frame comparison with Figma page 12; native app has no dark theme; dark mode not scanned at 320 px.
+
+Checks (local Supabase, MOCK providers): `tsc --noEmit` (web) clean; `pnpm lint` clean; `pnpm test:unit` 14 files / 79
+tests; `next build` OK; `npx playwright test` 49/49 passed. A one-off axe contrast run over 30 routes in dark reported
+0 findings (temporary script, deleted). Integration tests not re-run (no database or API code changed).

@@ -23,6 +23,25 @@
   --map-surface: #e9e6dd;
   --map-park: #cad3bb;
   --focus-ring: #245fc4;
+  --brand-primary-hover: #434d35;
+  --brand-primary-active: #3a432e;
+  /* Roles added for dark mode (16 Nov 2026): text on brand fills, the always-dark header/sidebar, and status tints. */
+  --on-brand: #ffffff;
+  --chrome-bg: #4f5a3f;
+  --chrome-bg-deep: #333c2b;
+  --chrome-accent: #4f5a3f;
+  --on-chrome: #ffffff;
+  --on-chrome-soft: #f6f2e9;
+  --chrome-line: #dccfbc;
+  --status-warm: #9a4600;
+  --status-warm-surface: #fff1e3;
+  --status-danger: #b3261e;
+  --status-danger-surface: #fcedec;
+  --status-neutral-surface: #eeeae2;
+  --status-error-hover: #8c2222;
+  --row-hover: #fbfaf7;
+  --skeleton-base: #ece7dc;
+  --map-road-opacity: 1;
   --shadow-sm: 0 1px 2px rgba(40, 42, 37, 0.06);
   --shadow-md: 0 4px 12px rgba(40, 42, 37, 0.08);
   --shadow-lg: 0 12px 28px rgba(40, 42, 37, 0.12);
@@ -61,6 +80,23 @@
   --map-surface: #222a23;
   --map-park: #303c30;
   --focus-ring: #7ca9f8;
+  --brand-primary: #dce3d2;
+  --brand-primary-hover: #c9d2bd;
+  --brand-primary-active: #b8c2ab;
+  --brand-sand: #485344;
+  --on-brand: #171c18;
+  --chrome-bg: #1f2720;
+  --chrome-bg-deep: #121612;
+  --chrome-accent: #3d4a34;
+  --status-warm: #ffc48d;
+  --status-warm-surface: #3a2816;
+  --status-danger: #ffb5af;
+  --status-danger-surface: #3e201e;
+  --status-neutral-surface: #303c30;
+  --status-error-hover: #ff9c94;
+  --row-hover: #283129;
+  --skeleton-base: #2a332b;
+  --map-road-opacity: 0.16;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.36);
   --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.45);
@@ -88,6 +124,23 @@
     --map-surface: #222a23;
     --map-park: #303c30;
     --focus-ring: #7ca9f8;
+    --brand-primary: #dce3d2;
+    --brand-primary-hover: #c9d2bd;
+    --brand-primary-active: #b8c2ab;
+    --brand-sand: #485344;
+    --on-brand: #171c18;
+    --chrome-bg: #1f2720;
+    --chrome-bg-deep: #121612;
+    --chrome-accent: #3d4a34;
+    --status-warm: #ffc48d;
+    --status-warm-surface: #3a2816;
+    --status-danger: #ffb5af;
+    --status-danger-surface: #3e201e;
+    --status-neutral-surface: #303c30;
+    --status-error-hover: #ff9c94;
+    --row-hover: #283129;
+    --skeleton-base: #2a332b;
+    --map-road-opacity: 0.16;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.36);
     --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.45);
@@ -155,15 +208,15 @@ a {
   gap: 12px 32px;
   min-height: 96px;
   padding: 12px var(--page-gutter);
-  background: var(--brand-primary);
-  color: #ffffff;
+  background: var(--chrome-bg);
+  color: var(--on-chrome);
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: var(--surface-canvas);
+  color: var(--on-chrome-soft);
   text-decoration: none;
 }
 
@@ -208,7 +261,7 @@ a {
 }
 
 .site-nav a {
-  color: #ffffff;
+  color: var(--on-chrome);
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -232,7 +285,7 @@ a {
   padding: 10px 12px;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-pill);
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
@@ -256,7 +309,7 @@ a {
 /* Synthetic-data label stays visible on every page (kit rule: mock output is labelled). */
 .mock-banner {
   background: var(--brand-sand);
-  color: #282a25;
+  color: var(--text-primary);
   padding: 6px var(--page-gutter);
   font-size: 12px;
   font-weight: 600;
@@ -382,7 +435,7 @@ h3 {
   border-radius: var(--radius-button);
   border: 1px solid var(--brand-primary);
   background: var(--brand-primary);
-  color: #ffffff;
+  color: var(--on-brand);
   font: inherit;
   font-size: 14px;
   line-height: 1.5;
@@ -503,7 +556,7 @@ h3 {
   padding: 0 12px;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-button);
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .field-control:hover {
@@ -568,7 +621,7 @@ h3 {
 table {
   width: 100%;
   border-collapse: collapse;
-  background: #ffffff;
+  background: var(--surface-card);
   font-size: 13px;
 }
 
@@ -697,7 +750,7 @@ fieldset {
   margin: 0;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-pill);
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
@@ -719,7 +772,7 @@ label.chip:hover {
 label.chip:has(input:checked) {
   border-color: var(--brand-primary);
   background: var(--brand-primary);
-  color: #ffffff;
+  color: var(--on-brand);
 }
 
 /* Checkbox chips keep the native control for keyboard and screen readers but show only the pill. */
@@ -761,7 +814,7 @@ label.chip:focus-within {
 }
 
 .status-pill.warning {
-  background: #f6eedf;
+  background: var(--status-warning-surface);
   color: var(--status-warning);
 }
 
@@ -859,12 +912,12 @@ body:has(.portal-sidebar) main > h1 {
   flex-direction: column;
   gap: 32px;
   padding: 30px 20px;
-  background: #333c2b;
-  color: #ffffff;
+  background: var(--chrome-bg-deep);
+  color: var(--on-chrome);
 }
 
 .portal-sidebar .brand {
-  color: var(--surface-canvas);
+  color: var(--on-chrome-soft);
 }
 
 .portal-label {
@@ -883,8 +936,8 @@ body:has(.portal-sidebar) main > h1 {
   gap: 4px;
   padding: 12px;
   border-radius: var(--radius-button);
-  background: var(--brand-primary);
-  color: #ffffff;
+  background: var(--chrome-accent);
+  color: var(--on-chrome);
   text-decoration: none;
 }
 
@@ -896,7 +949,7 @@ body:has(.portal-sidebar) main > h1 {
 
 .selected-venue-card span,
 .venue-switcher a span {
-  color: var(--surface-canvas);
+  color: var(--on-chrome-soft);
   font-size: 11px;
 }
 
@@ -908,7 +961,7 @@ body:has(.portal-sidebar) main > h1 {
 
 .venue-switcher a:not([aria-current="page"]) {
   background: transparent;
-  outline: 1px solid var(--brand-primary);
+  outline: 1px solid var(--chrome-accent);
 }
 
 .portal-nav {
@@ -924,7 +977,7 @@ body:has(.portal-sidebar) main > h1 {
   min-height: 46px;
   padding: 12px;
   border-radius: var(--radius-button);
-  color: #ffffff;
+  color: var(--on-chrome);
   font-size: 13px;
   font-weight: 400;
   text-decoration: none;
@@ -935,7 +988,7 @@ body:has(.portal-sidebar) main > h1 {
 }
 
 .portal-nav a[aria-current="page"] {
-  background: var(--brand-primary);
+  background: var(--chrome-accent);
   font-weight: 600;
 }
 
@@ -959,7 +1012,7 @@ body:has(.portal-sidebar) main > h1 {
 }
 
 .portal-access .portal-access-note {
-  color: var(--surface-canvas);
+  color: var(--on-chrome-soft);
 }
 
 .portal-access a {
@@ -967,7 +1020,7 @@ body:has(.portal-sidebar) main > h1 {
   align-items: center;
   gap: 8px;
   min-height: 24px;
-  color: #ffffff;
+  color: var(--on-chrome);
   font-size: 13px;
   text-decoration: none;
 }
@@ -985,7 +1038,7 @@ body:has(.portal-sidebar) main > h1 {
   margin: 0 -36px 28px;
   padding: 0 36px;
   border-bottom: 1px solid var(--brand-sand);
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .portal-breadcrumb {
@@ -1072,7 +1125,7 @@ body:has(.portal-sidebar) main > h1 {
   padding: 18px;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-card);
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .metric p {
@@ -1251,13 +1304,13 @@ body:has(.portal-sidebar) main > h1 {
 }
 
 .status-pill.neutral {
-  background: #eeeae2;
+  background: var(--status-neutral-surface);
   color: var(--text-muted);
 }
 
 .status-pill.warm {
-  background: #fff1e3;
-  color: #9a4600;
+  background: var(--status-warm-surface);
+  color: var(--status-warm);
 }
 
 .panel-row {
@@ -1284,7 +1337,7 @@ body:has(.portal-sidebar) main > h1 {
 
 .button.secondary {
   border-color: var(--brand-sand);
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--brand-primary);
 }
 
@@ -1350,13 +1403,13 @@ body:has(.portal-sidebar) main > h1 {
   align-items: flex-start;
   border: 0;
   border-radius: var(--radius-button);
-  background: #fff1e3;
+  background: var(--status-warm-surface);
 }
 
 .notice.warm > svg {
   flex: none;
   margin-top: 2px;
-  color: #9a4600;
+  color: var(--status-warm);
 }
 
 .notice.warm strong {
@@ -1400,8 +1453,8 @@ body:has(.portal-sidebar) main > h1 {
   width: 24px;
   height: 24px;
   border-radius: var(--radius-pill);
-  background: #fff1e3;
-  color: #9a4600;
+  background: var(--status-warm-surface);
+  color: var(--status-warm);
 }
 
 .timeline li.done .marker {
@@ -1468,7 +1521,7 @@ body:has(.portal-sidebar) main > .panel-row {
   padding: 16px;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-card);
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .mini-panel p {
@@ -1572,8 +1625,8 @@ body:has(.portal-sidebar) main > .panel-row {
 }
 
 .status-pill.danger {
-  background: #fcedec;
-  color: #b3261e;
+  background: var(--status-danger-surface);
+  color: var(--status-danger);
 }
 
 .plain-list {
@@ -1614,7 +1667,7 @@ body:has(.portal-sidebar) main > .panel-row {
   padding: 18px;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-card);
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .search-row {
@@ -1785,7 +1838,7 @@ body:has(.portal-sidebar) main > .panel-row {
   overflow: hidden;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-card);
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .venue-card:focus-within {
@@ -1989,7 +2042,7 @@ body:has(.portal-sidebar) main > .panel-row {
   padding: 9px 12px;
   border: 1px solid var(--brand-primary);
   border-radius: var(--radius-pill);
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
@@ -2000,7 +2053,7 @@ body:has(.portal-sidebar) main > .panel-row {
 
 .map-pin-pill.selected {
   background: var(--brand-primary);
-  color: #ffffff;
+  color: var(--on-brand);
 }
 
 .map-pin-pill.muted {
@@ -2012,7 +2065,7 @@ body:has(.portal-sidebar) main > .panel-row {
   position: absolute;
   width: 16px;
   height: 16px;
-  border: 3px solid #ffffff;
+  border: 3px solid var(--surface-card);
   border-radius: 50%;
   background: var(--focus-ring);
   transform: translate(-50%, -50%);
@@ -2030,7 +2083,7 @@ body:has(.portal-sidebar) main > .panel-row {
   padding: 18px;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-card);
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .selected-venue p {
@@ -2104,7 +2157,7 @@ body:has(.portal-sidebar) main > .panel-row {
 
 .view-toggle a[aria-current="page"] {
   background: var(--brand-primary);
-  color: var(--surface-card);
+  color: var(--on-brand);
 }
 
 .result-list {
@@ -2134,7 +2187,7 @@ body:has(.portal-sidebar) main > .panel-row {
 }
 
 .map-bg {
-  fill: #ebe6da;
+  fill: var(--map-surface);
   stroke: var(--brand-sand);
 }
 
@@ -2155,7 +2208,7 @@ body:has(.portal-sidebar) main > .panel-row {
 }
 
 .map-pin-label {
-  fill: var(--surface-card);
+  fill: var(--on-brand);
   font-size: 14px;
   font-weight: 700;
   pointer-events: none;
@@ -2277,7 +2330,7 @@ body:has(.portal-sidebar) main > .panel-row {
   padding: 10px 12px;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-pill);
-  background: #ffffff;
+  background: var(--surface-card);
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
@@ -2289,7 +2342,7 @@ body:has(.portal-sidebar) main > .panel-row {
 .tabs a[aria-current="page"] {
   border-color: var(--brand-primary);
   background: var(--brand-primary);
-  color: #ffffff;
+  color: var(--on-brand);
 }
 .visually-hidden {
   position: absolute;
@@ -2350,7 +2403,7 @@ body:has(.portal-sidebar) main > .panel-row {
   padding: 16px;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-card);
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .submission-card:hover {
@@ -2482,7 +2535,7 @@ body:has(.portal-sidebar) main > .panel-row {
 }
 
 .check-list li.missing > svg {
-  color: #9a4600;
+  color: var(--status-warm);
 }
 
 .check-list div {
@@ -2672,7 +2725,7 @@ h1.title-sans {
 
 .ops-search .field-control.compact {
   min-height: 52px;
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .ops-search .button {
@@ -2736,8 +2789,8 @@ h1.title-sans {
 }
 
 .timeline li.failed .marker {
-  background: #fcedec;
-  color: #b3261e;
+  background: var(--status-danger-surface);
+  color: var(--status-danger);
 }
 
 .refund-block {
@@ -2879,7 +2932,7 @@ h1.title-sans {
   align-items: flex-start;
   border: 0;
   border-radius: var(--radius-button);
-  background: #fcedec;
+  background: var(--status-danger-surface);
 }
 
 .notice.error > img {
@@ -3020,7 +3073,7 @@ h2.auth-aside-title {
 }
 
 .otp-field.invalid .otp-box {
-  border-color: #d32f2f;
+  border-color: var(--status-danger);
 }
 
 /* Select table and time (Figma "E · Customer web · Select table and time"): main column beside a 396px summary. */
@@ -3171,7 +3224,7 @@ a.table-choice:hover {
 
 .choice-pill.selected {
   background: var(--brand-primary);
-  color: #ffffff;
+  color: var(--on-brand);
 }
 
 .book-rules summary {
@@ -3385,7 +3438,7 @@ a.choice-pill {
 }
 
 a.choice-pill.selected {
-  color: #ffffff;
+  color: var(--on-brand);
 }
 
 a.choice-pill:hover {
@@ -3481,8 +3534,8 @@ a.choice-pill:hover {
 }
 
 .stay-timeline .marker.wait {
-  background: #fff1e3;
-  color: #9a4600;
+  background: var(--status-warm-surface);
+  color: var(--status-warm);
 }
 
 .stay-timeline strong {
@@ -3570,7 +3623,7 @@ button.choice-pill {
 }
 
 button.choice-pill.selected {
-  color: #ffffff;
+  color: var(--on-brand);
 }
 
 .faq-list details {
@@ -3787,8 +3840,6 @@ label.input-static {
   --shadow-xs: 0 1px 2px rgba(46, 46, 46, 0.05);
   --shadow-sm: 0 1px 2px rgba(46, 46, 46, 0.04), 0 4px 14px rgba(46, 46, 46, 0.05);
   --shadow-md: 0 2px 4px rgba(46, 46, 46, 0.04), 0 14px 30px rgba(46, 46, 46, 0.1);
-  --brand-primary-hover: #434d35;
-  --brand-primary-active: #3a432e;
   --header-height: 80px;
   --tabbar-height: 64px;
 }
@@ -3954,7 +4005,7 @@ input[type="radio"] {
     gap: 4px;
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--brand-sand);
-    background: #ffffff;
+    background: var(--surface-card);
     box-shadow: 0 -6px 20px rgba(46, 46, 46, 0.08);
   }
 
@@ -4022,8 +4073,8 @@ input[type="radio"] {
 }
 
 .button.danger:not(:disabled):hover {
-  border-color: #8c2222;
-  background: #8c2222;
+  border-color: var(--status-error-hover);
+  background: var(--status-error-hover);
   box-shadow: 0 6px 16px rgba(165, 42, 42, 0.22);
 }
 
@@ -4093,7 +4144,7 @@ label.chip:active,
 
 .slot:hover {
   background: var(--brand-primary);
-  color: #ffffff;
+  color: var(--on-brand);
 }
 
 /* Surfaces: a little depth so cards lift off the canvas. */
@@ -4170,7 +4221,7 @@ tbody tr {
 }
 
 tbody tr:hover > td {
-  background: #fbfaf7;
+  background: var(--row-hover);
 }
 
 .table-scroll {
@@ -4180,7 +4231,7 @@ tbody tr:hover > td {
 
 /* Loading placeholder: quieter shimmer. */
 .skeleton {
-  background: linear-gradient(90deg, #ece7dc 0%, var(--surface-canvas) 50%, #ece7dc 100%);
+  background: linear-gradient(90deg, var(--skeleton-base) 0%, var(--surface-canvas) 50%, var(--skeleton-base) 100%);
   background-size: 200% 100%;
 }
 
@@ -4255,7 +4306,7 @@ tbody tr:hover > td {
   padding: 32px 24px;
   border: 1px solid var(--brand-sand);
   border-radius: var(--radius-card);
-  background: #ffffff;
+  background: var(--surface-card);
   box-shadow: var(--shadow-sm);
   text-align: center;
 }
@@ -4272,7 +4323,7 @@ tbody tr:hover > td {
 }
 
 .message-page.is-error .message-icon {
-  background: #fcedec;
+  background: var(--status-danger-surface);
   color: var(--status-error);
 }
 
@@ -4464,7 +4515,7 @@ tbody tr:hover > td {
 
 .time-card .slot {
   width: 100%;
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .time-card .slot:hover {
@@ -4538,5 +4589,59 @@ tbody tr:hover > td {
 @media (max-width: 379px) {
   .metric-row {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Theme details (16 Nov 2026): things that sit on the always-dark header, and text selection. */
+.site-nav-links a::after {
+  background: var(--chrome-line);
+}
+
+::selection {
+  color: #1f231c;
+}
+
+.portal-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease-out);
+}
+
+.portal-theme-toggle:hover {
+  background: var(--surface-canvas);
+}
+
+.area-map .roads {
+  opacity: var(--map-road-opacity);
+}
+
+/* Narrow phones: the portal top bar keeps to one row (time-zone note hidden, breadcrumb truncates). */
+.portal-topbar .portal-breadcrumb {
+  min-width: 0;
+}
+
+@media (max-width: 479px) {
+  .portal-utilities {
+    flex: none;
+    gap: 2px;
+  }
+
+  .portal-utilities > span {
+    display: none;
+  }
+
+  .portal-topbar .portal-breadcrumb {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
