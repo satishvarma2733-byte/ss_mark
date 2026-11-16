@@ -17,6 +17,9 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   return (
     <main>
       <h1>Notifications</h1>
+      <p className="lede">
+        Booking, refund and support updates. <a href="/account/notifications">Notification preferences</a>
+      </p>
       {page.notifications.length === 0 ? (
         <p className="notice" data-testid="notifications-empty">Nothing yet. Updates about your bookings, refunds and support requests appear here.</p>
       ) : (

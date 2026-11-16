@@ -127,6 +127,7 @@ The remaining command surface is explicit below. All writes use idempotency, rol
 | `GET /partner/reports/payouts` | venue owner/manager; bounded dates | 200 partner-only gross, allocations, refund/fee adjustments, reserved amounts and evidenced payout status; unresolved totals visibly flagged. |
 | `GET /admin/metrics` | authorized admin; dates/venue | 200 PRD-defined conversion, occupancy, repeat, reliability and finance metrics; do not present unknown/unreconciled amounts as earned revenue. |
 | `POST /notifications/{id}/read` | own notification | 200 idempotently recorded read_at; cannot change delivery status. |
+| `GET /me/notification-preferences`, `PUT /me/notification-preferences` | authenticated owner; body `{email_copies, marketing}` | 200 own choices (defaults when never saved). Affects only optional email copies; essential messages and the inbox are never switched off. Added 16 Nov 2026. |
 
 Resource availability is not a generic DELETE endpoint: historical inventory stays referentially intact. Policy/rate/hour mutations and pause/resume acquire the same venue/resource lock path as holds, so a configuration change cannot race a reservation into an invalid state.
 

@@ -70,3 +70,28 @@ test("the partner and admin bells open a notification centre inside each workspa
   await expect(page.getByRole("heading", { name: "Notifications", level: 1 })).toBeVisible();
   await expect(page.locator(".portal-sidebar")).toBeVisible();
 });
+
+test("a customer turns off email booking copies; the choice is saved and survives a reload", async ({ page }) => {
+  test.setTimeout(90_000);
+  await signedInCustomer(page);
+  await page.goto("/account");
+  await page.getByRole("link", { name: "Notification preferences" }).click();
+  await expect(page.getByRole("heading", { name: "Notification preferences", level: 1 })).toBeVisible();
+  await page.waitForLoadState("networkidle");
+
+  const copies = page.getByRole("switch", { name: "Email booking copies" });
+  const marketing = page.getByRole("switch", { name: "Offers and announcements" });
+  await expect(copies).toHaveAttribute("aria-checked", "true");
+  await expect(marketing).toHaveAttribute("aria-checked", "false");
+  await expect(page.getByTestId("save-preferences")).toBeDisabled();
+
+  await copies.click();
+  await expect(copies).toHaveAttribute("aria-checked", "false");
+  await page.getByTestId("save-preferences").click();
+  await expect(page.getByTestId("preferences-message")).toHaveText("Preferences saved.");
+
+  await page.reload();
+  await expect(page.getByRole("switch", { name: "Email booking copies" })).toHaveAttribute("aria-checked", "false");
+  const api = await page.request.get("/api/v1/me/notification-preferences");
+  expect((await api.json()).data).toMatchObject({ email_copies: false, marketing: false });
+});

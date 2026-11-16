@@ -7,7 +7,14 @@ import postgres from "postgres";
 // Signs in through the real UI: request a code, read it from the local Mailpit inbox, verify.
 export async function signInWithEmailCode(page: Page, email: string, opts: { acceptTerms?: boolean } = {}) {
   await expect(page.getByRole("heading", { name: "Sign in / Create account" })).toBeVisible();
-  await page.getByLabel("Email address").fill(email);
+  // The form is React-controlled: text typed before hydration is discarded and the form then submits empty
+  // ("Some details need attention"). Wait for the page, then confirm the value held before sending.
+  await page.waitForLoadState("networkidle");
+  await expect(async () => {
+    await page.getByLabel("Email address").fill(email);
+    await page.waitForTimeout(200);
+    await expect(page.getByLabel("Email address")).toHaveValue(email, { timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
   if (opts.acceptTerms) await page.getByRole("checkbox").check();
   const sentAt = Date.now();
   await page.getByRole("button", { name: "Send verification code" }).click();

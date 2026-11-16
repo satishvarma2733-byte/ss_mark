@@ -529,6 +529,12 @@ export const notificationPageSchema = z.object({
 export type NotificationPage = z.infer<typeof notificationPageSchema>;
 export const notificationListQuerySchema = z.strictObject({ cursor: z.string().max(20).optional() });
 export const notificationReadResultSchema = z.object({ marked: z.number().int(), unread: z.number().int() });
+// Notification preferences (PUT /me/notification-preferences). Essential messages are not switchable; `email_copies`
+// covers optional email copies and `marketing` is a stored choice only (nothing sends marketing).
+export const notificationPreferencesInputSchema = z.strictObject({ email_copies: z.boolean(), marketing: z.boolean() });
+export type NotificationPreferencesInput = z.infer<typeof notificationPreferencesInputSchema>;
+export const notificationPreferencesSchema = z.object({ email_copies: z.boolean(), marketing: z.boolean(), updated_at: z.string().nullable() });
+export type NotificationPreferences = z.infer<typeof notificationPreferencesSchema>;
 
 const NOTIFICATION_COPY: Record<string, (n: { ref: string; venue: string }) => { title: string; body: string }> = {
   booking_confirmed: (n) => ({ title: "Booking confirmed", body: `${n.ref} at ${n.venue} is confirmed. Your arrival code is on the booking.` }),

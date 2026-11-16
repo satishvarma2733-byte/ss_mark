@@ -243,8 +243,10 @@
   width: 48px;
   height: 28px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--border-subtle);
-  background: var(--surface-muted);
+  flex: none;
+  border: 1px solid transparent;
+  /* Off state keeps 3:1 against the card so the control is visible without colour (WCAG 1.4.11). */
+  background: color-mix(in srgb, var(--text-muted) 70%, var(--surface-card));
   cursor: pointer;
   padding: 2px;
   transition: background-color var(--motion-fast) var(--motion-ease);

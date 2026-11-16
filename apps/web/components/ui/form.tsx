@@ -158,14 +158,16 @@ export interface SwitchProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label: string;
+  /** Keep the label for screen readers only (when a visible heading already names the choice). */
+  hideLabel?: boolean;
   disabled?: boolean;
 }
 
-export function Switch({ checked, onChange, label, disabled }: SwitchProps) {
+export function Switch({ checked, onChange, label, hideLabel, disabled }: SwitchProps) {
   const id = useId();
   return (
     <div className="ss-switch-row">
-      <label htmlFor={id} className="ss-switch-row__label">
+      <label htmlFor={id} className={hideLabel ? "visually-hidden" : "ss-switch-row__label"}>
         {label}
       </label>
       <button

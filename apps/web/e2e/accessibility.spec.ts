@@ -68,6 +68,7 @@ test("public and customer pages pass WCAG 2.2 A/AA checks and reflow at 320 px",
   findings.push(...await check(page, "/bookings", "bookings"));
   findings.push(...await check(page, "/notifications", "notifications"));
   findings.push(...await check(page, "/account", "account"));
+  findings.push(...await check(page, "/account/notifications", "notification preferences"));
   findings.push(...await check(page, "/help", "help (signed in)"));
   report(findings);
   expect(findings).toEqual([]);
@@ -192,7 +193,7 @@ test("dark mode passes WCAG 2.2 A/AA checks on customer, partner and admin pages
   await signInWithMfa(page, user.email, `/partner?venue=${venue.venueId}`);
   const q = `?venue=${venue.venueId}`;
   for (const [path, label] of [
-    ["/bookings", "bookings"], ["/account", "account"], ["/notifications", "notifications"],
+    ["/bookings", "bookings"], ["/account", "account"], ["/account/notifications", "notification preferences"], ["/notifications", "notifications"],
     [`/partner${q}`, "partner today"], [`/partner/calendar${q}`, "partner calendar"], [`/partner/inventory${q}`, "partner inventory"],
     [`/partner/payouts${q}`, "partner payouts"], [`/partner/staff${q}`, "partner staff"], [`/staff${q}`, "staff arrivals"],
     ["/admin", "admin"], ["/admin/venues", "admin venues"], ["/admin/bookings", "admin bookings"], ["/admin/finance", "admin finance"],

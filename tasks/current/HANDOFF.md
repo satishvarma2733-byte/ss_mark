@@ -163,3 +163,28 @@ Checks: `tsc --noEmit` (web) clean; `pnpm lint` clean; `pnpm test:unit` 79 passe
 
 Checks: `tsc --noEmit` (web) clean; `pnpm lint` clean; `next build` OK; `npx playwright test` 50/50 passed, then
 `journey.spec.ts` + `notifications.spec.ts` 13/13 after a small follow-up (button on the not-found state).
+
+## Step D (part 2) - notification preferences (16 November 2026)
+
+- Migration `supabase/migrations/20261116000100_notification_preferences.sql` (applied locally with
+  `npx supabase migration up`, no reset): table `notification_preferences` (forced RLS, no direct grants),
+  `app.is_optional_email`, `app.my_notification_preferences`, `app.set_notification_preferences`, and `app.notify_user`
+  now skips the EMAIL row for optional templates (booking_confirmed, booking_ending, extension_applied,
+  review_published, review_hidden, ticket_resolved, ticket_closed) when the person turned email copies off. Essential
+  templates are always emailed; the inbox row is never affected. Rollback: restore `notify_user` from migration
+  `20261103000500` and drop the table and the three functions.
+- Decisions made here, for the owner to confirm: email copies default ON (unchanged behaviour; the Figma frame shows
+  "Off"); "Offers & announcements" is a stored choice only (nothing sends marketing).
+- Contracts `notificationPreferencesInputSchema`; db wrappers `myNotificationPreferences`, `setNotificationPreferences`;
+  API `GET/PUT /api/v1/me/notification-preferences`; page `/account/notifications` (linked from `/account` and
+  `/notifications`). Kit `Switch` gained `hideLabel` and a higher-contrast off state. Docs 05 and 07 updated.
+- Tests: 3 integration tests (defaults and per-person saving; opt-out skips optional email only; no direct table
+  access), 1 e2e test, page added to light and dark accessibility lists.
+- E2E helper `signInWithEmailCode` now waits for hydration and verifies the email value (a slow run submitted the
+  form empty: "Some details need attention").
+
+Checks: `pnpm typecheck` clean; `pnpm lint` clean; `next build` OK; `npx playwright test` 51/51 passed.
+`pnpm test:integration`: 176 of 178 - the two failures are in `discovery.test.ts` (unfiltered search no longer returns
+the test venue on its first page). Cause: 236 venues created by e2e runs on 16 Nov in the un-reset local database; the
+same file passed (175/175) earlier the same day. NOT fixed: needs `pnpm db:reset` (wipes local data) or a test that
+filters its search. `pnpm test:unit` not re-run in this step.

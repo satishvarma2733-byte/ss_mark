@@ -4,7 +4,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   adminBusinessMetrics, adminUpdateTicket, asUser, asWorker, beginExtensionCheckout, cancelBooking, cancelPreview, createReview, createTicket,
-  decideExtension, holdExtension, jobNotifyBooking, markNotificationsRead, moderateReview, myNotifications, requestExtension, sendEndReminders,
+  decideExtension, holdExtension, jobNotifyBooking, markNotificationsRead, moderateReview, myNotificationPreferences, myNotifications, requestExtension, setNotificationPreferences, sendEndReminders,
   staffCheckIn, staffCheckOut, type Sql
 } from "@simply-sit/db";
 import { arrivalCodes } from "@simply-sit/domain";
@@ -217,5 +217,52 @@ describe("business metrics (A06)", () => {
     await expectDomainError(as(support, "aal1")((tx) => adminBusinessMetrics(tx, query)), "REAUTH_REQUIRED");
     await expectDomainError(as(support)((tx) => adminBusinessMetrics(tx, { ...query, from: "2026-01-01" })), "VALIDATION_FAILED");
     await expectDomainError(as(support)((tx) => adminBusinessMetrics(tx, { ...query, venue_id: crypto.randomUUID() })), "NOT_FOUND");
+  });
+});
+
+describe("notification preferences (Figma 94:22428)", () => {
+  const channels = async (user: TestUser, key: string) =>
+    (await sql`select channel from public.notifications where user_id = ${user.profileId}::uuid and event_key = ${key} order by channel`).map((r) => r.channel as string);
+  const notify = (user: TestUser, key: string, template: string) => sql`select app.notify_user(${user.profileId}::uuid, null, ${key}, ${template})`;
+
+  it("defaults to email copies on and marketing off; saving is per person", async () => {
+    const [a, b] = await Promise.all([createUser(sql), createUser(sql)]);
+    expect(await as(a)((tx) => myNotificationPreferences(tx))).toEqual({ email_copies: true, marketing: false, updated_at: null });
+    const saved = await as(a)((tx) => setNotificationPreferences(tx, { email_copies: false, marketing: true }));
+    expect(saved).toMatchObject({ email_copies: false, marketing: true });
+    expect(saved.updated_at).not.toBeNull();
+    expect(await as(b)((tx) => myNotificationPreferences(tx))).toMatchObject({ email_copies: true, marketing: false });
+    // Saving again updates the same row.
+    await as(a)((tx) => setNotificationPreferences(tx, { email_copies: true, marketing: false }));
+    const rows = await sql`select count(*)::int as n from public.notification_preferences where user_id = ${a.profileId}::uuid`;
+    expect(rows[0]!.n).toBe(1);
+  });
+
+  it("with email copies off, optional updates stay in the inbox without email; essential ones are still emailed", async () => {
+    const [optedOut, standard] = await Promise.all([createUser(sql), createUser(sql)]);
+    await as(optedOut)((tx) => setNotificationPreferences(tx, { email_copies: false, marketing: false }));
+    const run = crypto.randomUUID();
+    for (const template of ["booking_confirmed", "booking_ending", "review_published", "ticket_resolved"]) {
+      await notify(optedOut, `pref:${run}:${template}`, template);
+      expect(await channels(optedOut, `pref:${run}:${template}`), template).toEqual(["IN_APP"]);
+      await notify(standard, `pref:${run}:${template}`, template);
+      expect(await channels(standard, `pref:${run}:${template}`), template).toEqual(["EMAIL", "IN_APP"]);
+    }
+    for (const template of ["booking_cancelled", "refund_pending", "refund_delayed", "extension_approved", "ticket_reply"]) {
+      await notify(optedOut, `pref:${run}:${template}`, template);
+      expect(await channels(optedOut, `pref:${run}:${template}`), template).toEqual(["EMAIL", "IN_APP"]);
+    }
+    // Turning copies back on affects later events only; nothing is sent retroactively.
+    await as(optedOut)((tx) => setNotificationPreferences(tx, { email_copies: true, marketing: false }));
+    expect(await channels(optedOut, `pref:${run}:booking_confirmed`)).toEqual(["IN_APP"]);
+    await notify(optedOut, `pref:${run}:later`, "booking_confirmed");
+    expect(await channels(optedOut, `pref:${run}:later`)).toEqual(["EMAIL", "IN_APP"]);
+  });
+
+  it("the preferences table is not readable or writable directly by a signed-in user", async () => {
+    const user = await createUser(sql);
+    await as(user)((tx) => setNotificationPreferences(tx, { email_copies: false, marketing: false }));
+    await expect(as(user)((tx) => tx`select * from public.notification_preferences`)).rejects.toThrow();
+    await expect(as(user)((tx) => tx`update public.notification_preferences set marketing = true`)).rejects.toThrow();
   });
 });

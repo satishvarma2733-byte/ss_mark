@@ -56,6 +56,9 @@ export default async function AccountPage() {
                 </div>
               ) : null}
             </dl>
+            <p className="book-when">
+              <a className="text-link" href="/account/notifications">Notification preferences</a>
+            </p>
             {me.mfa_required_for_portal ? (
               <p className="book-when status-warning">
                 Portal access needs an authenticator check. <a href="/account/security">Set up or verify your authenticator</a>.

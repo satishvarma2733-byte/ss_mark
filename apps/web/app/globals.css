@@ -4728,3 +4728,74 @@ tbody tr:hover > td {
 .portal-utilities a[aria-current="page"] {
   background: var(--notice-surface);
 }
+
+/* Notification preferences (Figma 94:22428): one row per choice - icon, what it covers, and its control. */
+.preference-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 720px;
+  margin-top: 20px;
+}
+
+.card.preference {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+}
+
+.preference-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  background: var(--notice-surface);
+  color: var(--brand-primary);
+}
+
+.preference-copy {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.preference-copy h2 {
+  margin: 0 0 2px;
+  font-size: 15px;
+}
+
+.preference-copy p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.preference .status-pill {
+  flex: none;
+}
+
+.preference-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 6px;
+}
+
+.preference-actions p {
+  margin: 0;
+  font-weight: 600;
+}
+
+@media (max-width: 479px) {
+  .card.preference {
+    flex-wrap: wrap;
+  }
+
+  .preference-copy {
+    flex-basis: calc(100% - 56px);
+  }
+}

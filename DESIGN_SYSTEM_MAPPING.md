@@ -115,7 +115,7 @@ Built components live in `apps/web/components/ui/` (`button.tsx`, `form.tsx`, `f
 | `G · System state · Offline cached booking pass` | `94:17292` | Expo `booking/[id]` | **Missing** |
 | `Notifications · Partner notification centre` | `94:21953` | `/partner/notifications` | Implemented 16 Nov (the signed-in person's own inbox inside the workspace) |
 | `Notifications · Admin notification centre` | `94:22194` | `/admin/notifications` | Implemented 16 Nov (own inbox; queue alerts stay on Overview/Finance) |
-| `Notifications · Notification preferences` | `94:22428` | — | **Not built**: no table or API stores notification preferences; needs a migration and the notification job to honour it |
+| `Notifications · Notification preferences` | `94:22428` | `/account/notifications` | Implemented 16 Nov: table `notification_preferences`, `GET/PUT /api/v1/me/notification-preferences`; optional email copies honoured by `app.notify_user` |
 | `Notifications · Notification preview` | `94:22480` | — | Native push preview; not applicable to web |
 | `Notifications · Interaction states and feedback` | `94:22512` | kit `ToastProvider`, `Alert` | Built, not adopted |
 
