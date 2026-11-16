@@ -15,7 +15,7 @@
 
 ## Remaining work, in order
 
-### A. Safety net first (half a day)
+### A. Safety net first — DONE 16 Nov (baseline commit `977d332`; integration 175/175; e2e green after a 320 px fix)
 - Create a git repository in `build-kit` and make a first commit, so every later step can be reviewed and reverted (gap 16). **Needs the owner's go-ahead.**
 - Start local Supabase, re-run integration and e2e for a fresh baseline.
 - Environment template: already present at `config/.env.example` (no action needed).

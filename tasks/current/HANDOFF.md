@@ -92,3 +92,16 @@ owner decisions (D02-D04, D09) and accounts.
 
 Checks (16 November): `pnpm typecheck` clean; `pnpm lint` clean; `pnpm test:unit` 14 files / 79 tests passed.
 Integration, e2e and build NOT re-run (local Supabase containers stopped).
+
+## Step A - baseline (16 November 2026)
+
+- Git repository created in `build-kit` (branch `main`), baseline commit `977d332`; `.gitignore` gained `*.tsbuildinfo` and
+  `preview-shots/`. `pnpm secrets:check` passed before the commit. No remote; nothing pushed.
+- Environment templates already existed (`config/.env.example`, `config/.env.staging.example`); audit corrected.
+- Fix: `apps/web/app/globals.css` - portal figures two across on phones (12 Nov) let a long money value widen `/admin` at
+  320 px after a resize. Values now wrap at 22px and the row is one column below 380 px.
+
+Checks (local Supabase, MOCK providers, database NOT reset): `pnpm test:integration` 18 files / 175 tests passed;
+`pnpm exec next build` OK; `npx playwright test` 46/48 on the full run (accessibility portals @320 failed: fixed above;
+`finance.spec.ts:17` failed once and passed on two re-runs - treat as flaky, cause not investigated); after the fix
+`accessibility.spec.ts` + `finance.spec.ts` 7/7 passed. The full 48-spec suite was not re-run after the fix.

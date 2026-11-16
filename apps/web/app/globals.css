@@ -4522,7 +4522,21 @@ tbody tr:hover > td {
   }
 
   .metric {
+    min-width: 0;
     gap: 8px;
     padding: 14px;
+  }
+
+  /* Long money values must not push the card (and the page) wider than the screen. */
+  .metric .metric-value {
+    font-size: 22px;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Very narrow phones (320 px reflow): one figure per row again. */
+@media (max-width: 379px) {
+  .metric-row {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
