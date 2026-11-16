@@ -1,0 +1,101 @@
+{
+  "started_at": "2026-11-03T06:11:39.328Z",
+  "base": "http://localhost:3100",
+  "seconds": 45,
+  "sessions": 50,
+  "checkout_customers": 10,
+  "rows": [
+    {
+      "label": "GET / (page)",
+      "count": 108,
+      "errors": 0,
+      "p50_ms": 731,
+      "p95_ms": 5392,
+      "max_ms": 5508
+    },
+    {
+      "label": "GET /api/v1/venues (search)",
+      "count": 91,
+      "errors": 0,
+      "p50_ms": 3716,
+      "p95_ms": 6288,
+      "max_ms": 8174
+    },
+    {
+      "label": "GET /api/v1/venues/{id}",
+      "count": 99,
+      "errors": 0,
+      "p50_ms": 3498,
+      "p95_ms": 6628,
+      "max_ms": 8090
+    },
+    {
+      "label": "GET /api/v1/venues/{id}/availability",
+      "count": 105,
+      "errors": 0,
+      "p50_ms": 3172,
+      "p95_ms": 6827,
+      "max_ms": 9332
+    },
+    {
+      "label": "POST /quotes",
+      "count": 30,
+      "errors": 0,
+      "p50_ms": 1693,
+      "p95_ms": 6438,
+      "max_ms": 6566
+    },
+    {
+      "label": "GET /venues/{slug} (page)",
+      "count": 115,
+      "errors": 0,
+      "p50_ms": 11075,
+      "p95_ms": 15047,
+      "max_ms": 16564
+    },
+    {
+      "label": "POST /booking-holds",
+      "count": 30,
+      "errors": 0,
+      "p50_ms": 2663,
+      "p95_ms": 11489,
+      "max_ms": 11708
+    },
+    {
+      "label": "POST /bookings/{id}/checkout",
+      "count": 30,
+      "errors": 0,
+      "p50_ms": 146,
+      "p95_ms": 24031,
+      "max_ms": 25684
+    },
+    {
+      "label": "POST /payment-orders/{id}/verify",
+      "count": 30,
+      "errors": 0,
+      "p50_ms": 101,
+      "p95_ms": 10841,
+      "max_ms": 11165
+    }
+  ],
+  "race": {
+    "contenders": 10,
+    "wins": 1,
+    "refusals": [
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE"
+    ]
+  },
+  "invariants": {
+    "overlapping_active_claims": 0,
+    "confirmed_bookings": 30,
+    "captured_unallocated": 0
+  }
+}

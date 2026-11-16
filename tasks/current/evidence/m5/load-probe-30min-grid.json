@@ -1,0 +1,106 @@
+{
+  "started_at": "2026-11-03T06:19:45.671Z",
+  "base": "http://localhost:3100",
+  "seconds": 60,
+  "sessions": 50,
+  "checkout_customers": 10,
+  "think_ms": [
+    1000,
+    3000
+  ],
+  "grid_minutes": 30,
+  "rows": [
+    {
+      "label": "GET / (page)",
+      "count": 292,
+      "errors": 0,
+      "p50_ms": 39,
+      "p95_ms": 373,
+      "max_ms": 604
+    },
+    {
+      "label": "GET /api/v1/venues/{id}/availability",
+      "count": 294,
+      "errors": 0,
+      "p50_ms": 47,
+      "p95_ms": 551,
+      "max_ms": 1042
+    },
+    {
+      "label": "GET /api/v1/venues (search)",
+      "count": 286,
+      "errors": 0,
+      "p50_ms": 35,
+      "p95_ms": 683,
+      "max_ms": 1422
+    },
+    {
+      "label": "GET /api/v1/venues/{id}",
+      "count": 292,
+      "errors": 0,
+      "p50_ms": 31,
+      "p95_ms": 426,
+      "max_ms": 1529
+    },
+    {
+      "label": "GET /venues/{slug} (page)",
+      "count": 286,
+      "errors": 0,
+      "p50_ms": 153,
+      "p95_ms": 926,
+      "max_ms": 1529
+    },
+    {
+      "label": "POST /quotes",
+      "count": 30,
+      "errors": 0,
+      "p50_ms": 51,
+      "p95_ms": 560,
+      "max_ms": 564
+    },
+    {
+      "label": "POST /booking-holds",
+      "count": 30,
+      "errors": 0,
+      "p50_ms": 44,
+      "p95_ms": 416,
+      "max_ms": 442
+    },
+    {
+      "label": "POST /bookings/{id}/checkout",
+      "count": 30,
+      "errors": 0,
+      "p50_ms": 116,
+      "p95_ms": 1159,
+      "max_ms": 1169
+    },
+    {
+      "label": "POST /payment-orders/{id}/verify",
+      "count": 30,
+      "errors": 0,
+      "p50_ms": 87,
+      "p95_ms": 590,
+      "max_ms": 619
+    }
+  ],
+  "race": {
+    "contenders": 10,
+    "wins": 1,
+    "refusals": [
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE",
+      "SLOT_UNAVAILABLE"
+    ]
+  },
+  "invariants": {
+    "overlapping_active_claims": 0,
+    "confirmed_bookings": 30,
+    "captured_unallocated": 0
+  }
+}

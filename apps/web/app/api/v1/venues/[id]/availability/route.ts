@@ -1,0 +1,18 @@
+import { availabilityQuerySchema } from "@simply-sit/contracts";
+import { asAnon, getDb, venueDayAvailability } from "@simply-sit/db";
+import { handle, ok, parseQuery, parseUuid } from "../../../../../../lib/api";
+import { customerPrice } from "../../../../../../lib/price";
+
+export const dynamic = "force-dynamic";
+
+// GET /api/v1/venues/{id}/availability?date&duration_minutes&party_size - bookable starts per compatible table on one
+// venue-local date. Advisory (no-store); the hold is the only commitment.
+export function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+  return handle(async (requestId) => {
+    const id = parseUuid((await context.params).id);
+    const query = parseQuery(request, availabilityQuerySchema);
+    const result = await asAnon(getDb(), (tx) => venueDayAvailability(tx, id, query.date, query.duration_minutes, query.party_size));
+    const tables = (result.tables as { price: unknown }[]).map((t) => ({ ...t, price: customerPrice(t.price) }));
+    return ok(requestId, { ...result, tables });
+  });
+}

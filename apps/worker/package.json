@@ -1,0 +1,21 @@
+{
+  "name": "@simply-sit/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx --env-file-if-exists=.env.local src/index.ts",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@simply-sit/db": "workspace:*",
+    "@simply-sit/domain": "workspace:*",
+    "@simply-sit/payments": "workspace:*",
+    "@simply-sit/providers": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "tsx": "4.20.6"
+  }
+}

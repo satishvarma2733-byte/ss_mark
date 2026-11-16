@@ -1,0 +1,7 @@
+[demo 06:30:03] enqueued demo:worker-crash:50a2552a-067d-4883-9008-a5f6e18a0e66 (job 3ed36127-002e-4e01-93ba-a5e897687460), handler sleeps 12s, lease 10s
+[demo 06:30:05] after worker A leased: {"status":"LEASED","attempts":1,"leased_by":"worker-A","lease_live":true}
+[demo 06:30:07] worker A hard-killed mid-job
+[demo 06:30:07] after crash: job={"status":"LEASED","attempts":1,"leased_by":"worker-A","lease_live":true} effects=0
+[demo 06:30:27] worker-B: [worker] diagnostic demo:worker-crash:50a2552a-067d-4883-9008-a5f6e18a0e66 effect=applied
+[demo 06:30:27] final: job={"status":"DONE","attempts":2,"leased_by":null,"lease_live":null} effects=["worker-B"]
+[demo 06:30:27] PASS: recovered after lease expiry and applied the effect exactly once

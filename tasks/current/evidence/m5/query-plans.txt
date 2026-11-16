@@ -1,0 +1,130 @@
+ bookings | claims | resources | jobs  
+----------+--------+-----------+-------
+    50050 |  50050 |      1420 | 20151
+(1 row)
+
+=== Q1 hold/quote overlap check (one table, one slot) ===
+                                                                              QUERY PLAN                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using no_active_overlap on inventory_claims c
+   Index Cond: ((resource_id = '99999999-0002-4000-8000-000000005005'::uuid) AND (blocked_range && '["2026-11-02 10:00:00+00","2026-11-02 11:10:00+00")'::tstzrange))
+   Filter: ((expires_at IS NULL) OR (expires_at > now()))
+(3 rows)
+
+=== Q2 due-hold sweep ===
+                                    QUERY PLAN                                     
+-----------------------------------------------------------------------------------
+ Limit
+   ->  Unique
+         ->  Sort
+               Sort Key: venue_id, resource_id
+               ->  Index Scan using bookings_status_hold_idx on bookings b
+                     Index Cond: (status = ANY ('{HOLD,PENDING_PAYMENT}'::text[]))
+                     Filter: (hold_expires_at <= clock_timestamp())
+(7 rows)
+
+=== Q3 outbox lease candidates ===
+                                                                                              QUERY PLAN                                                                                              
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit
+   ->  LockRows
+         ->  Sort
+               Sort Key: available_at, id
+               ->  Bitmap Heap Scan on outbox_jobs
+                     Recheck Cond: ((status = 'READY'::text) OR (status = 'LEASED'::text))
+                     Filter: (((status = 'READY'::text) AND (available_at <= clock_timestamp())) OR ((status = 'LEASED'::text) AND (lease_until <= clock_timestamp()) AND (attempts < max_attempts)))
+                     ->  BitmapOr
+                           ->  Bitmap Index Scan on outbox_jobs_lease_idx
+                                 Index Cond: (status = 'READY'::text)
+                           ->  Bitmap Index Scan on outbox_jobs_lease_idx
+                                 Index Cond: (status = 'LEASED'::text)
+(12 rows)
+
+=== Q4 customer reads own bookings through RLS ===
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"44444444-4444-4444-8444-000000000001","role":"authenticated"}
+(1 row)
+
+                                               QUERY PLAN                                                
+---------------------------------------------------------------------------------------------------------
+ Limit
+   InitPlan 1
+     ->  Result
+   InitPlan 2
+     ->  Result
+   ->  Sort
+         Sort Key: bookings.start_at DESC
+         ->  Bitmap Heap Scan on bookings
+               Recheck Cond: ((customer_id = (InitPlan 1).col1) OR (venue_id = ANY ((InitPlan 2).col1)))
+               ->  BitmapOr
+                     ->  Bitmap Index Scan on bookings_customer_start_idx
+                           Index Cond: (customer_id = (InitPlan 1).col1)
+                     ->  Bitmap Index Scan on bookings_venue_start_status_idx
+                           Index Cond: (venue_id = ANY ((InitPlan 2).col1))
+(14 rows)
+
+=== Q5 venue staff reads venue calendar through RLS ===
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"44444444-4444-4444-8444-000000000003","role":"authenticated"}
+(1 row)
+
+                                         QUERY PLAN                                          
+---------------------------------------------------------------------------------------------
+ Limit
+   InitPlan 1
+     ->  Result
+   InitPlan 2
+     ->  Result
+   ->  Index Scan using bookings_venue_start_status_idx on bookings
+         Index Cond: (venue_id = '22222222-2222-4222-8222-000000000001'::uuid)
+         Filter: ((customer_id = (InitPlan 1).col1) OR (venue_id = ANY ((InitPlan 2).col1)))
+(8 rows)
+
+=== timing: customer own bookings via RLS (EXPLAIN ANALYZE) ===
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"44444444-4444-4444-8444-000000000001","role":"authenticated"}
+(1 row)
+
+                                               QUERY PLAN                                                
+---------------------------------------------------------------------------------------------------------
+ Limit (actual rows=0 loops=1)
+   InitPlan 1
+     ->  Result (actual rows=1 loops=1)
+   InitPlan 2
+     ->  Result (actual rows=1 loops=1)
+   ->  Sort (actual rows=0 loops=1)
+         Sort Key: bookings.start_at DESC
+         Sort Method: quicksort  Memory: 25kB
+         ->  Bitmap Heap Scan on bookings (actual rows=0 loops=1)
+               Recheck Cond: ((customer_id = (InitPlan 1).col1) OR (venue_id = ANY ((InitPlan 2).col1)))
+               ->  BitmapOr (actual rows=0 loops=1)
+                     ->  Bitmap Index Scan on bookings_customer_start_idx (actual rows=0 loops=1)
+                           Index Cond: (customer_id = (InitPlan 1).col1)
+                     ->  Bitmap Index Scan on bookings_venue_start_status_idx (actual rows=0 loops=1)
+                           Index Cond: (venue_id = ANY ((InitPlan 2).col1))
+ Planning Time: 0.089 ms
+ Execution Time: 1.563 ms
+(17 rows)
+
+=== Q6 worker sweeps every tick: earnings queue (M5) and due end reminders (M4.6) ===
+                                QUERY PLAN                                
+--------------------------------------------------------------------------
+ Limit
+   ->  Nested Loop
+         ->  Index Scan using earning_queue_queued_idx on earning_queue q
+         ->  Index Scan using bookings_pkey on bookings b
+               Index Cond: (id = q.booking_id)
+               Filter: ((status <> 'NO_SHOW'::text) OR (end_at <= now()))
+(6 rows)
+
+                                                                               QUERY PLAN                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit
+   ->  Index Scan using bookings_checked_in_end_idx on bookings b
+         Index Cond: (end_at > now())
+         Filter: ((end_at - make_interval(0, 0, 0, 0, 0, COALESCE(((policy_snapshot ->> 'end_reminder_minutes'::text))::integer, 10), '0'::double precision)) <= now())
+(4 rows)
+

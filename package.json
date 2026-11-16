@@ -1,0 +1,46 @@
+{
+  "name": "simply-sit",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Simply Sit monorepo - local development. SYNTHETIC DATA ONLY.",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22.13 <27"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter @simply-sit/web dev",
+    "dev:mobile": "pnpm --filter @simply-sit/mobile start",
+    "dev:worker": "pnpm --filter @simply-sit/worker dev",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:mock-media": "node scripts/seed-mock-media.mjs",
+    "env:local": "node scripts/local-env.mjs",
+    "db:plans": "docker exec -i supabase_db_build-kit psql -U postgres -q < scripts/query-plans.sql",
+    "ops:check": "docker exec -i supabase_db_build-kit psql -U postgres -q < scripts/ops-checks.sql",
+    "demo:worker-crash": "node scripts/worker-crash-demo.mjs",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r --workspace-concurrency=1 --if-present run typecheck",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:e2e": "pnpm --filter @simply-sit/web test:e2e",
+    "test:mobile": "pnpm --filter @simply-sit/mobile test:export",
+    "build": "pnpm -r --workspace-concurrency=1 --if-present run build",
+    "secrets:check": "node scripts/check-secrets.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@simply-sit/db": "workspace:*",
+    "@simply-sit/domain": "workspace:*",
+    "@simply-sit/payments": "workspace:*",
+    "@simply-sit/providers": "workspace:*",
+    "@simply-sit/synthetic-data": "workspace:^",
+    "@supabase/supabase-js": "2.118.0",
+    "@types/node": "24.10.1",
+    "eslint": "9.39.5",
+    "globals": "16.5.0",
+    "supabase": "2.122.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.0",
+    "vitest": "4.1.12"
+  }
+}

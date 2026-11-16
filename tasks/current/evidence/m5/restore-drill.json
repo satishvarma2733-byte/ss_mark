@@ -1,0 +1,182 @@
+{
+  "at": "2026-11-03T06:34:17.414Z",
+  "schemas": [
+    "public",
+    "app",
+    "auth",
+    "storage",
+    "mock_gateway",
+    "supabase_migrations"
+  ],
+  "dump_bytes": 1420979,
+  "source_counts": {
+    "bookings": 137,
+    "payment_attempts": 117,
+    "refunds": 34,
+    "ledger_journals": 154,
+    "ledger_entries": 316,
+    "booking_earnings": 9,
+    "payout_batches": 5,
+    "audit_events": 175,
+    "booking_events": 499,
+    "notifications": 55,
+    "outbox_jobs": 240,
+    "auth_users": 222,
+    "profiles": 222,
+    "storage_objects": 3,
+    "app_functions": 227,
+    "policies": 30,
+    "migrations": 24
+  },
+  "timings_ms": {
+    "backup database (pg_dump)": 667,
+    "backup storage files (copy)": 264,
+    "restore database (create + pg_restore)": 3954,
+    "verify": 9515,
+    "drop drill database": 361
+  },
+  "restore_and_verify_ms": 13469,
+  "checks": [
+    {
+      "name": "count bookings",
+      "ok": true,
+      "detail": "137 of 137"
+    },
+    {
+      "name": "count payment_attempts",
+      "ok": true,
+      "detail": "117 of 117"
+    },
+    {
+      "name": "count refunds",
+      "ok": true,
+      "detail": "34 of 34"
+    },
+    {
+      "name": "count ledger_journals",
+      "ok": true,
+      "detail": "154 of 154"
+    },
+    {
+      "name": "count ledger_entries",
+      "ok": true,
+      "detail": "316 of 316"
+    },
+    {
+      "name": "count booking_earnings",
+      "ok": true,
+      "detail": "9 of 9"
+    },
+    {
+      "name": "count payout_batches",
+      "ok": true,
+      "detail": "5 of 5"
+    },
+    {
+      "name": "count audit_events",
+      "ok": true,
+      "detail": "175 of 175"
+    },
+    {
+      "name": "count booking_events",
+      "ok": true,
+      "detail": "499 of 499"
+    },
+    {
+      "name": "count notifications",
+      "ok": true,
+      "detail": "55 of 55"
+    },
+    {
+      "name": "count outbox_jobs",
+      "ok": true,
+      "detail": "240 of 240"
+    },
+    {
+      "name": "count auth_users",
+      "ok": true,
+      "detail": "222 of 222"
+    },
+    {
+      "name": "count profiles",
+      "ok": true,
+      "detail": "222 of 222"
+    },
+    {
+      "name": "count storage_objects",
+      "ok": true,
+      "detail": "3 of 3"
+    },
+    {
+      "name": "count app_functions",
+      "ok": true,
+      "detail": "227 of 227"
+    },
+    {
+      "name": "count policies",
+      "ok": true,
+      "detail": "30 of 30"
+    },
+    {
+      "name": "count migrations",
+      "ok": true,
+      "detail": "24 of 24"
+    },
+    {
+      "name": "every foreign key and check constraint is validated",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "every journal balances (debits = credits, at least two entries)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ledger totals match the source",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "every payment attempt and refund is linked to its booking",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "every earning points at its journal",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "audit trail intact (newest entry identical)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "active inventory claims never overlap",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "row-level security still forced on application tables",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "application functions run (venue search as anon)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "every stored object's file is in the Storage copy",
+      "ok": true,
+      "detail": "2 of 2; 1 metadata-only test rows"
+    },
+    {
+      "name": "a copied object reads back intact",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "passed": true
+}
