@@ -105,7 +105,8 @@ test("partner, staff and admin portals pass WCAG 2.2 A/AA checks and reflow at 3
     [`/partner/venue${q}`, "partner venue"], [`/partner/staff${q}`, "partner staff"], [`/partner/reports${q}`, "partner reports"],
     [`/staff${q}`, "staff arrivals"], ["/admin", "admin"], ["/admin/venues", "admin venues"], ["/admin/support", "admin support"],
     ["/admin/reviews", "admin reviews"], ["/admin/finance/refunds", "admin refunds"], ["/admin/finance/fees", "admin fees"], ["/admin/bookings", "admin bookings"], ["/admin/finance", "admin finance"],
-    ["/admin/metrics", "admin metrics"], ["/admin/release", "admin release switches"]
+    ["/admin/metrics", "admin metrics"], ["/admin/release", "admin release switches"],
+    [`/partner/notifications${q}`, "partner notifications"], ["/admin/notifications", "admin notifications"]
   ] as const) {
     findings.push(...await check(page, path, label));
   }
@@ -196,7 +197,8 @@ test("dark mode passes WCAG 2.2 A/AA checks on customer, partner and admin pages
     [`/partner/payouts${q}`, "partner payouts"], [`/partner/staff${q}`, "partner staff"], [`/staff${q}`, "staff arrivals"],
     ["/admin", "admin"], ["/admin/venues", "admin venues"], ["/admin/bookings", "admin bookings"], ["/admin/finance", "admin finance"],
     ["/admin/finance/refunds", "admin refunds"], ["/admin/support", "admin support"], ["/admin/reviews", "admin reviews"],
-    ["/admin/metrics", "admin metrics"], ["/admin/release", "admin release switches"]
+    ["/admin/metrics", "admin metrics"], ["/admin/release", "admin release switches"],
+    [`/partner/notifications${q}`, "partner notifications"], ["/admin/notifications", "admin notifications"]
   ] as const) {
     await dark(path, label);
   }

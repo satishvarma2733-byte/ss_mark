@@ -43,7 +43,7 @@ Built components live in `apps/web/components/ui/` (`button.tsx`, `form.tsx`, `f
 | `SS / Modal`, `SS / Drawer`, `SS / Toast`, `SS / Alert`, `SS / Tooltip` | `94:435`-`94:473`, `94:541` | `Modal`, `Drawer`, `ConfirmDialog`, `ToastProvider`, `Alert`, `Tooltip` | Built; `ToastProvider` mounted in `layout.tsx`, others unused |
 | `SS / Pagination`, `SS / Empty state`, `SS / Loading skeleton`, `SS / Breadcrumbs` | `94:485`, `94:527`, `94:538`, `94:488` | `Pagination`, `EmptyState`, `ErrorState`, `Skeleton`, `Breadcrumbs` | Built; adopted on 3 admin pages |
 | Image gallery | `94:17490` | `ImageGallery` | Built and used on `/venues/[id]` |
-| Recovery states | `94:16726`-`94:17030` | `RecoveryBanner` | Built; **not used by any page yet** |
+| Recovery states | `94:16726`-`94:17030` | `.outcome` layout in `payment-return.tsx` | Implemented 16 Nov; `RecoveryBanner` removed |
 | `SS / Navigation bar`, `SS / Sidebar` | `94:407`, `94:414` | `site-nav.tsx`, `lib/partner-page.tsx`, `lib/admin-nav.tsx` | Implemented outside the kit |
 | `SS / Tabs`, filter chip | `94:419` | — | **Not built** (pages use `.tabs`, `.chip` classes) |
 | `SS / Card`, `SS / Venue card`, `SS / Booking card`, `SS / Table row` | `94:341`-`94:393` | — | **Not built** (class-based markup; `booking-parts.tsx`) |
@@ -69,7 +69,7 @@ Built components live in `apps/web/components/ui/` (`button.tsx`, `form.tsx`, `f
 | `E · Customer web · Cancellation and refund tracking` | `94:12401` | `/bookings/[id]/cancel` | Implemented |
 | `E · Customer web · Account and support centre` | `94:12507` | `/account`, `/help`, `/support/[id]` | Implemented |
 | `Notifications · Customer notification centre` | `94:21901` | `/notifications` | Implemented |
-| `B · Payment pending / failed / expired / unavailable` | `94:16726`–`94:17030` | `/checkout/[bookingId]`, `/payment/return`, `/venues/[id]/book`, `/bookings/[id]/extend` | Partial: `RecoveryBanner` built but not wired into these pages |
+| `B · Payment pending / failed / expired / unavailable` | `94:16726`–`94:17030` | `/checkout/[bookingId]`, `/payment/return`, `/venues/[id]/book`, `/bookings/[id]/extend` | Implemented: checkout, book and extend pages already show these states; `/payment/return` got a state layout 16 Nov. `RecoveryBanner` removed (its fixed copy was less accurate than the server-derived text) |
 
 ### Partner Dashboard (`08 — Partner Dashboard`, `94:9`)
 | Figma Frame | Node ID | Existing Web Route | Status |
@@ -113,9 +113,9 @@ Built components live in `apps/web/components/ui/` (`button.tsx`, `form.tsx`, `f
 | `G · System state · Empty customer results` | `94:17110` | `/venues` | Partial: plain notice, not the kit `EmptyState` |
 | `G · System state · Loading and recoverable error` | `94:17175` | `loading.tsx`, `error.tsx`, `not-found.tsx` | Implemented (12 Nov) |
 | `G · System state · Offline cached booking pass` | `94:17292` | Expo `booking/[id]` | **Missing** |
-| `Notifications · Partner notification centre` | `94:21953` | portal bell opens customer `/notifications` | **Missing** as a portal page |
-| `Notifications · Admin notification centre` | `94:22194` | same | **Missing** as a portal page |
-| `Notifications · Notification preferences` | `94:22428` | — | **Missing** (check whether the API stores preferences before building) |
+| `Notifications · Partner notification centre` | `94:21953` | `/partner/notifications` | Implemented 16 Nov (the signed-in person's own inbox inside the workspace) |
+| `Notifications · Admin notification centre` | `94:22194` | `/admin/notifications` | Implemented 16 Nov (own inbox; queue alerts stay on Overview/Finance) |
+| `Notifications · Notification preferences` | `94:22428` | — | **Not built**: no table or API stores notification preferences; needs a migration and the notification job to honour it |
 | `Notifications · Notification preview` | `94:22480` | — | Native push preview; not applicable to web |
 | `Notifications · Interaction states and feedback` | `94:22512` | kit `ToastProvider`, `Alert` | Built, not adopted |
 

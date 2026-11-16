@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { CircleCheck, CircleX, Clock, Info, LoaderCircle } from "lucide-react";
 import type { PaymentOrderStatus } from "@simply-sit/contracts";
 import { apiCall } from "../../../lib/client-api";
 import { formatInrPaise, formatVenueTime } from "../../../lib/format";
@@ -120,22 +121,29 @@ export function PaymentReturn({ orderId, providerPaymentId, signature, status }:
 
   if (!state && !error) return <div className="skeleton" aria-label="Checking payment" />;
   const view = state ? describe(state, status, slow) : null;
+  // One layout for every outcome: an icon that names the state (not colour alone), the title, what happened, and
+  // the next step. The copy above is unchanged; it always derives from the server's booking and payment states.
+  const kind = !view ? "error" : view.tone === "status-success" ? "success" : view.tone === "status-error" ? "error" : view.tone === "status-warning" ? "warning" : view.title.startsWith("Verifying") ? "pending" : "neutral";
+  const Icon = kind === "success" ? CircleCheck : kind === "error" ? CircleX : kind === "warning" ? Clock : kind === "pending" ? LoaderCircle : Info;
   return (
-    <Card aria-live="polite" data-testid="payment-status">
-      <span className="badge">Mock payment provider - test mode</span>
+    <Card className={`outcome outcome-${kind}`} aria-live="polite" data-testid="payment-status">
+      <span className="outcome-icon" aria-hidden="true">
+        <Icon size={30} />
+      </span>
       {view ? (
         <>
           <h2 className={view.tone} data-testid="payment-title">
             {view.title}
           </h2>
-          <p>{view.body}</p>
-          {view.link ? (
-            <p>
-              <ButtonLink href={view.link.href}>
-                {view.link.label}
+          <p className="outcome-body">{view.body}</p>
+          <div className="outcome-actions">
+            {view.link ? <ButtonLink href={view.link.href}>{view.link.label}</ButtonLink> : null}
+            {view.link?.href !== "/bookings" && kind !== "success" ? (
+              <ButtonLink variant="secondary" href="/bookings">
+                Your bookings
               </ButtonLink>
-            </p>
-          ) : null}
+            ) : null}
+          </div>
         </>
       ) : null}
       {error ? (
@@ -143,6 +151,14 @@ export function PaymentReturn({ orderId, providerPaymentId, signature, status }:
           {error}
         </p>
       ) : null}
+      {error && !view ? (
+        <div className="outcome-actions">
+          <ButtonLink variant="secondary" href="/bookings">
+            Your bookings
+          </ButtonLink>
+        </div>
+      ) : null}
+      <span className="badge">Mock payment provider - test mode</span>
     </Card>
   );
 }

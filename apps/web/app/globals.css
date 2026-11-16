@@ -4645,3 +4645,86 @@ tbody tr:hover > td {
     white-space: nowrap;
   }
 }
+
+/* Payment outcome (Figma "B · Payment verification pending / failed / hold expired"): one centred layout per state. */
+.card.outcome {
+  align-items: center;
+  gap: 12px;
+  max-width: 560px;
+  margin: 24px auto;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.outcome h2,
+.outcome p {
+  margin: 0;
+}
+
+.outcome h2 {
+  font-size: 22px;
+}
+
+.outcome-body {
+  max-width: 440px;
+  color: var(--text-muted);
+}
+
+.outcome-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-pill);
+  background: var(--notice-surface);
+  color: var(--brand-primary);
+}
+
+.outcome-success .outcome-icon {
+  background: var(--status-success-surface);
+  color: var(--status-success-text);
+}
+
+.outcome-warning .outcome-icon {
+  background: var(--status-warm-surface);
+  color: var(--status-warm);
+}
+
+.outcome-error .outcome-icon {
+  background: var(--status-danger-surface);
+  color: var(--status-danger);
+}
+
+.outcome-pending .outcome-icon svg {
+  animation: ss-spin 1.1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outcome-pending .outcome-icon svg {
+    animation: none;
+  }
+}
+
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.outcome .badge {
+  align-self: center;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+/* Portal notification centres: the inbox keeps a readable width inside the wide workspace. */
+.portal-inbox {
+  max-width: 760px;
+}
+
+.portal-utilities a[aria-current="page"] {
+  background: var(--notice-surface);
+}

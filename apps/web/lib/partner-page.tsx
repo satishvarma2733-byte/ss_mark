@@ -90,7 +90,7 @@ export function PartnerNav({ current, memberships, active }: { current: Membersh
         <div className="portal-utilities">
           <span>Asia/Kolkata · IST</span>
           <ThemeToggle className="portal-theme-toggle" />
-          <a href="/notifications" aria-label="Notifications">
+          <a href={`/partner/notifications?venue=${current.venue_id}`} aria-label="Notifications" aria-current={active === "/partner/notifications" ? "page" : undefined}>
             <Bell size={19} aria-hidden="true" />
           </a>
           <a className="portal-avatar" href="/account" aria-label="Account">

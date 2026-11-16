@@ -68,7 +68,7 @@ export function AdminNav({ roles, active }: { roles: Role[]; active: string }) {
         <div className="portal-utilities">
           <span>Asia/Kolkata · IST</span>
           <ThemeToggle className="portal-theme-toggle" />
-          <a href="/notifications" aria-label="Notifications">
+          <a href="/admin/notifications" aria-label="Notifications" aria-current={active === "/admin/notifications" ? "page" : undefined}>
             <Bell size={19} aria-hidden="true" />
           </a>
           <a className="portal-avatar" href="/account" aria-label="Account">

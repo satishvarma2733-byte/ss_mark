@@ -146,3 +146,20 @@ Decision: the kit components render the existing, Figma-matched classes in `glob
 
 Checks: `tsc --noEmit` (web) clean; `pnpm lint` clean; `pnpm test:unit` 79 passed; `next build` OK;
 `npx playwright test` 49/49 passed. No visual comparison against Figma frames was done for this step.
+
+## Step D (part 1) - payment outcomes and portal notification centres (16 November 2026, web)
+
+- `/payment/return`: every outcome (confirmed, failed, hold ended, refund pending/processed, under review, verifying,
+  not found) now uses one centred layout with a state icon, the existing server-derived title and text, the next-step
+  button and a "Your bookings" button. Titles, test ids and copy are unchanged. Styles: `.outcome*` in `globals.css`.
+- New `/partner/notifications` and `/admin/notifications` (inside the portal shells, gated like other portal pages);
+  the portal bells link there. They show the signed-in person's own notifications via `myNotifications` (no new API).
+- `components/ui/recovery-banner.tsx` deleted: unused, and its fixed copy ("No charge was confirmed") could be wrong
+  when a refund is pending; the pages derive their text from booking, payment and refund states.
+- E2E: new test in `notifications.spec.ts`; both new pages added to the light and dark accessibility lists.
+- Still open in step D: notification preferences and privacy preferences (no storage exists: needs a migration and
+  the notification job to honour it), partner arrival progression screens, partner support centre, admin
+  partner-and-venue management, system settings, secure admin access. Not compared frame by frame with Figma.
+
+Checks: `tsc --noEmit` (web) clean; `pnpm lint` clean; `next build` OK; `npx playwright test` 50/50 passed, then
+`journey.spec.ts` + `notifications.spec.ts` 13/13 after a small follow-up (button on the not-found state).
