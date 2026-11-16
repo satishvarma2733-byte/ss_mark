@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { TriangleAlert } from "lucide-react";
+import { Button } from "../components/ui";
 
 export default function ErrorBoundary({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -18,9 +19,9 @@ export default function ErrorBoundary({ error, reset }: { error: Error & { diges
         <p>Nothing was booked or charged. Try again, or come back in a few minutes.</p>
         <p className="food-note">Reference: {error.digest ?? "local-preview"}</p>
         <div className="heading-actions">
-          <button className="button" type="button" onClick={() => reset()}>
+          <Button type="button" onClick={() => reset()}>
             Try again
-          </button>
+          </Button>
         </div>
       </section>
     </main>

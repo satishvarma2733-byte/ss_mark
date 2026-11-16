@@ -5,6 +5,7 @@ import { bookingSearchQuerySchema } from "@simply-sit/contracts";
 import { adminBookingSearch, asUser, getDb } from "@simply-sit/db";
 import type { VerifiedClaims } from "@simply-sit/db";
 import { formatInrPaise, formatVenueDateTime, formatVenueTime, venueLocalDate } from "../../../lib/format";
+import { Button, ButtonLink } from "../../../components/ui";
 
 export type BookingRow = { booking_id: string; public_ref: string; status: string; venue_name: string; start_at: string; end_at?: string; total_paise: number };
 export type BookingQuery = { ref?: string; venue_id?: string; date?: string; email?: string };
@@ -70,9 +71,9 @@ export function BookingSearchForm({ q }: { q: BookingQuery }) {
           <input id="search-email" type="email" name="email" defaultValue={q.email ?? ""} placeholder="name@example.com" />
         </div>
       </div>
-      <button className="button" type="submit" data-testid="search-submit">
+      <Button type="submit" data-testid="search-submit">
         Search records
-      </button>
+      </Button>
     </form>
   );
 }
@@ -154,10 +155,10 @@ export function BookingOpsHeading() {
         <h1 className="title-sans">Resolve carefully. Reconcile completely.</h1>
         <p className="lede">Booking, payment, refund and settlement states remain separate · All times Asia/Kolkata.</p>
       </div>
-      <a className="button secondary" href={`/admin/bookings?date=${today}`}>
+      <ButtonLink variant="secondary" href={`/admin/bookings?date=${today}`}>
         <CalendarDays size={18} aria-hidden="true" />
         Today · {label}
-      </a>
+      </ButtonLink>
     </div>
   );
 }

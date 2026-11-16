@@ -24,7 +24,7 @@
 - Replace the 61 hard-coded colours in `globals.css` with tokens.
 - Screenshot every route in light and dark at 390 and 1440; fix contrast failures; add dark mode to the accessibility scan.
 
-### C. Finish the kit and adopt it (3–4 days)
+### C. Finish the kit and adopt it — MOSTLY DONE 16 Nov (see HANDOFF; form fields, notices and dynamic status pills still class-based)
 - Build `Tabs`, `FilterChip`, `Card`, `DatePicker`, `TimeSelector`, `QrBookingCard`.
 - Migrate pages group by group (customer, partner, admin), keeping e2e selectors, and delete the class rules each group no longer needs so there is one system, not two.
 

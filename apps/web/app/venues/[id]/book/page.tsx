@@ -7,6 +7,7 @@ import { loadMe } from "../../../../lib/me";
 import { formatInrPaise, formatVenueTime, venueLocalDate } from "../../../../lib/format";
 import { VenuePhoto } from "../../../../components/venue-photo";
 import { BookFlow } from "./book-flow";
+import { Card } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -123,7 +124,7 @@ export default async function BookPage({ params, searchParams }: { params: Promi
             </div>
           </dl>
 
-          <section className="card book-card" aria-labelledby="tables-heading">
+          <Card className="book-card" aria-labelledby="tables-heading">
             <h2 id="tables-heading">Choose an exact table</h2>
             <VenuePhoto
               mediaId={photo?.id ?? null}
@@ -165,9 +166,9 @@ export default async function BookPage({ params, searchParams }: { params: Promi
             <p className="field-hint">
               Statuses are for the selected interval. No automatic table substitution. Your table is checked again before a hold is created.
             </p>
-          </section>
+          </Card>
 
-          <section className="card book-card" aria-labelledby="time-heading">
+          <Card className="book-card" aria-labelledby="time-heading">
             <h2 id="time-heading">Selected time</h2>
             <ul className="choice-pills" aria-label="Selected booking">
               <li className="choice-pill selected">{timeRange}</li>
@@ -188,7 +189,7 @@ export default async function BookPage({ params, searchParams }: { params: Promi
               {hoursToday.length > 0 ? `Open ${hoursToday.map((h) => `${h.opens}–${h.closes}`).join(", ")}` : "Closed this day"} · Minimum{" "}
               {durationLabel(policy.minimum_minutes)} · {policy.lead_minutes}-minute lead time.
             </p>
-          </section>
+          </Card>
 
           <div className="notice info">
             <Info size={19} aria-hidden="true" />

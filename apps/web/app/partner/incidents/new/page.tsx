@@ -7,6 +7,7 @@ import type { PartnerBooking } from "../../../../lib/partner-types";
 import { PortalBlocked } from "../../../../lib/portal-page";
 import { longDate } from "../../../../components/booking-parts";
 import { IncidentForm } from "./incident-form";
+import { ButtonLink, Card, StatusPill } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -37,12 +38,12 @@ export default async function ReportIncidentPage({ searchParams }: { searchParam
         <IncidentForm venueId={ctx.current.venue_id} booking={venueBooking} />
         <div className="book-side">
           {venueBooking ? (
-            <section className="card book-card" aria-labelledby="ref-heading">
+            <Card className="book-card" aria-labelledby="ref-heading">
               <h2 id="ref-heading">Booking reference</h2>
-              <span className="status-pill">
+              <StatusPill>
                 <img src="/design/status-dot-available.svg" alt="" width={5} height={5} />
                 {venueBooking.status.replace("_", " ").toLowerCase()}
-              </span>
+              </StatusPill>
               <p className="book-when strong">
                 {venueBooking.guest_name ?? "Guest"} · {venueBooking.resource_label}
               </p>
@@ -59,7 +60,7 @@ export default async function ReportIncidentPage({ searchParams }: { searchParam
                 </dl>
               ) : null}
               <p className="field-hint">Guest contact is masked. Use the booking reference, not personal contact details, in notes.</p>
-            </section>
+            </Card>
           ) : null}
           <div className="notice warm">
             <Clock3 size={20} aria-hidden="true" />
@@ -71,14 +72,14 @@ export default async function ReportIncidentPage({ searchParams }: { searchParam
               </p>
             </div>
           </div>
-          <section className="card book-card" aria-labelledby="after-heading">
+          <Card className="book-card" aria-labelledby="after-heading">
             <h2 id="after-heading">After submission</h2>
             <p className="book-when">Support reviews the report and assigns a case owner. Confidential reports are visible only to senior support staff.</p>
             <p className="book-note">Any closure or guest remedy needs a separate, reasoned action. Every action records who did it and when.</p>
-            <a className="button secondary" href="/help">
+            <ButtonLink variant="secondary" href="/help">
               Contact support
-            </a>
-          </section>
+            </ButtonLink>
+          </Card>
         </div>
       </div>
       <div className="workspace-footer">

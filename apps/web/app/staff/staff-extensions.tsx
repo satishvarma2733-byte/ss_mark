@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { StaffExtension } from "@simply-sit/contracts";
 import { apiCall, newIdempotencyKey } from "../../lib/client-api";
 import { formatVenueTime } from "../../lib/format";
+import { Button, Card } from "../../components/ui";
 
 const STATUS: Record<string, string> = {
   APPROVED: "approved - waiting for the guest to pay", HELD: "time held - guest paying", PENDING_PAYMENT: "guest paying"
@@ -49,7 +50,7 @@ export function StaffExtensions({ venueId }: { venueId: string }) {
 
   if (items.length === 0) return null;
   return (
-    <section className="card" style={{ marginTop: 16 }} aria-labelledby="ext-requests-heading" data-testid="staff-extensions">
+    <Card style={{ marginTop: 16 }} aria-labelledby="ext-requests-heading" data-testid="staff-extensions">
       <h2 id="ext-requests-heading">More time requests</h2>
       <ul>
         {items.map((x) => {
@@ -61,14 +62,14 @@ export function StaffExtensions({ venueId }: { venueId: string }) {
                 <>
                   {" "}· answer within {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}
                   {!x.feasible ? <span className="status-warning"> · table booked right after</span> : null}{" "}
-                  <button className="button" type="button" disabled={busy !== null || !x.feasible} onClick={() => void decide(x, "APPROVE")}
+                  <Button type="button" disabled={busy !== null || !x.feasible} onClick={() => void decide(x, "APPROVE")}
                     data-testid={`ext-approve-${x.public_ref}`}>
                     Approve
-                  </button>{" "}
-                  <button className="button secondary" type="button" disabled={busy !== null} onClick={() => void decide(x, "DECLINE")}
+                  </Button>{" "}
+                  <Button variant="secondary" type="button" disabled={busy !== null} onClick={() => void decide(x, "DECLINE")}
                     data-testid={`ext-decline-${x.public_ref}`}>
                     Decline
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <> · {STATUS[x.status] ?? x.status.toLowerCase()}</>
@@ -78,6 +79,6 @@ export function StaffExtensions({ venueId }: { venueId: string }) {
         })}
       </ul>
       {message ? <p className="status-error" role="alert">{message}</p> : null}
-    </section>
+    </Card>
   );
 }

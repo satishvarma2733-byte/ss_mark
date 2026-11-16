@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { Button, ButtonLink, Card } from "../../../components/ui";
 
 type Status = { aal: string; factors: { id: string; status: string }[] };
 type Enrollment = { factor_id: string; qr_code: string; secret: string };
@@ -50,23 +51,23 @@ export function MfaPanel({ redirectPath }: { redirectPath: string }) {
   if (!status) return <p className="skeleton" aria-label="Loading authenticator status" />;
   if (status.aal === "aal2") {
     return (
-      <section className="card">
+      <Card>
         <p data-testid="mfa-verified">This session is verified with your authenticator.</p>
-        <a className="button" href={redirectPath}>
+        <ButtonLink href={redirectPath}>
           Continue
-        </a>
-      </section>
+        </ButtonLink>
+      </Card>
     );
   }
 
   return (
-    <section className="card" style={{ maxWidth: 520 }}>
+    <Card style={{ maxWidth: 520 }}>
       {!verified && !enrollment ? (
         <>
           <p>Add Simply Sit to an authenticator app (for example, one that supports standard 6-digit time-based codes).</p>
-          <button className="button" type="button" onClick={enroll} disabled={busy}>
+          <Button type="button" onClick={enroll} disabled={busy}>
             Set up authenticator
-          </button>
+          </Button>
         </>
       ) : null}
       {enrollment ? (
@@ -84,13 +85,13 @@ export function MfaPanel({ redirectPath }: { redirectPath: string }) {
           <input id="totp" className="input" inputMode="numeric" autoComplete="one-time-code" pattern="\d{6}" maxLength={6} required
             value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />
           <p>
-            <button className="button" type="submit" disabled={busy}>
+            <Button type="submit" disabled={busy}>
               Verify
-            </button>
+            </Button>
           </p>
         </form>
       ) : null}
       {message ? <p role="status">{message}</p> : null}
-    </section>
+    </Card>
   );
 }

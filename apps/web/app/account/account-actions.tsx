@@ -3,6 +3,7 @@
 // Terms, privacy and session actions for the account column (Figma "Contact preferences" card position). Deletion is a
 // request reviewed by support, not immediate erasure.
 import { useState } from "react";
+import { Button, Card } from "../../components/ui";
 
 type Props = { termsRequired: boolean; termsVersion: string; privacyVersion: string; deletionPending: boolean };
 
@@ -50,16 +51,16 @@ export function AccountActions({ termsRequired, termsVersion, privacyVersion, de
   return (
     <>
       {termsRequired ? (
-        <section className="card book-card" aria-labelledby="terms-heading">
+        <Card className="book-card" aria-labelledby="terms-heading">
           <h2 id="terms-heading">Terms</h2>
           <p className="book-when">Accept the current draft terms ({termsVersion}) and privacy notice before booking. Synthetic preview text.</p>
-          <button className="button" type="button" onClick={accept} disabled={busy}>
+          <Button type="button" onClick={accept} disabled={busy}>
             Accept terms
-          </button>
-        </section>
+          </Button>
+        </Card>
       ) : null}
 
-      <section className="card book-card" aria-labelledby="privacy-heading">
+      <Card className="book-card" aria-labelledby="privacy-heading">
         <h2 id="privacy-heading">Privacy &amp; session</h2>
         <dl className="detail-rows">
           <div>
@@ -82,27 +83,27 @@ export function AccountActions({ termsRequired, termsVersion, privacyVersion, de
               Requesting deletion pauses new bookings straight away. Active bookings, payments and refunds are reviewed first, and records we must
               keep for finance or audit are kept in pseudonymous form. This is a request, not immediate erasure.
             </p>
-            <button className="button danger" type="button" onClick={requestDeletion} disabled={busy}>
+            <Button variant="danger" type="button" onClick={requestDeletion} disabled={busy}>
               Confirm deletion request
-            </button>
-            <button className="button secondary" type="button" onClick={() => setConfirmDelete(false)}>
+            </Button>
+            <Button variant="secondary" type="button" onClick={() => setConfirmDelete(false)}>
               Keep my account
-            </button>
+            </Button>
           </>
         ) : (
           <button className="text-link" type="button" onClick={() => setConfirmDelete(true)}>
             Privacy &amp; data requests →
           </button>
         )}
-        <button className="button secondary" type="button" onClick={signOut} disabled={busy}>
+        <Button variant="secondary" type="button" onClick={signOut} disabled={busy}>
           Sign out
-        </button>
+        </Button>
         {message ? (
           <p className="book-when" role="status" aria-live="polite">
             {message}
           </p>
         ) : null}
-      </section>
+      </Card>
     </>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PaymentOrderStatus } from "@simply-sit/contracts";
 import { apiCall } from "../../../lib/client-api";
 import { formatInrPaise, formatVenueTime } from "../../../lib/format";
+import { ButtonLink, Card } from "../../../components/ui";
 
 type Props = { orderId: string; providerPaymentId?: string | undefined; signature?: string | undefined; status?: string | undefined };
 type View = { tone: string; title: string; body: string; link?: { href: string; label: string } };
@@ -120,7 +121,7 @@ export function PaymentReturn({ orderId, providerPaymentId, signature, status }:
   if (!state && !error) return <div className="skeleton" aria-label="Checking payment" />;
   const view = state ? describe(state, status, slow) : null;
   return (
-    <section className="card" aria-live="polite" data-testid="payment-status">
+    <Card aria-live="polite" data-testid="payment-status">
       <span className="badge">Mock payment provider - test mode</span>
       {view ? (
         <>
@@ -130,9 +131,9 @@ export function PaymentReturn({ orderId, providerPaymentId, signature, status }:
           <p>{view.body}</p>
           {view.link ? (
             <p>
-              <a className="button" href={view.link.href}>
+              <ButtonLink href={view.link.href}>
                 {view.link.label}
-              </a>
+              </ButtonLink>
             </p>
           ) : null}
         </>
@@ -142,6 +143,6 @@ export function PaymentReturn({ orderId, providerPaymentId, signature, status }:
           {error}
         </p>
       ) : null}
-    </section>
+    </Card>
   );
 }

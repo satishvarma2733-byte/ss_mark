@@ -5,6 +5,7 @@
 // with ?invitation=&token=; other open invitations ask the user to use their email link.
 import { useAction } from "../../lib/use-action";
 import { formatVenueDateTime } from "../../lib/format";
+import { Button, Card } from "../../components/ui";
 
 export type Invitation = { invitation_id: string; venue_id: string; venue_name: string; role: string; expires_at: string };
 export type InvitationLink = { invitationId: string; token: string };
@@ -13,15 +14,15 @@ export function Invitations({ invitations, link }: { invitations: Invitation[]; 
   const action = useAction();
   if (invitations.length === 0) return null;
   return (
-    <section className="card" aria-labelledby="invites-heading" data-testid="invitations">
+    <Card aria-labelledby="invites-heading" data-testid="invitations">
       <h2 id="invites-heading">Invitations</h2>
       <ul>
         {invitations.map((i) => (
           <li key={i.invitation_id}>
             {i.venue_name} invited you as <strong>{i.role.toLowerCase()}</strong> (until {formatVenueDateTime(i.expires_at)} IST){" "}
             {link?.invitationId === i.invitation_id ? (
-              <button
-                className="button"
+              <Button
+
                 type="button"
                 disabled={action.busy !== null}
                 aria-busy={action.busy === i.invitation_id}
@@ -30,7 +31,7 @@ export function Invitations({ invitations, link }: { invitations: Invitation[]; 
                 data-testid={`accept-${i.invitation_id}`}
               >
                 Accept
-              </button>
+              </Button>
             ) : (
               <span data-testid={`use-link-${i.invitation_id}`}>To accept, open the link in your invitation email.</span>
             )}
@@ -42,6 +43,6 @@ export function Invitations({ invitations, link }: { invitations: Invitation[]; 
           {action.message.text}
         </p>
       ) : null}
-    </section>
+    </Card>
   );
 }

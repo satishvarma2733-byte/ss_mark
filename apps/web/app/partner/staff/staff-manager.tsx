@@ -7,6 +7,7 @@ import { formatVenueDateTime } from "../../../lib/format";
 import type { StaffList } from "../../../lib/partner-types";
 import { useAction } from "../../../lib/use-action";
 import { TableScroll } from "../../../lib/table-scroll";
+import { Button, Card, StatusPill } from "../../../components/ui";
 
 const ROLE_LABEL: Record<string, string> = { OWNER: "Owner", MANAGER: "Venue manager", STAFF: "Front desk" };
 const ACCESS: Record<string, string> = {
@@ -39,7 +40,7 @@ export function StaffManager({ venueId, venueName, staff }: { venueId: string; v
   return (
     <div className="partner-layout">
       <div className="book-main">
-        <section className="card book-card" aria-labelledby="members-heading">
+        <Card className="book-card" aria-labelledby="members-heading">
           <h2 id="members-heading">Your venue team</h2>
           <TableScroll label="Venue team">
             <table data-testid="staff-members">
@@ -101,9 +102,9 @@ export function StaffManager({ venueId, venueName, staff }: { venueId: string; v
               {revoke.message.text}
             </p>
           ) : null}
-        </section>
+        </Card>
 
-        <section className="card book-card" aria-labelledby="bounds-heading">
+        <Card className="book-card" aria-labelledby="bounds-heading">
           <h2 id="bounds-heading">Permission boundaries</h2>
           <TableScroll label="Permission boundaries">
             <table>
@@ -128,7 +129,7 @@ export function StaffManager({ venueId, venueName, staff }: { venueId: string; v
             </table>
           </TableScroll>
           <p className="book-note">The server checks every action against these roles; this page only shows them.</p>
-        </section>
+        </Card>
       </div>
 
       <div className="book-side">
@@ -158,16 +159,16 @@ export function StaffManager({ venueId, venueName, staff }: { venueId: string; v
               {venueName} only
             </p>
           </div>
-          <span className="status-pill sage">
+          <StatusPill tone="sage">
             <img src="/design/status-dot-brand.svg" alt="" width={5} height={5} />
             No finance permissions
-          </span>
+          </StatusPill>
           <p className="field-hint">
             The invitation grants no access until it is accepted from the emailed link. Owner and payout rights cannot be added through an invitation.
           </p>
-          <button className="button" type="submit" disabled={invite.busy !== null} data-testid="invite-send">
+          <Button type="submit" disabled={invite.busy !== null} data-testid="invite-send">
             Send invitation
-          </button>
+          </Button>
           {invite.message ? (
             <p className={`book-when status-${invite.message.tone}`} role="status">
               {invite.message.text}

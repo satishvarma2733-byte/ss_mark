@@ -8,6 +8,7 @@ import { SERVICE_CANCEL_REASONS, type StaffArrivals } from "@simply-sit/contract
 import { formatInrPaise, formatVenueTime } from "../../../../lib/format";
 import type { PartnerBooking } from "../../../../lib/partner-types";
 import { useAction } from "../../../../lib/use-action";
+import { Button, ButtonLink, Card, StatusPill } from "../../../../components/ui";
 
 const REASON_LABEL: Record<string, string> = {
   VENUE_UNAVAILABLE: "Venue unavailable", VENUE_CLOSED: "Venue closed", TABLE_UNAVAILABLE: "Table unavailable", SAFETY: "Safety", OTHER: "Other"
@@ -36,7 +37,7 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
   return (
     <div className="partner-layout">
       <div className="book-main">
-        <section className="card book-card" aria-labelledby="departure-heading">
+        <Card className="book-card" aria-labelledby="departure-heading">
           <h2 id="departure-heading">{checkedIn ? "Review actual departure" : "Booking"}</h2>
           <span className={`status-pill${checkedIn || confirmed ? "" : " neutral"}`} data-testid="partner-booking-status">
             {checkedIn || confirmed ? <img src="/design/status-dot-available.svg" alt="" width={5} height={5} /> : null}
@@ -78,11 +79,11 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
                 <input type="checkbox" checked={left} onChange={(e) => setLeft(e.target.checked)} />
                 <span>I have checked the guest has left {booking.resource_label}.</span>
               </label>
-              <button className="button" type="button" disabled={!left || checkOut.busy !== null} data-testid="partner-check-out"
+              <Button type="button" disabled={!left || checkOut.busy !== null} data-testid="partner-check-out"
                 onClick={() => void checkOut.run("check-out", "POST", `/api/v1/partner/bookings/${booking.booking_id}/check-out`, { expected_version: booking.version },
                   { idempotent: true, success: "Checked out. The table is now marked for cleaning." })}>
                 Record check-out &amp; mark cleaning
-              </button>
+              </Button>
               <p className="field-hint">The departure time is the moment you confirm. This never charges extra or confirms an extension.</p>
             </>
           ) : null}
@@ -91,7 +92,7 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
               {checkOut.message.text}
             </p>
           ) : null}
-        </section>
+        </Card>
 
         {checkedIn || checkedOut ? (
           <>
@@ -102,7 +103,7 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
                 <p>Recording departure starts turnover, not availability. Cleaning and the full buffer must both pass before the table can be marked ready.</p>
               </div>
             </div>
-            <section className="card book-card" aria-labelledby="turnover-heading">
+            <Card className="book-card" aria-labelledby="turnover-heading">
               <h2 id="turnover-heading">Protected turnover</h2>
               <ol className="stay-timeline">
                 <li>
@@ -133,25 +134,25 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
                   </div>
                 </li>
               </ol>
-            </section>
+            </Card>
           </>
         ) : null}
 
         {confirmed && graceOver ? (
-          <section className="card book-card" aria-labelledby="ns-heading">
+          <Card className="book-card" aria-labelledby="ns-heading">
             <h2 id="ns-heading">Guest has not arrived</h2>
             <p className="book-note">The table stays reserved until the booking ends. The customer is told; any refund follows the rules they accepted.</p>
-            <button className="button secondary" type="button" disabled={noShow.busy !== null} data-testid="mark-no-show"
+            <Button variant="secondary" type="button" disabled={noShow.busy !== null} data-testid="mark-no-show"
               onClick={() => void noShow.run("no-show", "POST", `/api/v1/partner/bookings/${booking.booking_id}/no-show`, { expected_version: booking.version },
                 { idempotent: true, success: "Recorded as a no-show." })}>
               Record no-show
-            </button>
+            </Button>
             {noShow.message ? (
               <p className={`book-when status-${noShow.message.tone}`} role="status">
                 {noShow.message.text}
               </p>
             ) : null}
-          </section>
+          </Card>
         ) : null}
 
         {booking.can_manage && confirmed && beforeEnd ? (
@@ -183,9 +184,9 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
                   data-testid="service-cancel-reason" />
               </div>
             </div>
-            <button className="button danger" type="submit" disabled={cancel.busy !== null} data-testid="service-cancel">
+            <Button variant="danger" type="submit" disabled={cancel.busy !== null} data-testid="service-cancel">
               Cancel booking with full refund
-            </button>
+            </Button>
             {cancel.message ? (
               <p className={`book-when status-${cancel.message.tone}`} role="status">
                 {cancel.message.text}
@@ -196,14 +197,14 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
       </div>
 
       <div className="book-side">
-        <section className="card book-card" aria-labelledby="next-heading">
+        <Card className="book-card" aria-labelledby="next-heading">
           <h2 id="next-heading">Next arrival protected</h2>
           {next ? (
             <>
-              <span className="status-pill">
+              <StatusPill>
                 <img src="/design/status-dot-available.svg" alt="" width={5} height={5} />
                 Confirmed · Starts {formatVenueTime(next.start_at)}
-              </span>
+              </StatusPill>
               <p className="book-when strong">
                 {next.table_label} · {next.public_ref} · {formatVenueTime(next.start_at)}–{formatVenueTime(next.end_at)} IST
               </p>
@@ -212,9 +213,9 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
             <p className="book-when">No later booking on {booking.resource_label} that day.</p>
           )}
           <p className="book-note">Never shorten cleaning or move a confirmed booking to make room. Escalate delays to support.</p>
-        </section>
+        </Card>
 
-        <section className="card book-card" aria-labelledby="clean-heading">
+        <Card className="book-card" aria-labelledby="clean-heading">
           <h2 id="clean-heading">Cleaning controls</h2>
           <dl className="detail-rows">
             <div>
@@ -222,34 +223,34 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
               <dd>{table ? STATE_TEXT[table.operational_state] ?? table.operational_state : "Unknown"}</dd>
             </div>
           </dl>
-          <button className="button" type="button" disabled={!table || table.operational_state !== "CLEANING" || ready.busy !== null}
+          <Button type="button" disabled={!table || table.operational_state !== "CLEANING" || ready.busy !== null}
             onClick={() => table && void ready.run("ready", "POST", `/api/v1/partner/resources/${table.resource_id}/ready`, { expected_version: table.version },
               { idempotent: true, success: "Table marked ready." })}>
             Mark table ready
-          </button>
+          </Button>
           <p className="field-hint">Unlocks after check-out, once the table needs cleaning. The server refuses ready while a guest is checked in.</p>
           {ready.message ? (
             <p className={`book-when status-${ready.message.tone}`} role="status">
               {ready.message.text}
             </p>
           ) : null}
-        </section>
+        </Card>
 
-        <section className="card book-card" aria-labelledby="incident-heading">
+        <Card className="book-card" aria-labelledby="incident-heading">
           <h2 id="incident-heading">Something went wrong?</h2>
           <p className="book-when">Report an incident linked to this booking. It creates a support case and changes nothing else.</p>
-          <a className="button secondary" href={`/partner/incidents/new?venue=${booking.venue_id}&booking=${booking.booking_id}`} data-testid="report-incident-link">
+          <ButtonLink variant="secondary" href={`/partner/incidents/new?venue=${booking.venue_id}&booking=${booking.booking_id}`} data-testid="report-incident-link">
             Report an incident
-          </a>
-        </section>
+          </ButtonLink>
+        </Card>
 
-        <section className="card book-card" aria-labelledby="audit-heading">
+        <Card className="book-card" aria-labelledby="audit-heading">
           <h2 id="audit-heading">Audit preview</h2>
           <p className="book-when">You · {ROLE_LABEL[viewer.role] ?? viewer.role}</p>
           <p className="book-note">
             Check-out, cleaning state and timestamps are recorded with your name. The paid time stays {formatVenueTime(booking.start_at)}–{formatVenueTime(booking.end_at)}.
           </p>
-        </section>
+        </Card>
       </div>
     </div>
   );

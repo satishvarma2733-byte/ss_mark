@@ -3,6 +3,7 @@
 // Figma "E · Customer web · Sign-in and OTP": an entry card, then a code card with six digit boxes, an error notice and
 // a resend countdown. The digit boxes mirror one real input, so typing, pasting and one-time-code autofill all work.
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Button } from "../../components/ui";
 
 type ApiError = { error?: { code?: string; message?: string } };
 type RequestData = { data?: { resend_after_seconds?: number } };
@@ -98,9 +99,9 @@ export function SignInForm({ redirectPath }: { redirectPath: string }) {
             <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} />
             <span>I agree to the Terms of use and acknowledge the Privacy notice. Required before your first booking.</span>
           </label>
-          <button className="button" type="submit" disabled={busy} aria-busy={busy}>
+          <Button type="submit" disabled={busy} aria-busy={busy}>
             {busy ? "Sending…" : "Send verification code"}
-          </button>
+          </Button>
           <p className="field-hint">We ask only for details needed to secure your account and manage bookings.</p>
         </form>
       ) : (
@@ -134,9 +135,9 @@ export function SignInForm({ redirectPath }: { redirectPath: string }) {
               </div>
             </div>
           ) : null}
-          <button className="button" type="submit" disabled={busy} aria-busy={busy}>
+          <Button type="submit" disabled={busy} aria-busy={busy}>
             {busy ? "Checking…" : "Verify & continue"}
-          </button>
+          </Button>
           {resendIn > 0 ? (
             <p className="field-hint auth-resend">Resend code in {countdown(resendIn)}</p>
           ) : (

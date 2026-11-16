@@ -5,6 +5,7 @@ import { gatePortal, PortalBlocked } from "../../../lib/portal-page";
 import { getServerEnv } from "../../../lib/server-env";
 import { SwitchForm } from "./switch-form";
 import { AdminNav } from "../../../lib/admin-nav";
+import { Card } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export default async function ReleaseSwitchesPage() {
       {items.map((item) => {
         const text = LABELS[item.key];
         return (
-          <section key={item.key} className="card" style={{ marginTop: 16 }} aria-labelledby={`switch-${item.key}`} data-testid={`switch-${item.key}`}>
+          <Card key={item.key} style={{ marginTop: 16 }} aria-labelledby={`switch-${item.key}`} data-testid={`switch-${item.key}`}>
             <h2 id={`switch-${item.key}`}>
               {text.label}:{" "}
               <span className={item.is_open ? "status-success" : "status-error"} data-testid={`switch-state-${item.key}`}>
@@ -52,16 +53,16 @@ export default async function ReleaseSwitchesPage() {
             ) : (
               <p className="food-note">{item.key === "PAYOUTS" ? "Finance or superadmin" : "Superadmin"} can change this.</p>
             )}
-          </section>
+          </Card>
         );
       })}
-      <section className="card" style={{ marginTop: 16 }} aria-labelledby="native-min">
+      <Card style={{ marginTop: 16 }} aria-labelledby="native-min">
         <h2 id="native-min">Oldest app version that can book</h2>
         <p data-testid="native-min-version">
           {minimum ? `Android and iOS ${minimum} or newer.` : "Any app version."} Set by the server setting NATIVE_MIN_VERSION; raise it only
           through an approved recovery plan. Older apps keep bookings, receipts, cancellation and support.
         </p>
-      </section>
+      </Card>
     </main>
   );
 }

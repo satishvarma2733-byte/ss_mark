@@ -11,6 +11,7 @@ import { VenuePhoto } from "../../../components/venue-photo";
 import { VenueIdentity, longDate } from "../../../components/booking-parts";
 import { PrintButton } from "../../../components/print-button";
 import { RefundTracking } from "./refund-tracking";
+import { ButtonLink, Card, QrBookingCard, StatusPill } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -66,21 +67,21 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
           {positive ? <img src="/design/status-dot-available.svg" alt="" width={5} height={5} /> : null}
           {statusLabel}
         </span>
-        {b.venue.is_synthetic ? <span className="status-pill neutral">Synthetic demo booking · mock payment, no real charge</span> : null}
+        {b.venue.is_synthetic ? <StatusPill tone="neutral">Synthetic demo booking · mock payment, no real charge</StatusPill> : null}
       </div>
 
       <div className="book-layout checkout-layout">
         <div className="book-main">
           <VenuePhoto mediaId={photos[0]?.id ?? null} alt={photos[0]?.alt_text ?? ""} className="pass-photo" width={1240} height={520} />
-          <section className="card book-card" aria-label="Booking">
+          <Card className="book-card" aria-label="Booking">
             <VenueIdentity photo={photos[1] ?? photos[0] ?? null} venueName={b.venue.name} detail={`${b.table.label} · ${guests}`} reference={b.public_ref} />
             <hr />
             <p className="book-when">
               {longDate(b.start_at, tz)} · {timeRange}
             </p>
-          </section>
+          </Card>
 
-          <section className="card book-card" aria-labelledby="getting-heading">
+          <Card className="book-card" aria-labelledby="getting-heading">
             <h2 id="getting-heading">Getting there</h2>
             <p className="book-when strong">
               {b.venue.name} · {b.venue.locality}
@@ -88,12 +89,12 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
             <p className="book-when">{b.venue.address}</p>
             <p className="book-note">{policy.handover_instructions}</p>
             <div className="action-pair">
-              <a className="button" href={directions} rel="noreferrer" target="_blank">
+              <ButtonLink href={directions} rel="noreferrer" target="_blank">
                 Directions ↗<span className="visually-hidden"> (opens OpenStreetMap in a new tab; fictional demo coordinates)</span>
-              </a>
+              </ButtonLink>
               <PrintButton label="Print receipt" />
             </div>
-          </section>
+          </Card>
 
           <div className="notice info">
             <Info size={20} aria-hidden="true" />
@@ -110,17 +111,14 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
 
         <div className="book-side">
           {b.arrival && b.status === "CONFIRMED" ? (
-            <section className="card book-card arrival" aria-labelledby="arrival-heading" data-testid="arrival">
+            <Card className="book-card arrival" aria-labelledby="arrival-heading" data-testid="arrival">
               <h2 id="arrival-heading">Your check-in pass</h2>
-              <div className="pass-credential">
-                <div className="pass-qr" dangerouslySetInnerHTML={{ __html: qrSvg(b.arrival.qr_token, "Check-in QR code for this booking") }} />
-                <p className="pass-pin" aria-label={`PIN ${b.arrival.pin}`}>
-                  <span className="pin" data-testid="arrival-pin">
-                    {b.arrival.pin}
-                  </span>
-                </p>
-                <p className="book-when">Show this at reception, or tell staff your reference and PIN. Keep this code private.</p>
-              </div>
+              <QrBookingCard
+                qrSvg={qrSvg(b.arrival.qr_token, "Check-in QR code for this booking")}
+                pin={b.arrival.pin}
+                pinTestId="arrival-pin"
+                hint="Show this at reception, or tell staff your reference and PIN. Keep this code private."
+              />
               <hr />
               <dl className="detail-rows">
                 <div>
@@ -136,7 +134,7 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
                   <dd>{policy.grace_minutes} min after start</dd>
                 </div>
               </dl>
-            </section>
+            </Card>
           ) : null}
 
           {b.status === "CHECKED_IN" ? (
@@ -165,7 +163,7 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
             </div>
           ) : null}
 
-          <section className="card book-card" aria-labelledby="receipt-heading">
+          <Card className="book-card" aria-labelledby="receipt-heading">
             <h2 id="receipt-heading">Payment &amp; cancellation</h2>
             <dl className="detail-rows">
               <div>
@@ -201,14 +199,14 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
             ) : null}
             <p className="book-when">{cancellationPolicySummary(policy)}</p>
             {cancellable ? (
-              <a className="button secondary" href={`/bookings/${b.booking_id}/cancel`} data-testid="cancel-booking-link">
+              <ButtonLink variant="secondary" href={`/bookings/${b.booking_id}/cancel`} data-testid="cancel-booking-link">
                 Manage booking
-              </a>
+              </ButtonLink>
             ) : null}
-          </section>
-          <a className="button" href="/bookings">
+          </Card>
+          <ButtonLink href="/bookings">
             View my bookings
-          </a>
+          </ButtonLink>
         </div>
       </div>
     </main>

@@ -5,6 +5,7 @@ import { Check, CircleAlert } from "lucide-react";
 import { formatVenueDateTime } from "../../../../lib/format";
 import { useAction, type Conflict } from "../../../../lib/use-action";
 import { VenuePhoto } from "../../../../components/venue-photo";
+import { Button, Card } from "../../../../components/ui";
 
 export type AdminVenue = {
   venue: { id: string; name: string; description: string; address: string; locality: string; category_code: string; status: string;
@@ -50,7 +51,7 @@ export function ReviewPanel({ detail }: { detail: AdminVenue }) {
 
   return (
     <>
-      <section className="card" aria-labelledby="photos-heading">
+      <Card aria-labelledby="photos-heading">
         <div className="section-heading stacked">
           <h2 id="photos-heading">Photos</h2>
           {detail.venue.status === "PENDING_REVIEW" ? <p className="small">Approving the listing approves its pending photos.</p> : null}
@@ -68,14 +69,14 @@ export function ReviewPanel({ detail }: { detail: AdminVenue }) {
                 </figure>
                 {m.status === "PENDING" && detail.venue.status !== "PENDING_REVIEW" ? (
                   <div className="row-buttons">
-                    <button className="button secondary" type="button" disabled={media.busy !== null}
+                    <Button variant="secondary" type="button" disabled={media.busy !== null}
                       onClick={() => void media.run(m.id, "POST", `/api/v1/admin/media/${m.id}/review`, { decision: "APPROVE" }, { success: "Photo approved." })}>
                       Approve
-                    </button>
-                    <button className="button secondary" type="button" disabled={media.busy !== null}
+                    </Button>
+                    <Button variant="secondary" type="button" disabled={media.busy !== null}
                       onClick={() => void media.run(m.id, "POST", `/api/v1/admin/media/${m.id}/review`, { decision: "REJECT" }, { success: "Photo rejected." })}>
                       Reject
-                    </button>
+                    </Button>
                   </div>
                 ) : null}
               </li>
@@ -83,10 +84,10 @@ export function ReviewPanel({ detail }: { detail: AdminVenue }) {
           </ul>
         )}
         {media.message ? <p className={`status-${media.message.tone}`} role="status">{media.message.text}</p> : null}
-      </section>
+      </Card>
 
       {detail.draft_policy?.submitted_at ? (
-        <section className="card" aria-labelledby="policy-heading">
+        <Card aria-labelledby="policy-heading">
           <div className="section-heading stacked">
             <h2 id="policy-heading">Rule change submitted {formatVenueDateTime(detail.draft_policy.submitted_at)} IST</h2>
             <p className="small">Applies to new bookings only once approved.</p>
@@ -96,19 +97,19 @@ export function ReviewPanel({ detail }: { detail: AdminVenue }) {
             <input id="policy-reason" className="input" value={policyReason} onChange={(e) => setPolicyReason(e.target.value)} minLength={3} />
           </div>
           <div className="row-buttons">
-            <button className="button" type="button" disabled={policy.busy !== null || policyReason.trim().length < 3}
+            <Button type="button" disabled={policy.busy !== null || policyReason.trim().length < 3}
               onClick={() => void policy.run("approve", "POST", `/api/v1/admin/policies/${detail.draft_policy!.id}/review`,
                 { decision: "APPROVE", reason: policyReason, expected_version: detail.draft_policy!.version }, { success: "Rule change published." })}>
               Approve rule change
-            </button>
-            <button className="button secondary" type="button" disabled={policy.busy !== null || policyReason.trim().length < 3}
+            </Button>
+            <Button variant="secondary" type="button" disabled={policy.busy !== null || policyReason.trim().length < 3}
               onClick={() => void policy.run("return", "POST", `/api/v1/admin/policies/${detail.draft_policy!.id}/review`,
                 { decision: "REQUEST_CHANGES", reason: policyReason, expected_version: detail.draft_policy!.version }, { success: "Returned to the venue." })}>
               Request changes
-            </button>
+            </Button>
           </div>
           {policy.message ? <p className={`status-${policy.message.tone}`} role="status">{policy.message.text}</p> : null}
-        </section>
+        </Card>
       ) : null}
 
       {options.length > 0 ? (
@@ -129,10 +130,10 @@ export function ReviewPanel({ detail }: { detail: AdminVenue }) {
             ))}
           </fieldset>
           <div className="row-buttons">
-            <button className="button" type="submit" disabled={review.busy !== null} data-testid="review-submit">
+            <Button type="submit" disabled={review.busy !== null} data-testid="review-submit">
               <Check size={18} aria-hidden="true" />
               Record decision
-            </button>
+            </Button>
           </div>
           <p className="fine-print">
             Every decision records the reviewer, reason, time and the reviewed listing version. The reason is shown to the venue for changes, pauses and

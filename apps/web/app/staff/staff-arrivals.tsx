@@ -7,6 +7,7 @@ import type { CheckInResult, StaffArrivals as Arrivals } from "@simply-sit/contr
 import { apiCall, newIdempotencyKey } from "../../lib/client-api";
 import { formatVenueTime } from "../../lib/format";
 import { TableScroll } from "../../lib/table-scroll";
+import { Button, Card } from "../../components/ui";
 
 type BarcodeDetectorLike = { detect(source: CanvasImageSource): Promise<{ rawValue: string }[]> };
 declare global {
@@ -146,7 +147,7 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
   const tz = data?.timezone ?? "Asia/Kolkata";
   return (
     <>
-      <section className="card" aria-labelledby="checkin-heading">
+      <Card aria-labelledby="checkin-heading">
         <h2 id="checkin-heading">Check in a guest</h2>
         <form onSubmit={onManual} className="field-row" aria-label="Check in with reference and PIN">
           <div>
@@ -160,17 +161,17 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
               autoComplete="off" pattern="[0-9]{6}" maxLength={6} required />
           </div>
           <div style={{ alignSelf: "end" }}>
-            <button className="button" type="submit" disabled={busy !== null} aria-busy={busy === "check-in"} data-testid="check-in-pin">
+            <Button type="submit" disabled={busy !== null} aria-busy={busy === "check-in"} data-testid="check-in-pin">
               Check in
-            </button>
+            </Button>
           </div>
         </form>
         <details>
           <summary>Scan or paste a QR code</summary>
           <p>
-            <button className="button secondary" type="button" onClick={() => (scanning ? stopCamera() : void startScan())}>
+            <Button variant="secondary" type="button" onClick={() => (scanning ? stopCamera() : void startScan())}>
               {scanning ? "Stop camera" : "Scan QR"}
-            </button>
+            </Button>
           </p>
           {scanning ? <video ref={video} muted playsInline className="scanner" aria-label="Camera preview for QR scanning" /> : null}
           <form onSubmit={onToken} className="field-row" aria-label="Check in with QR code text">
@@ -179,9 +180,9 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
               <input id="token" className="input" value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" spellCheck={false} />
             </div>
             <div style={{ alignSelf: "end" }}>
-              <button className="button secondary" type="submit" disabled={busy !== null || token.length < 20} data-testid="check-in-token">
+              <Button variant="secondary" type="submit" disabled={busy !== null || token.length < 20} data-testid="check-in-token">
                 Check in with code
-              </button>
+              </Button>
             </div>
           </form>
         </details>
@@ -190,7 +191,7 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
             {result.text}
           </p>
         ) : null}
-      </section>
+      </Card>
 
       {loadError ? (
         <p className="notice status-error" role="alert">
@@ -226,10 +227,10 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
                     <td>{b.status === "CHECKED_IN" ? "Checked in" : b.status === "COMPLETED" ? "Checked out" : b.status === "NO_SHOW" ? "No-show" : "Expected"}</td>
                     <td>
                       {b.status === "CHECKED_IN" ? (
-                        <button className="button secondary" type="button" disabled={busy !== null} onClick={() => void checkOut(b.booking_id, b.version)}
+                        <Button variant="secondary" type="button" disabled={busy !== null} onClick={() => void checkOut(b.booking_id, b.version)}
                           data-testid={`check-out-${b.public_ref}`}>
                           Check out
-                        </button>
+                        </Button>
                       ) : null}
                     </td>
                   </tr>
@@ -245,18 +246,18 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
         <ul className="grid result-list">
           {data?.tables.map((t) => (
             <li key={t.resource_id}>
-              <article className="card" data-testid={`table-${t.label}`}>
+              <Card as="article" data-testid={`table-${t.label}`}>
                 <h3>{t.label}</h3>
                 <p className={t.operational_state === "READY" ? "status-success" : "status-warning"}>
                   {t.operational_state === "READY" ? "Ready" : t.operational_state === "CLEANING" ? "Needs cleaning" : t.operational_state === "OCCUPIED" ? "Occupied" : "Out of service"}
                 </p>
                 {t.operational_state === "CLEANING" ? (
-                  <button className="button" type="button" disabled={busy !== null} onClick={() => void markReady(t.resource_id, t.version)}
+                  <Button type="button" disabled={busy !== null} onClick={() => void markReady(t.resource_id, t.version)}
                     data-testid={`ready-${t.label}`}>
                     Mark ready
-                  </button>
+                  </Button>
                 ) : null}
-              </article>
+              </Card>
             </li>
           ))}
         </ul>

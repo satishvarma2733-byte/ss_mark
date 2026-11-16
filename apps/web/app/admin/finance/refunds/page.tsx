@@ -5,6 +5,7 @@ import { gatePortal, PortalBlocked } from "../../../../lib/portal-page";
 import { TableScroll } from "../../../../lib/table-scroll";
 import { AdminNav } from "../../../../lib/admin-nav";
 import { FinanceTabs } from "../finance-tabs";
+import { ButtonLink, Card } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export default async function AdminRefundsPage() {
       <p className="lede page-lede">Finance investigation queue · MOCK payment provider (test mode), no real money moves</p>
       <FinanceTabs active="/admin/finance/refunds" />
       <div className="panel-row page-lede">
-        <section className="card book-card" aria-labelledby="pending-heading">
+        <Card className="book-card" aria-labelledby="pending-heading">
           <h2 id="pending-heading">Pending refunds</h2>
           <dl className="detail-rows">
             <div className="total-row">
@@ -48,8 +49,8 @@ export default async function AdminRefundsPage() {
             </div>
           </dl>
           <p className="book-note">{Object.entries(o.refunds.by_status).map(([s, v]) => `${label(s)}: ${v.count}`).join(" · ") || "No refunds yet."}</p>
-        </section>
-        <section className="card book-card" aria-labelledby="recon-heading">
+        </Card>
+        <Card className="book-card" aria-labelledby="recon-heading">
           <h2 id="recon-heading">Reconciliation</h2>
           <p className="book-when">
             {lastRun
@@ -57,11 +58,11 @@ export default async function AdminRefundsPage() {
               : "No reconciliation run yet."}
           </p>
           <p className="book-note">Provider acknowledgement and bank credit are separate. No refund is marked credited without confirmation.</p>
-        </section>
+        </Card>
       </div>
 
       <div className="partner-layout">
-        <section className="card book-card" aria-labelledby="queue-heading">
+        <Card className="book-card" aria-labelledby="queue-heading">
           <h2 id="queue-heading">Refunds needing attention</h2>
           {o.refunds.attention.length === 0 ? (
             <p className="book-note">No failed, unknown or stalled refunds.</p>
@@ -97,7 +98,7 @@ export default async function AdminRefundsPage() {
             </TableScroll>
           )}
           <p className="book-note">Showing refunds that failed, are unknown or have not progressed. Processing refunds that are on time are not listed.</p>
-        </section>
+        </Card>
         <div className="book-side">
           <div className="notice info">
             <Info size={20} aria-hidden="true" />
@@ -106,13 +107,13 @@ export default async function AdminRefundsPage() {
               <p>A retry reconciles the existing provider request first; a new refund cannot bypass it. Retries and overrides are made from the booking record.</p>
             </div>
           </div>
-          <section className="card book-card" aria-labelledby="dispute-heading">
+          <Card className="book-card" aria-labelledby="dispute-heading">
             <h2 id="dispute-heading">Dispute handling</h2>
             <p className="book-when">A chargeback or dispute never creates a refund automatically. Check overlapping provider cases and the total exposure first.</p>
-            <a className="button secondary" href="/admin/support">
+            <ButtonLink variant="secondary" href="/admin/support">
               Open support cases
-            </a>
-          </section>
+            </ButtonLink>
+          </Card>
         </div>
       </div>
       <div className="workspace-footer">

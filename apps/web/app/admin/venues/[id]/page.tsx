@@ -9,6 +9,7 @@ import { VenuePhoto } from "../../../../components/venue-photo";
 import { ReviewPanel, type AdminVenue } from "./review-panel";
 import { AdminNav } from "../../../../lib/admin-nav";
 import { QUEUE_STATUSES, queueStatus, SubmissionList, type VenueQueueRow } from "../submission-list";
+import { ButtonLink, Card } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -96,17 +97,17 @@ export default async function AdminVenuePage({ params, searchParams }: { params:
             <a href="/admin/venues">Partner approval queue</a> · {rows.length} {rows.length === 1 ? "submission" : "submissions"} · Listing changes remain unpublished until approved.
           </p>
         </div>
-        <a className="button secondary" href="/help">
+        <ButtonLink variant="secondary" href="/help">
           <BookOpen size={18} aria-hidden="true" />
           Review guidelines
-        </a>
+        </ButtonLink>
       </div>
 
       <div className="review-layout">
         <SubmissionList rows={rows} status={status} q={query.q ?? ""} selectedId={v.id} />
 
         <div className="review-detail">
-          <section className="card review-header" aria-labelledby="venue-heading">
+          <Card className="review-header" aria-labelledby="venue-heading">
             <VenuePhoto mediaId={cover?.id ?? null} alt={cover?.alt_text ?? ""} className="review-cover" width={176} height={132} placeholderText={cover ? "Photo unavailable" : "No photos yet"} />
             <div className="review-summary">
               <p data-testid="admin-venue-status">
@@ -128,7 +129,7 @@ export default async function AdminVenuePage({ params, searchParams }: { params:
                 {lastSubmitted ? ` · Update submitted ${formatVenueDateTime(lastSubmitted)} IST` : ""}
               </p>
             </div>
-          </section>
+          </Card>
 
           {detail.publication_gaps.length > 0 ? (
             <div className="notice warm" role="status">
@@ -140,7 +141,7 @@ export default async function AdminVenuePage({ params, searchParams }: { params:
             </div>
           ) : null}
 
-          <section className="card" aria-labelledby="ev-heading">
+          <Card aria-labelledby="ev-heading">
             <div className="section-heading stacked">
               <h2 id="ev-heading">Evidence &amp; verification</h2>
               <p className="small">Review only what the supplied evidence supports.</p>
@@ -200,9 +201,9 @@ export default async function AdminVenuePage({ params, searchParams }: { params:
                 ))}
               </ul>
             </details>
-          </section>
+          </Card>
 
-          <section className="card" aria-labelledby="change-heading">
+          <Card aria-labelledby="change-heading">
             <div className="section-heading stacked">
               <h2 id="change-heading">What changed in this submission</h2>
               <p className="small">
@@ -249,11 +250,11 @@ export default async function AdminVenuePage({ params, searchParams }: { params:
                 <p>Approve only what the evidence supports. Food, delivery and refund wording is shown to guests as written.</p>
               </div>
             </div>
-          </section>
+          </Card>
 
           <ReviewPanel detail={detail} />
 
-          <section className="card" aria-labelledby="hist-heading">
+          <Card aria-labelledby="hist-heading">
             <h2 id="hist-heading">Audit trail</h2>
             {detail.history.length === 0 ? (
               <p className="muted">No recorded actions yet.</p>
@@ -277,7 +278,7 @@ export default async function AdminVenuePage({ params, searchParams }: { params:
                 ))}
               </ol>
             )}
-          </section>
+          </Card>
         </div>
       </div>
     </main>

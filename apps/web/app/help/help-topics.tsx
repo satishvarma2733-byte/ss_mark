@@ -2,6 +2,7 @@
 
 // Figma "How can we help?": a topic search, topic chips and expandable answers. Filtering happens in the browser.
 import { useState } from "react";
+import { Card } from "../../components/ui";
 
 const TOPICS = ["Bookings", "Payments", "Refunds", "Venue rules"] as const;
 type Topic = (typeof TOPICS)[number];
@@ -23,7 +24,7 @@ export function HelpTopics() {
   const shown = FAQ.filter((f) => (!topic || f.topic === topic) && (!needle || `${f.q} ${f.a}`.toLowerCase().includes(needle)));
 
   return (
-    <section className="card book-card" aria-labelledby="faq-heading">
+    <Card className="book-card" aria-labelledby="faq-heading">
       <h2 id="faq-heading">How can we help?</h2>
       <div className="field">
         <label className="field-label" htmlFor="help-search">
@@ -53,6 +54,6 @@ export function HelpTopics() {
           ))}
         </div>
       )}
-    </section>
+    </Card>
   );
 }

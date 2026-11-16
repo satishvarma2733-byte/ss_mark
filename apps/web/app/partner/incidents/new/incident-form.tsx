@@ -5,6 +5,7 @@
 import { useState, type FormEvent } from "react";
 import { TICKET_CATEGORIES, TICKET_CATEGORY_LABEL } from "@simply-sit/contracts";
 import { useAction } from "../../../../lib/use-action";
+import { Button, Card } from "../../../../components/ui";
 
 type Props = { venueId: string; booking: { booking_id: string; public_ref: string; resource_label: string } | null };
 
@@ -29,7 +30,7 @@ export function IncidentForm({ venueId, booking }: Props) {
 
   return (
     <form className="book-main" onSubmit={(e) => void submit(e)}>
-      <section className="card book-card" aria-labelledby="context-heading">
+      <Card className="book-card" aria-labelledby="context-heading">
         <h2 id="context-heading">Incident context</h2>
         <div className="field-pair">
           <div className="field">
@@ -84,15 +85,15 @@ export function IncidentForm({ venueId, booking }: Props) {
           <input id="inc-taken" className="input" maxLength={800} value={taken} onChange={(e) => setTaken(e.target.value)} placeholder="e.g. Socket taken out of use" />
         </div>
         <p className="field-hint">Do not include identity documents, payment details or personal contact details.</p>
-      </section>
+      </Card>
       {action.message ? (
         <p className={`book-when status-${action.message.tone}`} role="status">
           {action.message.text}
         </p>
       ) : null}
-      <button className="button" type="submit" disabled={action.busy !== null} data-testid="incident-submit">
+      <Button type="submit" disabled={action.busy !== null} data-testid="incident-submit">
         {action.busy ? "Sending…" : "Submit incident report"}
-      </button>
+      </Button>
       <p className="book-note">Submission creates a case; it does not cancel the booking, move the guest or issue a refund.</p>
     </form>
   );

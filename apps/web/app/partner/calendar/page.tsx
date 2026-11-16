@@ -3,6 +3,7 @@ import { formatVenueTime, istInstant, venueLocalDate } from "../../../lib/format
 import { PartnerNav, partnerContext } from "../../../lib/partner-page";
 import type { CalendarData } from "../../../lib/partner-types";
 import { PortalBlocked } from "../../../lib/portal-page";
+import { Card } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export default async function PartnerCalendarPage({ searchParams }: { searchPara
         const bookings = data.bookings.filter((b) => b.resource_id === r.id);
         const closures = data.closures.filter((c) => c.resource_id === r.id);
         return (
-          <section key={r.id} className="card" style={{ marginBottom: 12 }} aria-labelledby={`r-${r.id}`} data-testid={`calendar-${r.label}`}>
+          <Card key={r.id} style={{ marginBottom: 12 }} aria-labelledby={`r-${r.id}`} data-testid={`calendar-${r.label}`}>
             <h2 id={`r-${r.id}`}>
               {r.label} <span className="badge">{r.status === "ACTIVE" ? r.operational_state.toLowerCase().replace("_", " ") : r.status.toLowerCase()}</span>
             </h2>
@@ -62,7 +63,7 @@ export default async function PartnerCalendarPage({ searchParams }: { searchPara
                 </li>
               ))}
             </ul>
-          </section>
+          </Card>
         );
       })}
     </main>

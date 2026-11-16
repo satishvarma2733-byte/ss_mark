@@ -6,6 +6,7 @@ import { TableScroll } from "../../../../lib/table-scroll";
 import { AdminNav } from "../../../../lib/admin-nav";
 import { ApproveFeeButton, FeeConfigForm } from "../finance-actions";
 import { FinanceTabs } from "../finance-tabs";
+import { Card, StatusPill } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -41,12 +42,12 @@ export default async function AdminFeesPage() {
       </div>
       <div className="partner-layout">
         <div className="book-main">
-          <section className="card book-card" aria-labelledby="new-fee-heading">
+          <Card className="book-card" aria-labelledby="new-fee-heading">
             <h2 id="new-fee-heading">Proposed future rates</h2>
             <FeeConfigForm />
             <p className="field-hint">The draft takes effect only after another finance admin approves it, and only for rates set after its start.</p>
-          </section>
-          <section className="card book-card" aria-labelledby="versions-heading">
+          </Card>
+          <Card className="book-card" aria-labelledby="versions-heading">
             <h2 id="versions-heading">Fee versions</h2>
             <TableScroll label="Fee versions">
               <table className="data-table" data-testid="fee-configs">
@@ -78,10 +79,10 @@ export default async function AdminFeesPage() {
                 </tbody>
               </table>
             </TableScroll>
-          </section>
+          </Card>
         </div>
         <div className="book-side">
-          <section className="card book-card" aria-labelledby="confirm-heading">
+          <Card className="book-card" aria-labelledby="confirm-heading">
             <h2 id="confirm-heading">Authorised confirmation</h2>
             <span className={`status-pill ${drafts.length > 0 ? "warm" : "neutral"}`}>
               {drafts.length > 0 ? `${drafts.length} awaiting finance approval` : "Nothing awaiting approval"}
@@ -90,15 +91,15 @@ export default async function AdminFeesPage() {
               The person who drafts a version cannot approve it. A second, separately signed-in finance admin approves; the actor, version and time are
               recorded.
             </p>
-          </section>
-          <section className="card book-card" aria-labelledby="protected-heading">
+          </Card>
+          <Card className="book-card" aria-labelledby="protected-heading">
             <h2 id="protected-heading">Protected bookings</h2>
-            <span className="status-pill">
+            <StatusPill>
               <img src="/design/status-dot-available.svg" alt="" width={5} height={5} />
               Accepted price · Unchanged
-            </span>
+            </StatusPill>
             <p className="book-note">Every booking keeps the fee version recorded in its price snapshot. Future changes apply only when a new booking accepts them.</p>
-          </section>
+          </Card>
         </div>
       </div>
       <div className="workspace-footer">

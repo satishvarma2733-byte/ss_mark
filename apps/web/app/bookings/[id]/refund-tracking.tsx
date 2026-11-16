@@ -5,6 +5,7 @@ import { cancellationNotice, cancellationPolicySummary, refundReasonText, refund
 import { formatInrPaise, formatVenueTime } from "../../../lib/format";
 import { VenueIdentity, longDate } from "../../../components/booking-parts";
 import { PrintButton } from "../../../components/print-button";
+import { ButtonLink, Card, StatusPill } from "../../../components/ui";
 
 const when = (iso: string, tz: string) =>
   `${new Intl.DateTimeFormat("en-IN", { timeZone: tz, day: "numeric", month: "short" }).format(new Date(iso))} · ${formatVenueTime(iso, tz)} IST`;
@@ -30,33 +31,33 @@ export function RefundTracking({ b, photo }: { b: BookingDetail; photo: { id: st
         </p>
       </div>
       <div className="pill-row">
-        <span className="status-pill danger" data-testid="booking-status">
+        <StatusPill tone="danger" data-testid="booking-status">
           Cancelled
-        </span>
-        <span className="status-pill neutral">Pass no longer valid</span>
-        {b.venue.is_synthetic ? <span className="status-pill neutral">Synthetic demo booking · mock refund, no real money</span> : null}
+        </StatusPill>
+        <StatusPill tone="neutral">Pass no longer valid</StatusPill>
+        {b.venue.is_synthetic ? <StatusPill tone="neutral">Synthetic demo booking · mock refund, no real money</StatusPill> : null}
       </div>
 
       <div className="book-layout refund-layout">
         <div className="book-main">
-          <section className="card book-card" aria-label="Booking">
+          <Card className="book-card" aria-label="Booking">
             <VenueIdentity photo={photo} venueName={b.venue.name} detail={`${b.table.label} · ${guests}`} reference={b.public_ref} />
             <hr />
             <p className="book-when">
               {longDate(b.start_at, tz)} · {formatVenueTime(b.start_at, tz)}–{formatVenueTime(b.end_at, tz)} IST
             </p>
-            <span className="status-pill sage">
+            <StatusPill tone="sage">
               <img src="/design/status-dot-brand.svg" alt="" width={5} height={5} />
               Cancelled · Table released
-            </span>
+            </StatusPill>
             {b.confirmed_at ? (
               <p className="book-when" data-testid="cancelled-notice">
                 {cancellationNotice(b.cancel_reason)}
               </p>
             ) : null}
-          </section>
+          </Card>
 
-          <section className="card book-card" aria-labelledby="breakdown-heading">
+          <Card className="book-card" aria-labelledby="breakdown-heading">
             <h2 id="breakdown-heading">Your refund breakdown</h2>
             <dl className="detail-rows">
               <div>
@@ -78,28 +79,28 @@ export function RefundTracking({ b, photo }: { b: BookingDetail; photo: { id: st
               </p>
             ))}
             {b.refunds.length === 0 ? (
-              <span className="status-pill neutral">No refund due under the accepted policy</span>
+              <StatusPill tone="neutral">No refund due under the accepted policy</StatusPill>
             ) : credited ? (
-              <span className="status-pill">
+              <StatusPill>
                 <img src="/design/status-dot-available.svg" alt="" width={5} height={5} />
                 Refund confirmed by the payment provider
-              </span>
+              </StatusPill>
             ) : (
-              <span className="status-pill warm">Refund pending · Not yet credited</span>
+              <StatusPill tone="warm">Refund pending · Not yet credited</StatusPill>
             )}
-          </section>
+          </Card>
 
-          <section className="card book-card" aria-labelledby="policy-heading">
+          <Card className="book-card" aria-labelledby="policy-heading">
             <h2 id="policy-heading">Accepted cancellation policy</h2>
             <p className="book-when">{cancellationPolicySummary(b.policy_snapshot)}</p>
             <p className="field-hint">
               Policy version {b.policy_snapshot.policy_version}, accepted at booking. Current venue rules are not applied retroactively.
             </p>
-          </section>
+          </Card>
         </div>
 
         <div className="book-side">
-          <section className="card book-card" aria-labelledby="follow-heading">
+          <Card className="book-card" aria-labelledby="follow-heading">
             <h2 id="follow-heading">Follow your refund</h2>
             <ol className="stay-timeline">
               <li>
@@ -156,7 +157,7 @@ export function RefundTracking({ b, photo }: { b: BookingDetail; photo: { id: st
               )}
             </ol>
             <p className="field-hint">We notify you when the provider confirms the credit.</p>
-          </section>
+          </Card>
           <div className="notice info">
             <Info size={20} aria-hidden="true" />
             <div>
@@ -165,9 +166,9 @@ export function RefundTracking({ b, photo }: { b: BookingDetail; photo: { id: st
             </div>
           </div>
           <div className="action-pair">
-            <a className="button" href="/help">
+            <ButtonLink href="/help">
               Contact support
-            </a>
+            </ButtonLink>
             <PrintButton label="Print statement" />
           </div>
         </div>

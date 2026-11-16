@@ -5,6 +5,7 @@ import { DraftPayoutButton, PayoutActions, ReconcileForm } from "./finance-actio
 import { FinanceTabs } from "./finance-tabs";
 import { TableScroll } from "../../../lib/table-scroll";
 import { AdminNav } from "../../../lib/admin-nav";
+import { Card } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,7 @@ export default async function AdminFinancePage() {
         pending finance review.
       </p>
 
-      <section className="card" aria-labelledby="ledger-heading">
+      <Card aria-labelledby="ledger-heading">
         <h2 id="ledger-heading">Ledger balances</h2>
         <TableScroll label="Ledger balances">
           <table className="data-table">
@@ -67,9 +68,9 @@ export default async function AdminFinancePage() {
             </tbody>
           </table>
         </TableScroll>
-      </section>
+      </Card>
 
-      <section className="card" style={{ marginTop: 16 }} aria-labelledby="refunds-heading">
+      <Card style={{ marginTop: 16 }} aria-labelledby="refunds-heading">
         <h2 id="refunds-heading">Refunds</h2>
         <p>
           {Object.entries(o.refunds.by_status).map(([status, s]) => `${label(status)}: ${s.count} (${formatInrPaise(s.amount_paise)})`).join(" · ") || "None yet."}
@@ -79,9 +80,9 @@ export default async function AdminFinancePage() {
             {o.refunds.attention.length > 0 ? `${o.refunds.attention.length} refund(s) need attention →` : "Open the refunds queue →"}
           </a>
         </p>
-      </section>
+      </Card>
 
-      <section className="card" style={{ marginTop: 16 }} aria-labelledby="recon-heading">
+      <Card style={{ marginTop: 16 }} aria-labelledby="recon-heading">
         <h2 id="recon-heading">Reconciliation</h2>
         <p className="food-note">Compares the provider&apos;s captures and refunds with our records and ledger. A mismatch blocks payouts for that period.</p>
         <ReconcileForm />
@@ -109,9 +110,9 @@ export default async function AdminFinancePage() {
             </table>
           </TableScroll>
         )}
-      </section>
+      </Card>
 
-      <section className="card" style={{ marginTop: 16 }} aria-labelledby="payout-heading">
+      <Card style={{ marginTop: 16 }} aria-labelledby="payout-heading">
         <h2 id="payout-heading">Partner payouts</h2>
         {o.partners.length === 0 ? <p className="food-note">No partner has earnings yet.</p> : (
           <TableScroll label="Partner payables">
@@ -140,7 +141,7 @@ export default async function AdminFinancePage() {
         {o.payout_batches.length === 0 ? <p className="food-note">None yet.</p> : (
           <ul style={{ listStyle: "none", padding: 0 }} data-testid="payout-batches">
             {o.payout_batches.map((b) => (
-              <li key={b.payout_batch_id} className="card" style={{ marginBottom: 12 }} data-testid={`payout-${b.public_ref}`}>
+              <Card key={b.payout_batch_id} as="li" style={{ marginBottom: 12 }} data-testid={`payout-${b.public_ref}`}>
                 <p>
                   <strong>{b.public_ref}</strong> · {b.partner_name} · <span data-testid="payout-status">{label(b.status)}</span> ·{" "}
                   {formatInrPaise(b.amount_paise)} ({formatInrPaise(b.earnings_paise)} earned
@@ -150,13 +151,13 @@ export default async function AdminFinancePage() {
                 {b.transfer_ref && !b.evidence_ref ? <p className="food-note">Transfer: {b.transfer_ref}</p> : null}
                 {b.status_reason ? <p className="food-note">Reason: {b.status_reason}</p> : null}
                 <PayoutActions batchId={b.payout_batch_id} status={b.status} version={b.version} createdByMe={b.created_by_me} />
-              </li>
+              </Card>
             ))}
           </ul>
         )}
-      </section>
+      </Card>
 
-      <section className="card" style={{ marginTop: 16 }} aria-labelledby="fee-heading">
+      <Card style={{ marginTop: 16 }} aria-labelledby="fee-heading">
         <h2 id="fee-heading">Fee versions</h2>
         <p className="food-note">
           {o.fee_configs.filter((f) => f.status === "DRAFT").length} draft(s) awaiting approval.{" "}
@@ -164,7 +165,7 @@ export default async function AdminFinancePage() {
             Manage fee versions →
           </a>
         </p>
-      </section>
+      </Card>
     </main>
   );
 }

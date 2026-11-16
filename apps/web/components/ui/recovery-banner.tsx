@@ -68,11 +68,11 @@ export function RecoveryBanner({
       title={cfg.title}
       action={
         onRetry ? (
-          <button type="button" className="ss-btn ss-btn--secondary ss-btn--sm" onClick={onRetry}>
+          <button type="button" className="button secondary sm" onClick={onRetry}>
             {label ?? "Try again"}
           </button>
         ) : href && label ? (
-          <Link className="ss-btn ss-btn--secondary ss-btn--sm" href={href}>
+          <Link className="button secondary sm" href={href}>
             {label}
           </Link>
         ) : null

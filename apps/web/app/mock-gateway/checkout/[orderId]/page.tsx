@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { formatInrPaise } from "../../../../lib/format";
 import { mockGatewayOrNotFound, parseReturnTarget } from "../../../../lib/mock-gateway";
+import { Button } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -49,21 +50,21 @@ export default async function MockCheckoutPage({ params, searchParams }: { param
           </label>
         </fieldset>
         <p style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          <button className="button" type="submit" name="outcome" value="capture" data-testid="mock-pay-success">
+          <Button type="submit" name="outcome" value="capture" data-testid="mock-pay-success">
             Pay (success)
-          </button>
-          <button className="button secondary" type="submit" name="outcome" value="fail" data-testid="mock-pay-fail">
+          </Button>
+          <Button variant="secondary" type="submit" name="outcome" value="fail" data-testid="mock-pay-fail">
             Decline payment
-          </button>
-          <button className="button secondary" type="submit" name="outcome" value="authorize" data-testid="mock-pay-authorize">
+          </Button>
+          <Button variant="secondary" type="submit" name="outcome" value="authorize" data-testid="mock-pay-authorize">
             Authorize only (not captured)
-          </button>
-          <button className="button secondary" type="submit" name="outcome" value="pending" data-testid="mock-pay-pending">
+          </Button>
+          <Button variant="secondary" type="submit" name="outcome" value="pending" data-testid="mock-pay-pending">
             Leave pending
-          </button>
-          <button className="button secondary" type="submit" name="outcome" value="cancel" data-testid="mock-pay-cancel">
+          </Button>
+          <Button variant="secondary" type="submit" name="outcome" value="cancel" data-testid="mock-pay-cancel">
             Cancel and go back
-          </button>
+          </Button>
         </p>
       </form>
       <p className="food-note">

@@ -3,7 +3,7 @@ import { AdminNav } from "../../../lib/admin-nav";
 import { formatVenueDateTime } from "../../../lib/format";
 import { gatePortal, PortalBlocked } from "../../../lib/portal-page";
 import { TableScroll } from "../../../lib/table-scroll";
-import { Badge, EmptyState } from "../../../components/ui";
+import { Badge, Card, EmptyState } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,7 @@ export default async function AdminUsersPage() {
       <AdminNav roles={gate.me.platform_roles} active="/admin/users" />
       <h1>Admin users and permissions</h1>
       <p className="lede">Platform role assignments enforced by PostgreSQL row-level security and MFA requirements.</p>
-      <section className="card flush" style={{ marginTop: 16 }}>
+      <Card className="flush" style={{ marginTop: 16 }}>
         {rows.length === 0 ? (
           <EmptyState title="No admin memberships found" description="Platform role assignments will appear here." />
         ) : (
@@ -69,7 +69,7 @@ export default async function AdminUsersPage() {
             </table>
           </TableScroll>
         )}
-      </section>
+      </Card>
     </main>
   );
 }

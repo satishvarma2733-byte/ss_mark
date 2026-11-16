@@ -9,6 +9,7 @@ import { formatInrPaise, formatVenueDateTime, istInstant, venueLocalDate } from 
 import { WEEKDAY_NAMES, type PartnerResource, type VenueOverview } from "../../../lib/partner-types";
 import { conflictsOf, useAction, type ActionMessage, type Conflict } from "../../../lib/use-action";
 import { TableScroll } from "../../../lib/table-scroll";
+import { Button, Card, StatusPill } from "../../../components/ui";
 
 export function Status({ message }: { message: ActionMessage | null }) {
   return message ? (
@@ -81,9 +82,9 @@ function TableEditor({ r, policy }: { r: PartnerResource; policy: Record<string,
             <p className="field-hint">Seats at this table. Bookings need an exact fit.</p>
           </div>
         </div>
-        <button className="button secondary" type="submit" disabled={action.busy !== null}>
+        <Button variant="secondary" type="submit" disabled={action.busy !== null}>
           Save table
-        </button>
+        </Button>
       </form>
 
       <form className="card book-card" aria-labelledby="rate-heading" onSubmit={(e) => {
@@ -130,12 +131,12 @@ function TableEditor({ r, policy }: { r: PartnerResource; policy: Record<string,
           Rate is per table, not per guest. Duration, increments, lead time and buffer are venue rules, changed on the venue profile. The guest platform
           fee is shown separately at checkout.
         </p>
-        <button className="button secondary" type="submit" disabled={action.busy !== null}>
+        <Button variant="secondary" type="submit" disabled={action.busy !== null}>
           Set price
-        </button>
+        </Button>
       </form>
 
-      <section className="card book-card" aria-labelledby="pause-heading">
+      <Card className="book-card" aria-labelledby="pause-heading">
         <h2 id="pause-heading">Availability</h2>
         {r.status === "ACTIVE" ? (
           <>
@@ -147,27 +148,27 @@ function TableEditor({ r, policy }: { r: PartnerResource; policy: Record<string,
                 data-testid={`pause-reason-${r.label}`} />
             </div>
             <div className="action-pair">
-              <button className="button secondary" type="button" disabled={action.busy !== null || reason.trim().length < 3} data-testid={`pause-${r.label}`}
+              <Button variant="secondary" type="button" disabled={action.busy !== null || reason.trim().length < 3} data-testid={`pause-${r.label}`}
                 onClick={() => void action.run("pause", "POST", `${base}/pause`, { reason, expected_version: r.version }, { success: "New bookings for this table are paused." })}>
                 Pause new bookings
-              </button>
-              <button className="button secondary" type="button" disabled={action.busy !== null || reason.trim().length < 3}
+              </Button>
+              <Button variant="secondary" type="button" disabled={action.busy !== null || reason.trim().length < 3}
                 onClick={() => void action.run("retire", "POST", `${base}/retire`, { reason, expected_version: r.version }, { success: "Table retired." })}>
                 Retire table (owner)
-              </button>
+              </Button>
             </div>
           </>
         ) : r.status === "PAUSED" ? (
-          <button className="button secondary" type="button" disabled={action.busy !== null} data-testid={`resume-${r.label}`}
+          <Button variant="secondary" type="button" disabled={action.busy !== null} data-testid={`resume-${r.label}`}
             onClick={() => void action.run("resume", "POST", `${base}/resume`, { expected_version: r.version }, { success: "Table open for booking again." })}>
             Resume bookings
-          </button>
+          </Button>
         ) : (
           <p className="book-when">This table is retired and cannot be booked.</p>
         )}
         <Status message={conflicts.length > 0 ? null : action.message} />
         <Conflicts conflicts={conflicts} hint="Resolve them first (the booking page has service cancellation), then try again." />
-      </section>
+      </Card>
     </>
   );
 }
@@ -241,9 +242,9 @@ export function InventoryEditor({ overview, selectedId }: { overview: VenueOverv
             </table>
           </TableScroll>
           <p className="field-hint">Bookings must fit hours, lead time, exact table capacity, holds, closures and cleaning buffers.</p>
-          <button className="button" type="submit" disabled={hours.busy !== null} data-testid="save-hours">
+          <Button type="submit" disabled={hours.busy !== null} data-testid="save-hours">
             Save hours
-          </button>
+          </Button>
           <Status message={hoursConflicts.length > 0 ? null : hours.message} />
           <Conflicts conflicts={hoursConflicts} hint="Change the hours so they still fit, or resolve those bookings first." />
         </form>
@@ -251,12 +252,12 @@ export function InventoryEditor({ overview, selectedId }: { overview: VenueOverv
 
       <div className="book-side">
         {selected ? (
-          <section className="card book-card" aria-labelledby="summary-heading">
+          <Card className="book-card" aria-labelledby="summary-heading">
             <h2 id="summary-heading">Publish summary</h2>
-            <span className="status-pill sage">
+            <StatusPill tone="sage">
               <img src="/design/status-dot-brand.svg" alt="" width={5} height={5} />
               {STATUS_TEXT[selected.status]}
-            </span>
+            </StatusPill>
             <dl className="detail-rows">
               <div>
                 <dt>Table</dt>
@@ -283,10 +284,10 @@ export function InventoryEditor({ overview, selectedId }: { overview: VenueOverv
               </div>
             </div>
             <p className="field-hint">Every change revalidates inventory and records who changed what, and when.</p>
-          </section>
+          </Card>
         ) : null}
 
-        <section className="card book-card" aria-labelledby="tables-heading">
+        <Card className="book-card" aria-labelledby="tables-heading">
           <h2 id="tables-heading">Tables</h2>
           <ul className="table-list">
             {overview.resources.map((r) => (
@@ -303,7 +304,7 @@ export function InventoryEditor({ overview, selectedId }: { overview: VenueOverv
           <a className="text-link" href={`/partner/closures?venue=${overview.venue.id}`}>
             Add a closure and review impacts →
           </a>
-        </section>
+        </Card>
 
         <form className="card book-card" onSubmit={(e) => {
           e.preventDefault();
@@ -335,9 +336,9 @@ export function InventoryEditor({ overview, selectedId }: { overview: VenueOverv
                 required data-testid="new-table-price" />
             </div>
           </div>
-          <button className="button" type="submit" disabled={create.busy !== null} data-testid="add-table">
+          <Button type="submit" disabled={create.busy !== null} data-testid="add-table">
             Add table
-          </button>
+          </Button>
           <Status message={create.message} />
         </form>
       </div>

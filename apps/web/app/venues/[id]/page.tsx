@@ -5,17 +5,11 @@ import { FOOD_RULE_LABEL, formatInrPaise, formatVenueTime, istInstant, venueLoca
 import { tagLabel } from "../../../lib/labels";
 import { WEEKDAYS } from "../../../lib/venues";
 import { ArrowLeft, MapPin } from "lucide-react";
-import { ImageGallery } from "../../../components/ui";
+import { Button, Card, DatePicker, ImageGallery, TimeSelector } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
 type Search = Promise<{ date?: string; time?: string; duration?: string; party?: string }>;
-
-// "2026-11-12" -> "Today · Thu 12 Nov". The option value stays the ISO date.
-const dateLabel = (iso: string, today: string) => {
-  const text = new Intl.DateTimeFormat("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
-  return iso === today ? `Today · ${text}` : text;
-};
 
 const durationLabel = (m: number) => (m % 60 === 0 ? `${m / 60} h` : `${Math.floor(m / 60)} h ${m % 60} min`);
 
@@ -84,19 +78,10 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
 
       <div className="venue-layout">
         <div className="venue-aside">
-      <section className="card time-card" aria-labelledby="book-heading">
+      <Card className="time-card" aria-labelledby="book-heading">
         <h2 id="book-heading">Choose a time</h2>
         <form method="get" className="time-form">
-          <div>
-            <label htmlFor="date">Date</label>
-            <select id="date" name="date" className="input" defaultValue={date}>
-              {dates.map((d) => (
-                <option key={d} value={d}>
-                  {dateLabel(d, today)}
-                </option>
-              ))}
-            </select>
-          </div>
+          <DatePicker id="date" name="date" label="Date" value={date} dates={dates} today={today} />
           <div>
             <label htmlFor="duration">Duration</label>
             <select id="duration" name="duration" className="input" defaultValue={String(duration)}>
@@ -107,16 +92,7 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
               ))}
             </select>
           </div>
-          <div>
-            <label htmlFor="time">From</label>
-            <select id="time" name="time" className="input" defaultValue={from}>
-              {HOURS.map((h) => (
-                <option key={h} value={h}>
-                  {h === "00:00" ? "Earliest" : h}
-                </option>
-              ))}
-            </select>
-          </div>
+          <TimeSelector id="time" name="time" label="From" value={from} times={HOURS} labels={{ "00:00": "Earliest" }} />
           <div>
             <label htmlFor="party">People</label>
             <select id="party" name="party" className="input" defaultValue={String(party)}>
@@ -128,9 +104,9 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
             </select>
           </div>
           <div className="time-form-action">
-            <button className="button secondary block" type="submit">
+            <Button variant="secondary" block type="submit">
               Show times
-            </button>
+            </Button>
           </div>
         </form>
 
@@ -185,10 +161,10 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
           );
         })}
         <p className="food-note">Times are shown in IST and are checked again when you hold the table.</p>
-      </section>
+      </Card>
         </div>
         <div className="venue-main">
-      <section className="card" aria-labelledby="food-heading">
+      <Card aria-labelledby="food-heading">
         <h2 id="food-heading">Food and house rules</h2>
         <p>
           Outside food: <strong>{FOOD_RULE_LABEL[policy.byo_food]}</strong>. {policy.byo_details}
@@ -203,10 +179,10 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
           no refund after that. Bookings run {durationLabel(policy.minimum_minutes)} to {durationLabel(policy.maximum_minutes)} in{" "}
           {policy.increment_minutes}-minute steps, with a {policy.buffer_minutes}-minute cleaning buffer after each booking.
         </p>
-      </section>
+      </Card>
 
       {venue.amenities.length > 0 || venue.environment.length > 0 ? (
-        <section className="card" aria-labelledby="amenities-heading">
+        <Card aria-labelledby="amenities-heading">
           <h2 id="amenities-heading">Amenities and atmosphere</h2>
           <ul className="chips">
             {venue.amenities.map((a) => (
@@ -221,11 +197,11 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
               </li>
             ))}
           </ul>
-        </section>
+        </Card>
       ) : null}
 
       {reviews.count > 0 ? (
-        <section className="card" aria-labelledby="reviews-heading" data-testid="venue-reviews">
+        <Card aria-labelledby="reviews-heading" data-testid="venue-reviews">
           <h2 id="reviews-heading">
             Reviews: {reviews.average} of 5 ({reviews.count})
           </h2>
@@ -236,10 +212,10 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
               </li>
             ))}
           </ul>
-        </section>
+        </Card>
       ) : null}
 
-      <section className="card" aria-labelledby="hours-heading">
+      <Card aria-labelledby="hours-heading">
         <h2 id="hours-heading">Bookable hours ({venue.timezone})</h2>
         <dl className="hours-list">
           {venue.hours.map((period) => (
@@ -258,7 +234,7 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
           </a>{" "}
           - fictional demo coordinates.
         </p>
-      </section>
+      </Card>
         </div>
       </div>
     </main>

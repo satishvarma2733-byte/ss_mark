@@ -68,11 +68,11 @@ export function ImageGallery({ photos }: { photos: GalleryPhoto[] }) {
             <p className="ss-lightbox__caption">{active.alt_text}</p>
             {photos.length > 1 ? (
               <div className="ss-lightbox__nav">
-                <button type="button" className="ss-btn ss-btn--secondary ss-btn--sm" onClick={prev} aria-label="Previous photo">
+                <button type="button" className="button secondary sm" onClick={prev} aria-label="Previous photo">
                   <ChevronLeft size={16} aria-hidden="true" />
                   Previous
                 </button>
-                <button type="button" className="ss-btn ss-btn--secondary ss-btn--sm" onClick={next} aria-label="Next photo">
+                <button type="button" className="button secondary sm" onClick={next} aria-label="Next photo">
                   Next
                   <ChevronRight size={16} aria-hidden="true" />
                 </button>

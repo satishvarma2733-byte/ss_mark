@@ -10,6 +10,7 @@ import {
 } from "@simply-sit/contracts";
 import { apiCall, newIdempotencyKey } from "../../../../lib/client-api";
 import { formatInrPaise, formatVenueDateTime } from "../../../../lib/format";
+import { Button, ButtonLink, Card, StatusPill } from "../../../../components/ui";
 
 type Terms = Pick<CancelPreview, "window" | "refund_paise" | "retained_paise" | "captured_paise" | "terms_change_at">;
 
@@ -56,7 +57,7 @@ export function CancelPanel({ bookingId, initial }: { bookingId: string; initial
 
   return (
     <>
-      <section className="card book-card" aria-labelledby="refund-heading" data-testid="cancel-panel">
+      <Card className="book-card" aria-labelledby="refund-heading" data-testid="cancel-panel">
         <h2 id="refund-heading">If you cancel now</h2>
         <dl className="detail-rows">
           <div>
@@ -78,9 +79,9 @@ export function CancelPanel({ bookingId, initial }: { bookingId: string; initial
           <p className="field-hint">This refund applies if you cancel before {formatVenueDateTime(terms.terms_change_at)} IST.</p>
         ) : null}
         {terms.window === "LATE" && terms.refund_paise === 0 ? (
-          <span className="status-pill warm" data-testid="cancel-no-refund">
+          <StatusPill tone="warm" data-testid="cancel-no-refund">
             The deadline has passed: cancelling now gives no refund. The table will be released for others.
-          </span>
+          </StatusPill>
         ) : null}
         <p className="field-hint">
           Refunds go back to the original payment method. You will see the refund as in progress until the payment provider confirms it.
@@ -106,18 +107,18 @@ export function CancelPanel({ bookingId, initial }: { bookingId: string; initial
           </p>
         ) : null}
         {blocked ? (
-          <a className="button" href={`/bookings/${bookingId}`}>
+          <ButtonLink href={`/bookings/${bookingId}`}>
             See booking
-          </a>
+          </ButtonLink>
         ) : (
-          <button className="button danger" type="button" onClick={() => void confirm()} disabled={busy} aria-busy={busy} data-testid="confirm-cancel">
+          <Button variant="danger" type="button" onClick={() => void confirm()} disabled={busy} aria-busy={busy} data-testid="confirm-cancel">
             {busy ? "Cancelling…" : terms.refund_paise > 0 ? `Cancel and refund ${formatInrPaise(terms.refund_paise)}` : "Cancel without refund"}
-          </button>
+          </Button>
         )}
-        <a className="button secondary" href={`/bookings/${bookingId}`}>
+        <ButtonLink variant="secondary" href={`/bookings/${bookingId}`}>
           Keep booking
-        </a>
-      </section>
+        </ButtonLink>
+      </Card>
       <div className="notice info">
         <Info size={20} aria-hidden="true" />
         <div>

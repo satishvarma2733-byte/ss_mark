@@ -50,8 +50,8 @@ State management is server components plus small client components (`lib/use-act
 ## 4. Gaps found in this audit
 
 ### Design system and UI
-1. **The UI kit is barely adopted.** Only 5 files import `components/ui` (`layout.tsx`, `venues/[id]`, and the three new admin pages). The other ~42 pages still use the class-based markup in `globals.css`. Two parallel systems now exist.
-2. **Kit is incomplete against the plan:** `Tabs`, `FilterChip`, `Card`, `DatePicker`, `TimeSelector` and `QrBookingCard` are not built.
+1. **UI kit adoption** — largely resolved 16 Nov: 68 files import `components/ui`. Buttons, button-links, cards, static status pills and link chips now come from the kit, which renders the existing Figma-matched classes, so there is one look. Still class-based: form fields (`.input`, about 99 uses), notices (about 65), status pills with computed tones (about 22), label/checkbox chips.
+2. **Kit completeness** — resolved 16 Nov: `Card`, `StatusPill`, `FilterChip`, `Tabs`, `DatePicker`, `TimeSelector`, `QrBookingCard` and `ButtonLink` added. `Tabs` has no page using it yet.
 3. **Dark mode** — resolved 16 Nov: hard-coded colours replaced with role tokens (only the QR, scanner and mock-gateway banner stay fixed), 30 routes pass axe contrast in dark, and the accessibility spec now has a dark-mode test. Not yet compared frame by frame with Figma page `12 — Dark Mode`.
 4. **Stylesheet size:** `globals.css` is 4,528 lines plus `ui.css` 640 lines, with layered overrides.
 

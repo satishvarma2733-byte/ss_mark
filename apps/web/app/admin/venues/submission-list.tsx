@@ -2,6 +2,7 @@
 // search filters the loaded queue by name or area (GET), status chips load another queue.
 import { Search } from "lucide-react";
 import { formatVenueDateTime } from "../../../lib/format";
+import { FilterChip } from "../../../components/ui";
 
 export type VenueQueueRow = {
   venue_id: string;
@@ -59,10 +60,10 @@ export function SubmissionList({ rows, status, q, selectedId }: { rows: VenueQue
       </form>
       <nav aria-label="Status" className="chips">
         {QUEUE_STATUSES.map(([s, label]) => (
-          <a key={s} className="chip" href={`/admin/venues?status=${s}`} aria-current={s === status ? "page" : undefined}>
+          <FilterChip key={s} href={`/admin/venues?status=${s}`} aria-current={s === status ? "page" : undefined}>
             {label}
             {s === status ? ` · ${rows.length}` : ""}
-          </a>
+          </FilterChip>
         ))}
       </nav>
       {shown.length === 0 ? (

@@ -1,5 +1,6 @@
 import { safeRedirectPath } from "../../lib/api";
 import { SignInForm } from "./sign-in-form";
+import { StatusPill } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -21,10 +22,10 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
           <img className="auth-photo" src="/design/sign-in-venue.jpg" alt="" width={1584} height={672} />
           <h2 className="auth-aside-title">A little space. All yours.</h2>
           <p className="muted">Reserve a table, not a compulsory meal. Keep your bookings, receipts and support in one place.</p>
-          <span className="status-pill sage">
+          <StatusPill tone="sage">
             <img src="/design/status-dot-brand.svg" alt="" width={5} height={5} />
             No password or identity document needed
-          </span>
+          </StatusPill>
         </aside>
         <SignInForm redirectPath={safeRedirectPath(redirect_path)} />
       </div>

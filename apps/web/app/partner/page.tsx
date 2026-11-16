@@ -9,6 +9,7 @@ import { GAP_LABEL, VENUE_STATUS_LABEL, type CalendarData, type VenueOverview } 
 import { PortalBlocked } from "../../lib/portal-page";
 import { Invitations, type Invitation, type InvitationLink } from "./invitations";
 import { TableScroll } from "../../lib/table-scroll";
+import { ButtonLink, Card, FilterChip, StatusPill } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -65,13 +66,13 @@ export default async function PartnerHomePage({ searchParams }: {
       <main>
         <h1>Partner portal</h1>
         <Invitations invitations={invitations} link={link} />
-        <section className="card" style={{ marginTop: 16 }} aria-labelledby="apply-heading">
+        <Card style={{ marginTop: 16 }} aria-labelledby="apply-heading">
           <h2 id="apply-heading">List your venue on Simply Sit</h2>
           <p>Cafes, restaurants, lounges and other hospitality spaces can offer tables by the hour. We review every listing before customers see it.</p>
-          <a className="button" href="/partner/apply" data-testid="partner-apply-link">
+          <ButtonLink href="/partner/apply" data-testid="partner-apply-link">
             Start an application
-          </a>
-        </section>
+          </ButtonLink>
+        </Card>
       </main>
     );
   }
@@ -118,10 +119,10 @@ export default async function PartnerHomePage({ searchParams }: {
       <PartnerNav current={current} memberships={memberships} active="/partner" />
       <div className="page-heading">
         <p className="lede">{todayLong} · A clear view of every arrival, table and handover.</p>
-        <a className="button secondary" href={`/partner/calendar?${venueQuery}`}>
+        <ButtonLink variant="secondary" href={`/partner/calendar?${venueQuery}`}>
           <CalendarDays size={18} aria-hidden="true" />
           {todayShort} · Today
-        </a>
+        </ButtonLink>
       </div>
       <Invitations invitations={invitations} link={link} />
 
@@ -157,7 +158,7 @@ export default async function PartnerHomePage({ searchParams }: {
 
       <div className="ops-columns">
         <div className="ops-main">
-          <section className="card listing-card" aria-labelledby="venue-heading" data-testid={overview ? "venue-status" : undefined}>
+          <Card className="listing-card" aria-labelledby="venue-heading" data-testid={overview ? "venue-status" : undefined}>
             <div className="section-heading">
               <h2 id="venue-heading">
                 {current.venue_name} <span className="badge">{current.role}</span>
@@ -186,9 +187,9 @@ export default async function PartnerHomePage({ searchParams }: {
             ) : (
               <p className="muted small">Arrivals and table readiness for this venue.</p>
             )}
-          </section>
+          </Card>
 
-          <section className="card flush" aria-labelledby="today-heading">
+          <Card className="flush" aria-labelledby="today-heading">
             <div className="card-section">
               <div className="section-heading">
                 <h2 id="today-heading">Today’s reservations</h2>
@@ -209,9 +210,9 @@ export default async function PartnerHomePage({ searchParams }: {
               </form>
               <nav className="chips" aria-label="Booking status">
                 {FILTERS.map((f) => (
-                  <a key={f.key} className="chip" href={filterHref(f.key)} aria-current={f.key === filter.key ? "true" : undefined}>
+                  <FilterChip key={f.key} href={filterHref(f.key)} aria-current={f.key === filter.key ? "true" : undefined}>
                     {f.label} · {count(f.key)}
-                  </a>
+                  </FilterChip>
                 ))}
               </nav>
             </div>
@@ -259,9 +260,9 @@ export default async function PartnerHomePage({ searchParams }: {
             <p className="table-footer">
               Showing {shown.length} of {all.length} bookings
             </p>
-          </section>
+          </Card>
 
-          <section className="card" aria-labelledby="cleaning-heading">
+          <Card aria-labelledby="cleaning-heading">
             <div className="section-heading stacked">
               <h2 id="cleaning-heading">Prepare the next good hour</h2>
               <p>Tables become available only after cleaning is marked complete.</p>
@@ -272,23 +273,23 @@ export default async function PartnerHomePage({ searchParams }: {
               <div className="panel-row">
                 {cleaning.map((r) => (
                   <div key={r.id} className="soft-panel">
-                    <span className="status-pill warm">Cleaning · {r.label}</span>
+                    <StatusPill tone="warm">Cleaning · {r.label}</StatusPill>
                     <p>Mark it ready once the table is cleared and reset.</p>
-                    <a className="button secondary block" href={`/staff?${venueQuery}`}>
+                    <ButtonLink variant="secondary" block href={`/staff?${venueQuery}`}>
                       Mark clean &amp; ready
-                    </a>
+                    </ButtonLink>
                   </div>
                 ))}
               </div>
             )}
-          </section>
+          </Card>
         </div>
 
         <aside className="ops-side" aria-label="Next arrival">
-          <section className="card">
+          <Card>
             {nextArrival ? (
               <>
-                <span className="status-pill">Confirmed · Payment verified</span>
+                <StatusPill>Confirmed · Payment verified</StatusPill>
                 <p className="side-title">{nextArrival.public_ref}</p>
                 <p className="muted small">Next arrival at {current.venue_name}</p>
                 <dl className="detail-rows">
@@ -314,10 +315,10 @@ export default async function PartnerHomePage({ searchParams }: {
             )}
             <hr />
             <h2>Validate arrival</h2>
-            <a className="button secondary block" href={`/staff?${venueQuery}`}>
+            <ButtonLink variant="secondary" block href={`/staff?${venueQuery}`}>
               <ScanLine size={18} aria-hidden="true" />
               Check PIN or scan guest QR
-            </a>
+            </ButtonLink>
             <div className="notice warm">
               <Info size={19} aria-hidden="true" />
               <div>
@@ -326,9 +327,9 @@ export default async function PartnerHomePage({ searchParams }: {
               </div>
             </div>
             <p className="fine-print">Never check in an unpaid or cancelled booking.</p>
-          </section>
+          </Card>
 
-          <section className="card" aria-labelledby="workflow-heading">
+          <Card aria-labelledby="workflow-heading">
             <h2 id="workflow-heading">Stay workflow</h2>
             <ol className="timeline">
               <li className="done">
@@ -359,7 +360,7 @@ export default async function PartnerHomePage({ searchParams }: {
                 </div>
               </li>
             </ol>
-          </section>
+          </Card>
         </aside>
       </div>
 

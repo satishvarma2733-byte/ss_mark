@@ -3,6 +3,7 @@ import { resolveIdentity } from "../../lib/auth/identity";
 import { loadMe } from "../../lib/me";
 import { CasesColumn, HelpColumn, loadSupportData } from "../help/support-centre";
 import { AccountActions } from "./account-actions";
+import { Card } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export default async function AccountPage() {
       </div>
       <div className="account-layout">
         <div className="book-side account-column">
-          <section className="card book-card" aria-labelledby="profile-heading">
+          <Card className="book-card" aria-labelledby="profile-heading">
             <h2 id="profile-heading">Your account</h2>
             <div className="field">
               <span className="field-label" id="email-label">
@@ -60,7 +61,7 @@ export default async function AccountPage() {
                 Portal access needs an authenticator check. <a href="/account/security">Set up or verify your authenticator</a>.
               </p>
             ) : null}
-          </section>
+          </Card>
           <AccountActions
             termsRequired={me.terms_required}
             termsVersion={me.current_terms_version}

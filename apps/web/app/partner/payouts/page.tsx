@@ -5,6 +5,7 @@ import { formatInrPaise, venueLocalDate } from "../../../lib/format";
 import { NotManager, PartnerNav, partnerContext } from "../../../lib/partner-page";
 import { PortalBlocked } from "../../../lib/portal-page";
 import { longDate } from "../../../components/booking-parts";
+import { Button, ButtonLink, Card, StatusPill } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -46,9 +47,9 @@ export default async function PartnerPayoutsPage({ searchParams }: { searchParam
       </div>
       <div className="partner-layout">
         <div className="book-main">
-          <section className="card book-card" aria-labelledby="beneficiary-heading">
+          <Card className="book-card" aria-labelledby="beneficiary-heading">
             <h2 id="beneficiary-heading">Payout destination</h2>
-            <span className="status-pill warm">Provider setup · Not connected</span>
+            <StatusPill tone="warm">Provider setup · Not connected</StatusPill>
             <dl className="detail-rows">
               <div>
                 <dt>Destination account</dt>
@@ -67,23 +68,23 @@ export default async function PartnerPayoutsPage({ searchParams }: { searchParam
               Bank details and identity checks are handled by the payment provider, never stored by Simply Sit. Provider onboarding is not connected in this
               preview, so no destination can be set yet.
             </p>
-            <button className="button" type="button" disabled>
+            <Button type="button" disabled>
               Open secure destination setup · Not available yet
-            </button>
-          </section>
+            </Button>
+          </Card>
 
-          <section className="card book-card" aria-labelledby="change-heading">
+          <Card className="book-card" aria-labelledby="change-heading">
             <h2 id="change-heading">Changing the destination</h2>
             <p className="book-when">
               A change needs a reason, a fresh provider verification and the owner’s confirmation. It never redirects a payout that is already scheduled;
               pending payouts are reviewed separately.
             </p>
             <p className="book-note">Every finance action records who did it and when.</p>
-          </section>
+          </Card>
         </div>
 
         <div className="book-side">
-          <section className="card book-card" aria-labelledby="scheduled-heading">
+          <Card className="book-card" aria-labelledby="scheduled-heading">
             <h2 id="scheduled-heading">Scheduled payout</h2>
             {scheduled ? (
               <>
@@ -101,7 +102,7 @@ export default async function PartnerPayoutsPage({ searchParams }: { searchParam
                     <dd>{scheduled.evidence_ref ?? "Not issued yet"}</dd>
                   </div>
                 </dl>
-                <span className="status-pill warm">{PAYOUT_TEXT[scheduled.status] ?? scheduled.status}</span>
+                <StatusPill tone="warm">{PAYOUT_TEXT[scheduled.status] ?? scheduled.status}</StatusPill>
               </>
             ) : (
               <p className="book-when">No payout is scheduled right now.</p>
@@ -112,9 +113,9 @@ export default async function PartnerPayoutsPage({ searchParams }: { searchParam
                 <dd>{formatInrPaise(Math.max(0, statement.totals.unresolved_paise))}</dd>
               </div>
             </dl>
-          </section>
+          </Card>
 
-          <section className="card book-card" aria-labelledby="audit-heading">
+          <Card className="book-card" aria-labelledby="audit-heading">
             <h2 id="audit-heading">Payout history</h2>
             {payouts.length === 0 ? (
               <p className="book-note">No payouts in the last 92 days.</p>
@@ -137,10 +138,10 @@ export default async function PartnerPayoutsPage({ searchParams }: { searchParam
                 ))}
               </ol>
             )}
-          </section>
-          <a className="button secondary" href={`/partner/reports?${venueQuery}`}>
+          </Card>
+          <ButtonLink variant="secondary" href={`/partner/reports?${venueQuery}`}>
             Back to earnings
-          </a>
+          </ButtonLink>
         </div>
       </div>
       <div className="workspace-footer">

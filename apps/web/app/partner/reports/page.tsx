@@ -4,6 +4,7 @@ import { formatInrPaise, formatSignedInrPaise, formatVenueDateTime, venueLocalDa
 import { NotManager, PartnerNav, partnerContext } from "../../../lib/partner-page";
 import { PortalBlocked } from "../../../lib/portal-page";
 import { TableScroll } from "../../../lib/table-scroll";
+import { Button, ButtonLink, Card } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -54,8 +55,8 @@ export default async function PartnerReportsPage({ searchParams }: { searchParam
           To
           <input className="input" type="date" name="to" defaultValue={to} max={today} required />
         </label>
-        <button className="button secondary" type="submit">Show</button>
-        {statement ? <a className="button" href={csv} data-testid="statement-csv">Download CSV</a> : null}
+        <Button variant="secondary" type="submit">Show</Button>
+        {statement ? <ButtonLink href={csv} data-testid="statement-csv">Download CSV</ButtonLink> : null}
       </form>
       {problem ? <p className="notice status-error" role="alert">{problem}</p> : null}
       {statement ? (
@@ -63,7 +64,7 @@ export default async function PartnerReportsPage({ searchParams }: { searchParam
           <p className="notice status-warning" role="note">
             Test data from the MOCK payment provider. Amounts not yet in a paid payout are unresolved.
           </p>
-          <section className="card" aria-labelledby="totals-heading" data-testid="statement-totals">
+          <Card aria-labelledby="totals-heading" data-testid="statement-totals">
             <h2 id="totals-heading">Summary</h2>
             <ul>
               <li>Bookings earned: {formatInrPaise(statement.totals.gross_paise)}</li>
@@ -80,9 +81,9 @@ export default async function PartnerReportsPage({ searchParams }: { searchParam
                 {statement.not_yet_earned.count} paid bookings in this period have not finished yet, so they are not earnings yet.
               </p>
             ) : null}
-          </section>
+          </Card>
 
-          <section className="card" style={{ marginTop: 16 }} aria-labelledby="earn-heading">
+          <Card style={{ marginTop: 16 }} aria-labelledby="earn-heading">
             <h2 id="earn-heading">Bookings</h2>
             {statement.earnings.length === 0 ? <p className="food-note">No finished bookings in this period.</p> : (
               <TableScroll label="Statement bookings">
@@ -106,10 +107,10 @@ export default async function PartnerReportsPage({ searchParams }: { searchParam
                 </table>
               </TableScroll>
             )}
-          </section>
+          </Card>
 
           {statement.adjustments.length > 0 ? (
-            <section className="card" style={{ marginTop: 16 }} aria-labelledby="adj-heading">
+            <Card style={{ marginTop: 16 }} aria-labelledby="adj-heading">
               <h2 id="adj-heading">Refunds charged to the venue</h2>
               <p className="food-note">Approved by Simply Sit support after the booking finished. Deducted from the next payout.</p>
               <ul data-testid="statement-adjustments">
@@ -120,10 +121,10 @@ export default async function PartnerReportsPage({ searchParams }: { searchParam
                   </li>
                 ))}
               </ul>
-            </section>
+            </Card>
           ) : null}
 
-          <section className="card" style={{ marginTop: 16 }} aria-labelledby="po-heading">
+          <Card style={{ marginTop: 16 }} aria-labelledby="po-heading">
             <h2 id="po-heading">Payouts</h2>
             {statement.payouts.length === 0 ? <p className="food-note">No payouts in this period.</p> : (
               <ul data-testid="statement-payouts">
@@ -136,7 +137,7 @@ export default async function PartnerReportsPage({ searchParams }: { searchParam
                 ))}
               </ul>
             )}
-          </section>
+          </Card>
         </>
       ) : null}
     </main>

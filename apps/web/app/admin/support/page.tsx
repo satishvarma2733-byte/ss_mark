@@ -5,6 +5,7 @@ import { formatVenueDateTime } from "../../../lib/format";
 import { gatePortal, PortalBlocked } from "../../../lib/portal-page";
 import { TableScroll } from "../../../lib/table-scroll";
 import { AdminNav } from "../../../lib/admin-nav";
+import { Button, Card, StatusPill } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -46,9 +47,9 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
           </label>
           <input id="case-q" name="q" className="input" defaultValue={q} placeholder="Case ID, venue or booking" />
         </div>
-        <button className="button secondary" type="submit">
+        <Button variant="secondary" type="submit">
           Search
-        </button>
+        </Button>
       </form>
       <nav aria-label="Case filters" className="page-lede">
         <ul className="choice-pills">
@@ -68,7 +69,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
       </nav>
 
       <div className="partner-layout">
-        <section className="card book-card" aria-labelledby="backlog-heading">
+        <Card className="book-card" aria-labelledby="backlog-heading">
           <h2 id="backlog-heading">Prioritised backlog</h2>
           {queue.restricted_count > 0 ? (
             <p className="book-note" data-testid="restricted-count">
@@ -94,7 +95,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
                     <tr key={t.ticket_id} className={t.priority === "URGENT" ? "row-highlight" : undefined}>
                       <th scope="row">
                         <a href={`/admin/support/${t.ticket_id}`}>{t.public_ref}</a>
-                        {t.is_sensitive ? <span className="status-pill danger table-pill">Confidential</span> : null}
+                        {t.is_sensitive ? <StatusPill className="table-pill" tone="danger">Confidential</StatusPill> : null}
                         {t.assigned_to_me ? " (yours)" : ""}
                       </th>
                       <td>
@@ -110,7 +111,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
             </TableScroll>
           )}
           <p className="book-note">Urgent cases sort first. Prioritise imminent arrivals and immediate safety needs.</p>
-        </section>
+        </Card>
 
         <div className="book-side">
           <div className="notice warm">
@@ -120,7 +121,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
               <p>Direct people to local emergency services ({EMERGENCY_NUMBER}) and the on-call safety lead. A support queue must not delay emergency action.</p>
             </div>
           </div>
-          <section className="card book-card" aria-labelledby="roles-heading">
+          <Card className="book-card" aria-labelledby="roles-heading">
             <h2 id="roles-heading">Role-controlled actions</h2>
             <dl className="detail-rows">
               <div>
@@ -137,7 +138,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
               </div>
             </dl>
             <p className="field-hint">Pausing new sales never silently cancels confirmed stays. Review affected bookings and record the resolution separately.</p>
-          </section>
+          </Card>
         </div>
       </div>
       <div className="workspace-footer">

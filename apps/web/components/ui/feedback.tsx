@@ -74,7 +74,7 @@ export function ErrorState({
       title={title}
       action={
         onRetry ? (
-          <button type="button" className="ss-btn ss-btn--secondary ss-btn--sm" onClick={onRetry}>
+          <button type="button" className="button secondary sm" onClick={onRetry}>
             Try again
           </button>
         ) : null
@@ -125,7 +125,7 @@ export function Pagination({
   if (totalPages <= 1) return null;
   return (
     <nav className="ss-pagination" aria-label="Pagination">
-      <button type="button" className="ss-btn ss-btn--secondary ss-btn--sm" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
+      <button type="button" className="button secondary sm" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
         Previous
       </button>
       <span className="ss-pagination__info">
@@ -133,7 +133,7 @@ export function Pagination({
       </span>
       <button
         type="button"
-        className="ss-btn ss-btn--secondary ss-btn--sm"
+        className="button secondary sm"
         disabled={page >= totalPages}
         onClick={() => onPageChange(page + 1)}
       >

@@ -3,6 +3,7 @@ import { TICKET_CATEGORY_LABEL, type Ticket } from "@simply-sit/contracts";
 import { asUser, DomainError, getDb, myTicket } from "@simply-sit/db";
 import { resolveIdentity } from "../../../lib/auth/identity";
 import { formatVenueDateTime } from "../../../lib/format";
+import { Card } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -29,19 +30,19 @@ export default async function SupportTicketPage({ params }: { params: Promise<{ 
       <p data-testid="ticket-status">
         <strong>{STATUS[ticket.status] ?? ticket.status}</strong>
       </p>
-      <section className="card" aria-labelledby="t-heading">
+      <Card aria-labelledby="t-heading">
         <h2 id="t-heading">{TICKET_CATEGORY_LABEL[ticket.category]}</h2>
         <p className="food-note">
           Sent {formatVenueDateTime(ticket.created_at)} IST{ticket.booking_ref ? ` · booking ${ticket.booking_ref}` : ""}
           {ticket.is_sensitive ? " · confidential" : ""}
         </p>
         <p>{ticket.description}</p>
-      </section>
+      </Card>
       {ticket.customer_visible_resolution ? (
-        <section className="card" style={{ marginTop: 16 }} aria-labelledby="r-heading" data-testid="ticket-resolution">
+        <Card style={{ marginTop: 16 }} aria-labelledby="r-heading" data-testid="ticket-resolution">
           <h2 id="r-heading">Reply from Simply Sit</h2>
           <p>{ticket.customer_visible_resolution}</p>
-        </section>
+        </Card>
       ) : null}
     </main>
   );

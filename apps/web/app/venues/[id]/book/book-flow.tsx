@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Hold, Quote } from "@simply-sit/contracts";
 import { apiCall, newIdempotencyKey } from "../../../../lib/client-api";
 import { FOOD_RULE_LABEL, formatInrPaise, formatVenueTime } from "../../../../lib/format";
+import { Button, ButtonLink, Card, StatusPill } from "../../../../components/ui";
 
 type Props = {
   venueId: string;
@@ -95,7 +96,7 @@ export function BookFlow(props: Props) {
 
   return (
     <>
-      <section className="card book-card" aria-labelledby="table-heading">
+      <Card className="book-card" aria-labelledby="table-heading">
         <h2 id="table-heading">{props.tableLabel}</h2>
         <span className={`status-pill${props.tableFree ? "" : " warning"}`}>
           {props.tableFree ? <img src="/design/status-dot-available.svg" alt="" width={5} height={5} /> : null}
@@ -118,7 +119,7 @@ export function BookFlow(props: Props) {
           </select>
         </div>
         <p className="book-when">{props.whenLabel}</p>
-      </section>
+      </Card>
 
       {problem ? (
         <div className="notice error" role="alert" data-testid="book-problem">
@@ -143,9 +144,9 @@ export function BookFlow(props: Props) {
 
       {quote && policy && price ? (
         <>
-          <section className="card book-card" aria-labelledby="quote-heading" data-testid="quote">
+          <Card className="book-card" aria-labelledby="quote-heading" data-testid="quote">
             <h2 id="quote-heading">Payment summary</h2>
-            {price.synthetic ? <span className="status-pill neutral">Sandbox pricing · synthetic, no real charge</span> : null}
+            {price.synthetic ? <StatusPill tone="neutral">Sandbox pricing · synthetic, no real charge</StatusPill> : null}
             <dl className="detail-rows">
               <div>
                 <dt>
@@ -169,7 +170,7 @@ export function BookFlow(props: Props) {
               </div>
             </dl>
             <p className="field-hint">No tax rate is approved yet. Refreshments are optional and paid at the venue.</p>
-          </section>
+          </Card>
 
           <details className="card book-card book-rules">
             <summary>Rules you are accepting</summary>
@@ -198,23 +199,23 @@ export function BookFlow(props: Props) {
             <span>I accept the venue rules and the cancellation terms.</span>
           </label>
           {quoteExpired ? (
-            <button className="button secondary" type="button" onClick={() => void loadQuote()}>
+            <Button variant="secondary" type="button" onClick={() => void loadQuote()}>
               Quote expired · get a fresh quote
-            </button>
+            </Button>
           ) : (
-            <button className="button" type="button" disabled={!accepted || holding} aria-busy={holding} onClick={() => void hold()}
+            <Button type="button" disabled={!accepted || holding} aria-busy={holding} onClick={() => void hold()}
               data-testid="hold-table">
               {holding ? "Holding…" : `Reserve ${props.tableLabel} & continue`}
-            </button>
+            </Button>
           )}
           <p className="field-hint">
             Not charged yet. We check the table again, then hold it for {policy.hold_minutes} minutes while you pay.
           </p>
         </>
       ) : null}
-      <a className="button secondary" href={`/venues/${props.slug}`}>
+      <ButtonLink variant="secondary" href={`/venues/${props.slug}`}>
         Back to venue details
-      </a>
+      </ButtonLink>
     </>
   );
 }

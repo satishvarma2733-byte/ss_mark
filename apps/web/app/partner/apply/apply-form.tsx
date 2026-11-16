@@ -7,6 +7,7 @@ import { Check, Clock3 } from "lucide-react";
 import { CATEGORY_CODES, PILOT_AREAS } from "@simply-sit/contracts";
 import { tagLabel } from "../../../lib/labels";
 import { useAction } from "../../../lib/use-action";
+import { Button, Card, StatusPill } from "../../../components/ui";
 
 const STEPS = [
   { title: "Business & contact", detail: "Registered name on this form" },
@@ -37,7 +38,7 @@ export function ApplyForm() {
   return (
     <form className="partner-layout" onSubmit={(e) => void submit(e)} data-testid="apply-form">
       <div className="book-main">
-        <section className="card book-card" aria-labelledby="business-heading">
+        <Card className="book-card" aria-labelledby="business-heading">
           <h2 id="business-heading">Business &amp; contact</h2>
           <div className="field">
             <label className="field-label" htmlFor="legal">
@@ -47,9 +48,9 @@ export function ApplyForm() {
               onChange={(e) => set({ partner_legal_name: e.target.value })} autoComplete="organization" />
           </div>
           <p className="field-hint">We contact you through your signed-in account. Registration documents are requested during review, not here.</p>
-        </section>
+        </Card>
 
-        <section className="card book-card" aria-labelledby="venue-heading">
+        <Card className="book-card" aria-labelledby="venue-heading">
           <h2 id="venue-heading">Venue &amp; location</h2>
           {/* Illustrative photograph from the Figma frame; your own photos are added on the venue profile. */}
           <img className="apply-photo" src="/design/sign-in-venue.jpg" alt="" width={1584} height={672} />
@@ -107,16 +108,16 @@ export function ApplyForm() {
             </div>
           </div>
           <p className="book-note">Table-only reservations. Tables, rates, hours and policies are set in the next step and reviewed with the listing.</p>
-        </section>
+        </Card>
       </div>
 
       <div className="book-side">
-        <section className="card book-card" aria-labelledby="progress-heading">
+        <Card className="book-card" aria-labelledby="progress-heading">
           <h2 id="progress-heading">Setup progress</h2>
-          <span className="status-pill sage">
+          <StatusPill tone="sage">
             <img src="/design/status-dot-brand.svg" alt="" width={5} height={5} />
             Draft · {done.filter(Boolean).length} of 5 complete
-          </span>
+          </StatusPill>
           <ol className="stay-timeline">
             {STEPS.map((s, i) => (
               <li key={s.title}>
@@ -130,14 +131,14 @@ export function ApplyForm() {
               </li>
             ))}
           </ol>
-        </section>
-        <section className="card book-card" aria-labelledby="verify-heading">
+        </Card>
+        <Card className="book-card" aria-labelledby="verify-heading">
           <h2 id="verify-heading">Secure verification</h2>
           <p className="book-when">
             Owner identity and payouts are set up directly with our payment provider after review. Never send bank details in support messages.
           </p>
-          <span className="status-pill warm">Provider KYC · Not started</span>
-        </section>
+          <StatusPill tone="warm">Provider KYC · Not started</StatusPill>
+        </Card>
         <label className="check-row">
           <input type="checkbox" checked={authorised} onChange={(e) => setAuthorised(e.target.checked)} required />
           <span>I’m authorised to represent this venue and accept the partner terms.</span>
@@ -147,9 +148,9 @@ export function ApplyForm() {
             {action.message.text}
           </p>
         ) : null}
-        <button className="button" type="submit" disabled={action.busy !== null || !authorised} aria-busy={action.busy === "apply"} data-testid="apply-submit">
+        <Button type="submit" disabled={action.busy !== null || !authorised} aria-busy={action.busy === "apply"} data-testid="apply-submit">
           {action.busy ? "Creating draft…" : "Save & continue"}
-        </button>
+        </Button>
         <p className="field-hint">Simply Sit reviews every listing before it goes live. Your listing stays unpublished until approved.</p>
       </div>
     </form>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { notificationCopy, type AppNotification } from "@simply-sit/contracts";
 import { apiCall } from "../../lib/client-api";
 import { formatVenueDateTime } from "../../lib/format";
+import { Button } from "../../components/ui";
 
 function hrefFor(n: AppNotification): string | null {
   if (n.ticket_id) return `/support/${n.ticket_id}`;
@@ -26,14 +27,14 @@ export function NotificationList({ notifications, unread }: { notifications: App
       {unread > 0 ? (
         <p className="inline-form">
           <span data-testid="unread-count">{unread} unread</span>
-          <button className="button secondary" type="button" disabled={busy} data-testid="mark-all-read" onClick={async () => {
+          <Button variant="secondary" type="button" disabled={busy} data-testid="mark-all-read" onClick={async () => {
             setBusy(true);
             await apiCall("POST", "/api/v1/notifications/read-all", { body: {} });
             setBusy(false);
             router.refresh();
           }}>
             Mark all as read
-          </button>
+          </Button>
         </p>
       ) : null}
       <ul className="notification-list" data-testid="notifications">

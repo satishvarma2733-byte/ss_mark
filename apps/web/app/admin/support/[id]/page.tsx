@@ -5,6 +5,7 @@ import { formatVenueDateTime } from "../../../../lib/format";
 import { gatePortal, PortalBlocked } from "../../../../lib/portal-page";
 import { TicketTriage, type AdminTicket } from "./ticket-triage";
 import { AdminNav } from "../../../../lib/admin-nav";
+import { Card } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
       <p data-testid="admin-ticket-status">
         {ticket.status.replace("_", " ").toLowerCase()} · {ticket.priority.toLowerCase()} priority · {ticket.assigned ? (ticket.assigned_to_me ? "assigned to you" : "assigned") : "unassigned"}
       </p>
-      <section className="card" aria-labelledby="report-heading">
+      <Card aria-labelledby="report-heading">
         <h2 id="report-heading">{TICKET_CATEGORY_LABEL[ticket.category]}</h2>
         <p className="food-note">
           From {ticket.reporter_role === "VENUE_STAFF" ? "venue staff" : "a customer"} · {formatVenueDateTime(ticket.created_at)} IST
@@ -43,7 +44,7 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
           ) : null}
         </p>
         <p>{ticket.description}</p>
-      </section>
+      </Card>
       <TicketTriage ticket={ticket} />
     </main>
   );

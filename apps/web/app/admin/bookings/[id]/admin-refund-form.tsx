@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CircleAlert, RotateCcw } from "lucide-react";
 import { formatInrPaise } from "../../../../lib/format";
 import { useAction } from "../../../../lib/use-action";
+import { Button } from "../../../../components/ui";
 
 export type RefundOptions = {
   max_refund_paise: number;
@@ -39,13 +40,13 @@ export function FailedRefunds({ items }: { items: RefundOptions["retryable"] }) 
               <strong>{formatInrPaise(r.amount_paise)}</strong> · {r.reason_code.toLowerCase().replace(/_/g, " ")}
               {r.last_error_code ? ` · ${r.last_error_code}` : ""}
             </span>
-            <button className="button secondary" type="button" disabled={action.busy !== null || reason.trim().length < 10}
+            <Button variant="secondary" type="button" disabled={action.busy !== null || reason.trim().length < 10}
               data-testid={`retry-${r.refund_id}`}
               onClick={() => void action.run(`retry-${r.refund_id}`, "POST", `/api/v1/admin/refunds/${r.refund_id}/retry`, { reason },
                 { idempotent: true, success: "Retry requested." })}>
               <RotateCcw size={16} aria-hidden="true" />
               Retry refund
-            </button>
+            </Button>
           </li>
         ))}
       </ul>
@@ -102,9 +103,9 @@ export function AdminRefundForm({ bookingId, options }: { bookingId: string; opt
         </fieldset>
       ) : null}
       <div className="row-buttons">
-        <button className="button" type="submit" disabled={!valid || action.busy !== null} data-testid="refund-submit">
+        <Button type="submit" disabled={!valid || action.busy !== null} data-testid="refund-submit">
           Request refund
-        </button>
+        </Button>
       </div>
       {action.message ? <p className={`status-${action.message.tone}`} role="status">{action.message.text}</p> : null}
     </form>

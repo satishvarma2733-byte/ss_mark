@@ -6,6 +6,7 @@ import { gatePortal, PortalBlocked } from "../../../../lib/portal-page";
 import { AdminRefundForm, FailedRefunds, type RefundOptions } from "./admin-refund-form";
 import { AdminNav } from "../../../../lib/admin-nav";
 import { BookingOpsHeading, BookingRecordList, BookingSearchForm, bookingPill, bookingQuery, searchBookings } from "../booking-records";
+import { Card, StatusPill } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -111,7 +112,7 @@ export default async function AdminBookingPage({ params, searchParams }: { param
         />
 
         <div className="review-detail">
-          <section className="card" aria-labelledby="booking-heading">
+          <Card aria-labelledby="booking-heading">
             <div className="section-heading">
               <h2 id="booking-heading" className="record-title">
                 {b.public_ref}
@@ -129,7 +130,7 @@ export default async function AdminBookingPage({ params, searchParams }: { param
             <ul className="chips" aria-label="Money states">
               {attempts.length === 0 ? (
                 <li>
-                  <span className="status-pill neutral">No payment attempt</span>
+                  <StatusPill tone="neutral">No payment attempt</StatusPill>
                 </li>
               ) : (
                 attempts.map((a) => {
@@ -151,10 +152,10 @@ export default async function AdminBookingPage({ params, searchParams }: { param
               })}
             </ul>
             <p className="fine-print">Cancelling releases the table; a refund is not marked paid until the payment provider confirms it.</p>
-          </section>
+          </Card>
 
           <div className="pair-columns">
-            <section className="card" aria-labelledby="money-heading">
+            <Card aria-labelledby="money-heading">
               <h2 id="money-heading">Payment &amp; refund timeline</h2>
               {steps.length === 0 ? (
                 <p className="muted">No payments yet.</p>
@@ -176,9 +177,9 @@ export default async function AdminBookingPage({ params, searchParams }: { param
                   ))}
                 </ol>
               )}
-            </section>
+            </Card>
 
-            <section className="card" aria-labelledby="rupee-heading">
+            <Card aria-labelledby="rupee-heading">
               <h2 id="rupee-heading">Every rupee accounted for</h2>
               <dl className="detail-rows">
                 <div>
@@ -228,10 +229,10 @@ export default async function AdminBookingPage({ params, searchParams }: { param
               <p className="fine-print">
                 Captured counts verified payment attempts only. {finance ? "" : "Earnings and fees are shown to finance roles."}
               </p>
-            </section>
+            </Card>
           </div>
 
-          <section className="card" aria-labelledby="rf-heading">
+          <Card aria-labelledby="rf-heading">
             <div className="section-heading stacked">
               <h2 id="rf-heading">Support &amp; refund actions</h2>
               <p className="small">
@@ -264,9 +265,9 @@ export default async function AdminBookingPage({ params, searchParams }: { param
                 <p>The server caps each refund at what is still refundable and ignores a repeated submission of the same request.</p>
               </div>
             </div>
-          </section>
+          </Card>
 
-          <section className="card" aria-labelledby="ev-heading">
+          <Card aria-labelledby="ev-heading">
             <h2 id="ev-heading">Booking history</h2>
             <ol className="timeline" data-testid="booking-timeline">
               {d.events.map((e, i) => (
@@ -286,7 +287,7 @@ export default async function AdminBookingPage({ params, searchParams }: { param
                 </li>
               ))}
             </ol>
-          </section>
+          </Card>
         </div>
       </div>
     </main>

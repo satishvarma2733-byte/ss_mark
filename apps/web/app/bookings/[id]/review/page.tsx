@@ -4,6 +4,7 @@ import { resolveIdentity } from "../../../../lib/auth/identity";
 import { loadBookingDetail } from "../../../../lib/bookings";
 import { formatVenueDateTime } from "../../../../lib/format";
 import { ReviewForm } from "./review-form";
+import { Card } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -33,11 +34,11 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
         <strong>{booking.venue.name}</strong> · {formatVenueDateTime(booking.start_at)} IST
       </p>
       {booking.review ? (
-        <section className="card" data-testid="review-status">
+        <Card data-testid="review-status">
           <p>{"★".repeat(booking.review.rating)}{"☆".repeat(5 - booking.review.rating)} ({booking.review.rating} of 5)</p>
           {booking.review.body ? <p>{booking.review.body}</p> : null}
           <p className="food-note">{MODERATION[booking.review.moderation_status]}</p>
-        </section>
+        </Card>
       ) : booking.status === "COMPLETED" ? (
         <ReviewForm bookingId={id} />
       ) : (

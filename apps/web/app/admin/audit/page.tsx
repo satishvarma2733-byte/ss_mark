@@ -3,7 +3,7 @@ import { AdminNav } from "../../../lib/admin-nav";
 import { formatVenueDateTime } from "../../../lib/format";
 import { gatePortal, PortalBlocked } from "../../../lib/portal-page";
 import { TableScroll } from "../../../lib/table-scroll";
-import { Badge, EmptyState } from "../../../components/ui";
+import { Badge, Card, EmptyState } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ export default async function AdminAuditPage() {
       <AdminNav roles={gate.me.platform_roles} active="/admin/audit" />
       <h1>Audit log</h1>
       <p className="lede">Append-only record of sensitive platform, booking, payment, and release actions (latest 100 events).</p>
-      <section className="card flush" style={{ marginTop: 16 }}>
+      <Card className="flush" style={{ marginTop: 16 }}>
         {rows.length === 0 ? (
           <EmptyState title="No audit events yet" description="Sensitive operations will appear here automatically." />
         ) : (
@@ -72,7 +72,7 @@ export default async function AdminAuditPage() {
             </table>
           </TableScroll>
         )}
-      </section>
+      </Card>
     </main>
   );
 }

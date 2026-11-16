@@ -7,6 +7,7 @@ import { useState, type FormEvent } from "react";
 import { CalendarDays, ChevronDown, Clock3, LocateFixed, MapPin, Search, SlidersHorizontal, Users } from "lucide-react";
 import { AMENITY_CODES, CATEGORY_CODES, ENVIRONMENT_TAGS, PILOT_AREAS, REQUIREMENT_TAGS, coarseCoordinate } from "@simply-sit/contracts";
 import { tagLabel } from "../lib/labels";
+import { Button } from "../components/ui";
 
 export type SearchCriteria = {
   area?: string;
@@ -184,10 +185,10 @@ export function SearchForm({ initial, showFilters = false }: { initial: SearchCr
           </div>
         </div>
         <div className="search-action">
-          <button className="button" type="submit">
+          <Button type="submit">
             <Search size={18} aria-hidden="true" />
             Find a space
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import { formatInrPaise } from "../../../lib/format";
 import { mockGatewayOrNotFound } from "../../../lib/mock-gateway";
+import { Button, Card } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export default async function MockGatewayConsole() {
         MOCK PAYMENT GATEWAY CONSOLE - TEST MODE - NO MONEY MOVES
       </p>
       <h1>Mock gateway console</h1>
-      <section className="card" aria-labelledby="faults">
+      <Card aria-labelledby="faults">
         <h2 id="faults">Inject a fault</h2>
         <form method="post" action="/mock-gateway/console/action" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           <input type="hidden" name="action" value="faults" />
@@ -33,11 +34,11 @@ export default async function MockGatewayConsole() {
             <option value="unavailable">Provider unavailable (refused)</option>
             <option value="timeout_after_create">Timeout after creating (outcome unknown)</option>
           </select>
-          <button className="button secondary" type="submit">
+          <Button variant="secondary" type="submit">
             Apply
-          </button>
+          </Button>
         </form>
-      </section>
+      </Card>
       <h2>Recent mock payments</h2>
       {payments.length === 0 ? <p className="notice">No mock payments yet.</p> : null}
       <table>
@@ -69,9 +70,9 @@ export default async function MockGatewayConsole() {
                     <form method="post" action="/mock-gateway/console/action" style={{ display: "inline" }}>
                       <input type="hidden" name="action" value="resend" />
                       <input type="hidden" name="event_id" value={w.id} />
-                      <button className="button secondary" type="submit">
+                      <Button variant="secondary" type="submit">
                         Send
-                      </button>
+                      </Button>
                     </form>
                   </div>
                 ))}
@@ -81,9 +82,9 @@ export default async function MockGatewayConsole() {
                   <form method="post" action="/mock-gateway/console/action" style={{ display: "inline" }}>
                     <input type="hidden" name="action" value="capture" />
                     <input type="hidden" name="payment_id" value={p.id} />
-                    <button className="button" type="submit" data-testid={`mock-capture-${p.id}`}>
+                    <Button type="submit" data-testid={`mock-capture-${p.id}`}>
                       Capture now (late)
-                    </button>
+                    </Button>
                   </form>
                 ) : null}
               </td>

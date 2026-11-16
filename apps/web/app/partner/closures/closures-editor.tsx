@@ -10,6 +10,7 @@ import type { VenueOverview } from "../../../lib/partner-types";
 import { conflictsOf, useAction } from "../../../lib/use-action";
 import { TableScroll } from "../../../lib/table-scroll";
 import { Status } from "../inventory/inventory-editor";
+import { Button, ButtonLink, Card } from "../../../components/ui";
 
 export function ClosuresEditor({ overview }: { overview: VenueOverview }) {
   const venueBase = `/api/v1/partner/venues/${overview.venue.id}`;
@@ -102,7 +103,7 @@ export function ClosuresEditor({ overview }: { overview: VenueOverview }) {
                 </p>
               </div>
             </div>
-            <section className="card book-card" aria-labelledby="affected-heading">
+            <Card className="book-card" aria-labelledby="affected-heading">
               <h2 id="affected-heading">Affected bookings</h2>
               <TableScroll label="Affected bookings">
                 <table>
@@ -129,16 +130,16 @@ export function ClosuresEditor({ overview }: { overview: VenueOverview }) {
                 </table>
               </TableScroll>
               <p className="book-note">Paid bookings need the guest’s agreement and a support resolution before any change.</p>
-              <a className="button" href={`/partner?venue=${overview.venue.id}`}>
+              <ButtonLink href={`/partner?venue=${overview.venue.id}`}>
                 Open bookings to resolve
-              </a>
-            </section>
+              </ButtonLink>
+            </Card>
           </>
         ) : null}
       </div>
 
       <div className="book-side">
-        <section className="card book-card" aria-labelledby="apply-heading">
+        <Card className="book-card" aria-labelledby="apply-heading">
           <h2 id="apply-heading">Apply safely</h2>
           <span className={`status-pill ${state === "blocked" ? "danger" : state === "applied" ? "" : "sage"}`}>
             {state === "applied" ? <img src="/design/status-dot-available.svg" alt="" width={5} height={5} /> : null}
@@ -173,13 +174,13 @@ export function ClosuresEditor({ overview }: { overview: VenueOverview }) {
               </div>
             </li>
           </ol>
-          <button className="button" type="submit" form="closure-form" disabled={closure.busy !== null} data-testid="add-closure">
+          <Button type="submit" form="closure-form" disabled={closure.busy !== null} data-testid="add-closure">
             {closure.busy ? "Checking…" : state === "blocked" ? "Check again & apply" : "Check impact & apply closure"}
-          </button>
+          </Button>
           <Status message={conflicts.length > 0 ? null : closure.message} />
-        </section>
+        </Card>
 
-        <section className="card book-card" aria-labelledby="upcoming-heading">
+        <Card className="book-card" aria-labelledby="upcoming-heading">
           <h2 id="upcoming-heading">Upcoming closures</h2>
           {overview.closures.length === 0 ? (
             <p className="book-note">No upcoming closures.</p>
@@ -190,7 +191,7 @@ export function ClosuresEditor({ overview }: { overview: VenueOverview }) {
               ))}
             </ul>
           )}
-        </section>
+        </Card>
       </div>
     </div>
   );

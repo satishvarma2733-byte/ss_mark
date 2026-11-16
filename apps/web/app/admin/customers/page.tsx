@@ -3,7 +3,7 @@ import { AdminNav } from "../../../lib/admin-nav";
 import { formatVenueDateTime } from "../../../lib/format";
 import { gatePortal, PortalBlocked } from "../../../lib/portal-page";
 import { TableScroll } from "../../../lib/table-scroll";
-import { Badge, EmptyState } from "../../../components/ui";
+import { Badge, Card, EmptyState } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +42,7 @@ export default async function AdminCustomersPage() {
       <AdminNav roles={gate.me.platform_roles} active="/admin/customers" />
       <h1>Customer management</h1>
       <p className="lede">Registered profiles, account status, and terms acceptance (latest 100 profiles).</p>
-      <section className="card flush" style={{ marginTop: 16 }}>
+      <Card className="flush" style={{ marginTop: 16 }}>
         {rows.length === 0 ? (
           <EmptyState title="No customer profiles found" description="Customer profiles appear here after sign-in." />
         ) : (
@@ -75,7 +75,7 @@ export default async function AdminCustomersPage() {
             </table>
           </TableScroll>
         )}
-      </section>
+      </Card>
     </main>
   );
 }

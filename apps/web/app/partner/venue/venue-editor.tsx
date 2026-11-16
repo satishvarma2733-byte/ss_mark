@@ -7,6 +7,7 @@ import { AMENITY_CODES, CATEGORY_CODES, ENVIRONMENT_TAGS, REQUIREMENT_TAGS } fro
 import { tagLabel } from "../../../lib/labels";
 import { GAP_LABEL, VENUE_STATUS_LABEL, type VenueOverview } from "../../../lib/partner-types";
 import { useAction, type ActionMessage } from "../../../lib/use-action";
+import { Button, Card } from "../../../components/ui";
 
 function Status({ message }: { message: ActionMessage | null }) {
   return message ? (
@@ -129,7 +130,7 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
 
   return (
     <>
-      <section className="card" aria-labelledby="listing-heading" data-testid="listing-status">
+      <Card aria-labelledby="listing-heading" data-testid="listing-status">
         <h2 id="listing-heading">{v.name}</h2>
         <p>
           <strong>{VENUE_STATUS_LABEL[v.status] ?? v.status}</strong>
@@ -147,14 +148,14 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
               </ul>
             </>
           ) : (
-            <button className="button" type="button" disabled={submit.busy !== null} data-testid="submit-venue"
+            <Button type="button" disabled={submit.busy !== null} data-testid="submit-venue"
               onClick={() => void submit.run("submit", "POST", `${base}/submit`, { expected_version: v.version }, { success: "Sent for review." })}>
               Send for review
-            </button>
+            </Button>
           )
         ) : null}
         <Status message={submit.message} />
-      </section>
+      </Card>
 
       <form className="card" style={{ marginTop: 16 }} onSubmit={(e) => void saveProfile(e)} aria-labelledby="profile-heading">
         <h2 id="profile-heading">Profile</h2>
@@ -186,9 +187,9 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
               <input className="input" inputMode="decimal" value={p.lng} onChange={(e) => setP({ ...p, lng: e.target.value })} />
             </label>
           </div>
-          <button className="button" type="submit" disabled={profile.busy !== null} data-testid="save-profile">
+          <Button type="submit" disabled={profile.busy !== null} data-testid="save-profile">
             Save profile
-          </button>
+          </Button>
         </fieldset>
         <Status message={profile.message} />
       </form>
@@ -235,15 +236,15 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
             </label>
           ))}
           <p className="food-note">Customers keep the rules they accepted when they booked; changes apply to new bookings only.</p>
-          <button className="button" type="submit" disabled={rules.busy !== null} data-testid="save-rules">
+          <Button type="submit" disabled={rules.busy !== null} data-testid="save-rules">
             {live ? "Save draft" : "Save rules"}
-          </button>
+          </Button>
           {live && overview.draft_policy && !overview.draft_policy.submitted_at ? (
-            <button className="button secondary" type="button" disabled={rules.busy !== null} style={{ marginLeft: 8 }}
+            <Button variant="secondary" type="button" disabled={rules.busy !== null} style={{ marginLeft: 8 }}
               onClick={() => void rules.run("submit-policy", "POST", `${base}/policies/${overview.draft_policy!.id}/submit`,
                 { expected_version: overview.draft_policy!.version }, { success: "Sent for review." })}>
               Send rule change for review
-            </button>
+            </Button>
           ) : null}
         </fieldset>
         <Status message={rules.message} />
@@ -285,14 +286,14 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
               ) : null}
             </div>
           ))}
-          <button className="button" type="submit" disabled={catalogue.busy !== null} data-testid="save-catalogue">
+          <Button type="submit" disabled={catalogue.busy !== null} data-testid="save-catalogue">
             Save
-          </button>
+          </Button>
         </fieldset>
         <Status message={catalogue.message} />
       </form>
 
-      <section className="card" style={{ marginTop: 16 }} aria-labelledby="photos-heading">
+      <Card style={{ marginTop: 16 }} aria-labelledby="photos-heading">
         <h2 id="photos-heading">Photos</h2>
         <p className="food-note">JPEG, PNG or WebP up to 5 MB. Photos stay private until Simply Sit approves them.</p>
         {overview.media.length > 0 ? (
@@ -302,10 +303,10 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
                 <img src={`/api/v1/media/${m.id}`} alt={m.alt_text} width={240} height={150} style={{ width: 240, height: 150, objectFit: "cover" }} />
                 <figcaption>
                   {m.status === "APPROVED" ? "Approved" : m.status === "PENDING" ? "Waiting for approval" : "Not approved"} ·{" "}
-                  <button type="button" className="button secondary" disabled={photos.busy !== null}
+                  <Button type="button" variant="secondary" disabled={photos.busy !== null}
                     onClick={() => void photos.run(m.id, "DELETE", `/api/v1/partner/media/${m.id}`, undefined, { success: "Photo removed." })}>
                     Remove
-                  </button>
+                  </Button>
                 </figcaption>
               </figure>
             ))}
@@ -320,12 +321,12 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
             Describe the photo (for screen readers)
             <input className="input" required minLength={3} maxLength={250} value={alt} onChange={(e) => setAlt(e.target.value)} data-testid="photo-alt" />
           </label>
-          <button className="button" type="submit" disabled={!editable || !file} data-testid="photo-upload">
+          <Button type="submit" disabled={!editable || !file} data-testid="photo-upload">
             Upload
-          </button>
+          </Button>
         </form>
         <Status message={uploadState ?? photos.message} />
-      </section>
+      </Card>
     </>
   );
 }

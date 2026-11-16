@@ -4052,17 +4052,17 @@ input[type="radio"] {
     box-shadow var(--dur) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 
-.button:not(.secondary):not(.static) {
+.button:not(.secondary):not(.ghost):not(.static) {
   box-shadow: var(--shadow-xs);
 }
 
-.button:not(.secondary):not(.danger):not(.static):not(:disabled):hover {
+.button:not(.secondary):not(.danger):not(.ghost):not(.static):not(:disabled):hover {
   border-color: var(--brand-primary-hover);
   background: var(--brand-primary-hover);
   box-shadow: 0 6px 16px rgba(79, 90, 63, 0.24);
 }
 
-.button:not(.secondary):not(.danger):not(.static):not(:disabled):active {
+.button:not(.secondary):not(.danger):not(.ghost):not(.static):not(:disabled):active {
   border-color: var(--brand-primary-active);
   background: var(--brand-primary-active);
 }

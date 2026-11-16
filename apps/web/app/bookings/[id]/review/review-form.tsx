@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useAction } from "../../../../lib/use-action";
+import { Button } from "../../../../components/ui";
 
 export function ReviewForm({ bookingId }: { bookingId: string }) {
   const action = useAction();
@@ -29,9 +30,9 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
         data-testid="review-body" />
       <p className="food-note">Please do not include phone numbers or other personal details. Reviews are checked before they appear.</p>
       {action.message ? <p className={`status-${action.message.tone}`} role="status">{action.message.text}</p> : null}
-      <button className="button" type="submit" disabled={action.busy !== null || rating === 0} data-testid="review-submit">
+      <Button type="submit" disabled={action.busy !== null || rating === 0} data-testid="review-submit">
         Send review
-      </button>
+      </Button>
     </form>
   );
 }

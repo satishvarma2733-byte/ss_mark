@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import type { Ticket } from "@simply-sit/contracts";
 import { formatVenueDateTime } from "../../../../lib/format";
 import { useAction } from "../../../../lib/use-action";
+import { Button, Card } from "../../../../components/ui";
 
 export type AdminTicket = Ticket & {
   reporter_role: string; booking_id: string | null; assigned_to_me: boolean; assigned: boolean;
@@ -41,7 +42,7 @@ export function TicketTriage({ ticket }: { ticket: AdminTicket }) {
 
   return (
     <>
-      <section className="card" style={{ marginTop: 16 }} aria-labelledby="notes-heading">
+      <Card style={{ marginTop: 16 }} aria-labelledby="notes-heading">
         <h2 id="notes-heading">Private notes</h2>
         {ticket.notes.length === 0 ? <p className="food-note">No notes yet. Notes are never shown to the reporter.</p> : (
           <ul data-testid="ticket-notes">
@@ -52,7 +53,7 @@ export function TicketTriage({ ticket }: { ticket: AdminTicket }) {
             ))}
           </ul>
         )}
-      </section>
+      </Card>
 
       <form className="card" style={{ marginTop: 16 }} onSubmit={(e) => void save(e)} aria-labelledby="triage-heading">
         <h2 id="triage-heading">Triage</h2>
@@ -92,25 +93,25 @@ export function TicketTriage({ ticket }: { ticket: AdminTicket }) {
         <textarea id="resolution" className="input" rows={3} value={resolution} onChange={(e) => setResolution(e.target.value)} data-testid="ticket-resolution-input" />
         <label htmlFor="note">Private note (support only)</label>
         <textarea id="note" className="input" rows={2} value={note} onChange={(e) => setNote(e.target.value)} data-testid="ticket-note-input" />
-        <button className="button" type="submit" disabled={update.busy !== null} data-testid="ticket-save">
+        <Button type="submit" disabled={update.busy !== null} data-testid="ticket-save">
           Save
-        </button>
+        </Button>
         {update.message ? <p className={`status-${update.message.tone}`} role="status">{update.message.text}</p> : null}
       </form>
 
-      <section className="card" style={{ marginTop: 16 }} aria-labelledby="contact-heading">
+      <Card style={{ marginTop: 16 }} aria-labelledby="contact-heading">
         <h2 id="contact-heading">Contact the reporter</h2>
         {email ? <p data-testid="revealed-email">{email}</p> : (
           <>
             <label htmlFor="reveal-reason">Why do you need their email? (recorded)</label>
             <input id="reveal-reason" className="input" value={reason} onChange={(e) => setReason(e.target.value)} minLength={10} maxLength={500} />
-            <button className="button secondary" type="button" disabled={reveal.busy !== null || reason.trim().length < 10} onClick={() => void revealContact()}>
+            <Button variant="secondary" type="button" disabled={reveal.busy !== null || reason.trim().length < 10} onClick={() => void revealContact()}>
               Show email
-            </button>
+            </Button>
           </>
         )}
         {reveal.message ? <p className={`status-${reveal.message.tone}`} role="status">{reveal.message.text}</p> : null}
-      </section>
+      </Card>
     </>
   );
 }

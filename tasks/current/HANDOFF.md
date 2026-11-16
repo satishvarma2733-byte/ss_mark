@@ -127,3 +127,22 @@ Checks (local Supabase, MOCK providers, database NOT reset): `pnpm test:integrat
 Checks (local Supabase, MOCK providers): `tsc --noEmit` (web) clean; `pnpm lint` clean; `pnpm test:unit` 14 files / 79
 tests; `next build` OK; `npx playwright test` 49/49 passed. A one-off axe contrast run over 30 routes in dark reported
 0 findings (temporary script, deleted). Integration tests not re-run (no database or API code changed).
+
+## Step C - one component system (16 November 2026, web)
+
+Decision: the kit components render the existing, Figma-matched classes in `globals.css` (`.button`, `.card`,
+`.status-pill`, `.chip`) instead of the parallel `ss-btn` look, so pages and kit share one style and the DOM is unchanged.
+
+- `components/ui/button.tsx`: `Button` (variants primary/secondary/ghost/danger, sizes, `block`, `loading`) and new
+  `ButtonLink`; duplicate `.ss-btn*` rules removed from `ui.css`; `.button.sm/.lg/.ghost` added.
+- New `components/ui/layout.tsx` (`Card`, `StatusPill`, `FilterChip`, `Tabs`) and `components/ui/booking.tsx`
+  (`DatePicker`, `TimeSelector`, `QrBookingCard`, `friendlyDate`).
+- Codemod (TypeScript AST, temporary script, deleted) over `app`, `lib`, `components`: 139 cards, 86 buttons,
+  34 button-links, 33 status pills, 10 link chips in 70 files. Native buttons without a `type` got `type="submit"`
+  so form behaviour is unchanged (kit `Button` defaults to `type="button"`).
+- `/bookings/[id]` uses `QrBookingCard`; `/venues/[id]` uses `DatePicker` and `TimeSelector`.
+- Not migrated: `.input` fields (about 99), `.notice` (about 65), status pills with computed class names (about 22),
+  label/checkbox chips, `Tabs` (no adopter yet). Old class rules are still needed by the kit, so none were deleted.
+
+Checks: `tsc --noEmit` (web) clean; `pnpm lint` clean; `pnpm test:unit` 79 passed; `next build` OK;
+`npx playwright test` 49/49 passed. No visual comparison against Figma frames was done for this step.

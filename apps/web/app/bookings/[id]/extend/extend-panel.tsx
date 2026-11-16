@@ -10,6 +10,7 @@ import type { BookingDetail, Extension, PaymentOrderStatus } from "@simply-sit/c
 import { apiCall, newIdempotencyKey } from "../../../../lib/client-api";
 import { formatInrPaise, formatVenueTime } from "../../../../lib/format";
 import { bookingStatusLabel } from "../../../../lib/labels";
+import { Button, ButtonLink, Card, StatusPill } from "../../../../components/ui";
 
 const OPEN = new Set(["REQUESTED", "APPROVED", "HELD", "PENDING_PAYMENT"]);
 
@@ -140,7 +141,7 @@ export function ExtendPanel({ initial }: { initial: BookingDetail }) {
   return (
     <div className="book-layout checkout-layout" data-testid="extend-panel" aria-live="polite">
       <div className="book-main">
-        <section className="card book-card" aria-labelledby="stay-heading">
+        <Card className="book-card" aria-labelledby="stay-heading">
           <h2 id="stay-heading">{booking.status === "CHECKED_IN" ? "Your stay is in progress" : "Your booking"}</h2>
           <span className={`status-pill${booking.status === "CHECKED_IN" ? "" : " neutral"}`}>
             {booking.status === "CHECKED_IN" ? <img src="/design/status-dot-available.svg" alt="" width={5} height={5} /> : null}
@@ -169,10 +170,10 @@ export function ExtendPanel({ initial }: { initial: BookingDetail }) {
               Extended by {ext.additional_minutes} minutes. Payment verified.
             </p>
           ) : null}
-        </section>
+        </Card>
 
         {eligible && !open && choices.length > 0 ? (
-          <section className="card book-card" aria-labelledby="choose-heading">
+          <Card className="book-card" aria-labelledby="choose-heading">
             <h2 id="choose-heading">Choose extra time</h2>
             <fieldset className="choice-radios" data-testid="ext-minutes">
               <legend className="visually-hidden">Extra time</legend>
@@ -202,10 +203,10 @@ export function ExtendPanel({ initial }: { initial: BookingDetail }) {
                 <p>The full {buffer}-minute cleaning buffer must fit before the next booking on this table. Extensions never move the next stay.</p>
               </div>
             </div>
-          </section>
+          </Card>
         ) : null}
 
-        <section className="card book-card" aria-labelledby="timeline-heading">
+        <Card className="book-card" aria-labelledby="timeline-heading">
           <h2 id="timeline-heading">Before your end time</h2>
           <ol className="stay-timeline">
             <li>
@@ -238,15 +239,15 @@ export function ExtendPanel({ initial }: { initial: BookingDetail }) {
               </div>
             </li>
           </ol>
-          <a className="button secondary" href="/help">
+          <ButtonLink variant="secondary" href="/help">
             Contact venue / Get help
-          </a>
-        </section>
+          </ButtonLink>
+        </Card>
       </div>
 
       <div className="book-side">
         {eligible || open ? (
-          <section className="card book-card" aria-labelledby="more-heading">
+          <Card className="book-card" aria-labelledby="more-heading">
             <h2 id="more-heading">{shownMinutes} minutes more</h2>
             <dl className="detail-rows">
               <div>
@@ -263,10 +264,10 @@ export function ExtendPanel({ initial }: { initial: BookingDetail }) {
             <p className="field-hint">
               {open ? "Price set by the venue for this request." : "Estimate from your booked rate. The venue confirms the exact price when it answers."}
             </p>
-          </section>
+          </Card>
         ) : null}
 
-        <section className="card book-card" aria-labelledby="review-heading">
+        <Card className="book-card" aria-labelledby="review-heading">
           <h2 id="review-heading">Review your extension</h2>
           {eligible || open ? (
             <dl className="detail-rows">
@@ -301,16 +302,16 @@ export function ExtendPanel({ initial }: { initial: BookingDetail }) {
 
           {ext?.status === "APPROVED" ? (
             <div className="ext-state" data-testid="ext-approved">
-              <span className="status-pill">
+              <StatusPill>
                 <img src="/design/status-dot-available.svg" alt="" width={5} height={5} />
                 Approved · confirm availability and pay
-              </span>
+              </StatusPill>
               <p className="book-when">
                 Confirm within <strong role="timer" aria-live="off">{mmss(remaining(ext.approval_expires_at, serverNow))}</strong>.
               </p>
-              <button className="button" type="button" disabled={busy !== null} aria-busy={busy === "pay"} onClick={() => void holdAndPay()} data-testid="ext-pay">
+              <Button type="button" disabled={busy !== null} aria-busy={busy === "pay"} onClick={() => void holdAndPay()} data-testid="ext-pay">
                 {busy === "pay" ? "Checking availability…" : `Check availability & pay ${formatInrPaise(acceptedPrice ?? ext.amount_paise)}`}
-              </button>
+              </Button>
             </div>
           ) : null}
 
@@ -320,9 +321,9 @@ export function ExtendPanel({ initial }: { initial: BookingDetail }) {
                 The extra time is held for you for <strong role="timer" aria-live="off">{mmss(remaining(ext.hold_expires_at, serverNow))}</strong>.
                 {ext.status === "PENDING_PAYMENT" ? " A payment may already be in progress." : ""}
               </p>
-              <button className="button" type="button" disabled={busy !== null} onClick={() => { setBusy("pay"); void payFor(ext); }} data-testid="ext-pay-held">
+              <Button type="button" disabled={busy !== null} onClick={() => { setBusy("pay"); void payFor(ext); }} data-testid="ext-pay-held">
                 Pay {formatInrPaise(ext.amount_paise)}
-              </button>
+              </Button>
             </div>
           ) : null}
 
@@ -334,18 +335,18 @@ export function ExtendPanel({ initial }: { initial: BookingDetail }) {
           ) : null}
 
           {open ? (
-            <button className="button secondary" type="button" disabled={busy !== null} onClick={() => void cancel()}>
+            <Button variant="secondary" type="button" disabled={busy !== null} onClick={() => void cancel()}>
               Withdraw request
-            </button>
+            </Button>
           ) : eligible && choices.length > 0 ? (
             <>
               <label className="check-row">
                 <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
                 <span>I understand the venue confirms the price, and my end time changes only after a verified payment.</span>
               </label>
-              <button className="button" type="button" disabled={busy !== null || !accepted} onClick={() => void request()} data-testid="ext-request">
+              <Button type="button" disabled={busy !== null || !accepted} onClick={() => void request()} data-testid="ext-request">
                 {busy === "request" ? "Asking the venue…" : `Ask the venue for ${minutes} minutes`}
-              </button>
+              </Button>
               <p className="field-hint">
                 The venue answers within five minutes. Then we check the next interval, hold it briefly and verify payment before changing your end time.
               </p>
@@ -364,10 +365,10 @@ export function ExtendPanel({ initial }: { initial: BookingDetail }) {
               {message.text}
             </p>
           ) : null}
-          <a className="button secondary" href={`/bookings/${booking.booking_id}`}>
+          <ButtonLink variant="secondary" href={`/bookings/${booking.booking_id}`}>
             Keep original {formatVenueTime(booking.end_at, tz)} end
-          </a>
-        </section>
+          </ButtonLink>
+        </Card>
       </div>
     </div>
   );

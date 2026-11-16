@@ -6,6 +6,7 @@ import { formatInrPaise, venueLocalDate } from "../../../lib/format";
 import { gatePortal, PortalBlocked } from "../../../lib/portal-page";
 import { AdminNav } from "../../../lib/admin-nav";
 import { TableScroll } from "../../../lib/table-scroll";
+import { Button, Card, StatusPill } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -90,36 +91,36 @@ export default async function AdminMetricsPage({ searchParams }: { searchParams:
           </p>
         </div>
         {venueId ? <input type="hidden" name="venue_id" value={venueId} /> : null}
-        <button className="button secondary" type="submit">
+        <Button variant="secondary" type="submit">
           Show
-        </button>
+        </Button>
       </form>
       {problem ? <p className="book-when status-error" role="alert">{problem}</p> : null}
       {m ? (
         <div className="partner-layout">
           <div className="book-main">
           <div className="panel-row">
-            <section className="card book-card" aria-labelledby="k1">
+            <Card className="book-card" aria-labelledby="k1">
               <h2 id="k1">Paid bookings</h2>
               <p className="kpi-figure">{m.funnel.paid}</p>
               <p className="book-note">Of {m.funnel.holds} holds created in the period.</p>
-            </section>
-            <section className="card book-card" aria-labelledby="k2">
+            </Card>
+            <Card className="book-card" aria-labelledby="k2">
               <h2 id="k2">Paid occupancy</h2>
               <p className="kpi-figure">{pct(m.occupancy.booked_minutes, m.occupancy.open_minutes)}</p>
               <p className="book-note">
                 {Math.round(m.occupancy.booked_minutes / 60)} of {Math.round(m.occupancy.open_minutes / 60)} table-hours.
               </p>
-            </section>
-            <section className="card book-card" aria-labelledby="k3">
+            </Card>
+            <Card className="book-card" aria-labelledby="k3">
               <h2 id="k3">Repeat customers</h2>
               <p className="kpi-figure">{pct(m.repeat.repeat_customers, m.repeat.customers)}</p>
               <p className="book-note">
                 {m.repeat.repeat_customers} of {m.repeat.customers} customers.
               </p>
-            </section>
+            </Card>
           </div>
-          <section className="card book-card" aria-labelledby="funnel-heading" data-testid="metrics-funnel">
+          <Card className="book-card" aria-labelledby="funnel-heading" data-testid="metrics-funnel">
             <h2 id="funnel-heading">Bookings</h2>
             <KpiTable label="Metric definitions">
               <Metric label="Conversion" value={`${pct(m.funnel.paid, m.funnel.holds)} (${m.funnel.paid} of ${m.funnel.holds} holds)`}
@@ -134,8 +135,8 @@ export default async function AdminMetricsPage({ searchParams }: { searchParams:
               <Metric label="Repeat customers" value={`${pct(m.repeat.repeat_customers, m.repeat.customers)} (${m.repeat.repeat_customers} of ${m.repeat.customers})`}
                 definition={METRIC_DEFINITIONS.repeat} />
             </KpiTable>
-          </section>
-          <section className="card book-card" aria-labelledby="rel-heading">
+          </Card>
+          <Card className="book-card" aria-labelledby="rel-heading">
             <h2 id="rel-heading">Reliability</h2>
             <KpiTable label="Metric definitions">
               <Metric label="Extensions decided in time"
@@ -148,9 +149,9 @@ export default async function AdminMetricsPage({ searchParams }: { searchParams:
                 definition={METRIC_DEFINITIONS.check_in_failures} />
               <Metric label="End reminders" value={String(m.reliability.end_reminders)} definition={METRIC_DEFINITIONS.end_reminders} />
             </KpiTable>
-          </section>
+          </Card>
           {m.finance ? (
-            <section className="card book-card" aria-labelledby="money-heading" data-testid="metrics-finance">
+            <Card className="book-card" aria-labelledby="money-heading" data-testid="metrics-finance">
               <h2 id="money-heading">Money</h2>
               {m.finance.reconciliation !== "MATCHED" ? (
                 <p className="book-when status-warning" role="note">
@@ -165,18 +166,18 @@ export default async function AdminMetricsPage({ searchParams }: { searchParams:
                   definition={METRIC_DEFINITIONS.earned} />
                 <Metric label="Reconciliation" value={m.finance.reconciliation.toLowerCase()} definition={METRIC_DEFINITIONS.reconciliation} />
               </KpiTable>
-            </section>
+            </Card>
           ) : null}
           </div>
           <div className="book-side">
-            <section className="card book-card" aria-labelledby="export-heading">
+            <Card className="book-card" aria-labelledby="export-heading">
               <h2 id="export-heading">Exports</h2>
-              <span className="status-pill sage">Aggregates only · No personal data</span>
+              <StatusPill tone="sage">Aggregates only · No personal data</StatusPill>
               <p className="book-when">
                 Partner statements export as CSV from each venue’s earnings page. A marketplace-wide export is not available yet.
               </p>
               <p className="field-hint">Any future export will be permission-checked, logged and limited to masked identifiers.</p>
-            </section>
+            </Card>
             <div className="notice info">
               <Info size={20} aria-hidden="true" />
               <div>

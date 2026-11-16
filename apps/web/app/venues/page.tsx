@@ -6,6 +6,7 @@ import { FOOD_RULE_LABEL, formatInrPaise, istInstant } from "../../lib/format";
 import { runVenueSearch } from "../../lib/search";
 import { tagLabel } from "../../lib/labels";
 import { SearchForm, type SearchCriteria } from "../search-form";
+import { FilterChip } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -236,25 +237,25 @@ export default async function VenuesPage({ searchParams }: { searchParams: Searc
       {/* Figma "Discovery filters": venue-type chips apply at once; the view switch sits on the right. */}
       <div className="discovery-filters">
         <nav aria-label="Venue type" className="chips">
-          <a className="chip" href={withParams(criteria, { category: undefined, cursor: undefined })} aria-current={selectedCategories.length === 0 ? "true" : undefined}>
+          <FilterChip href={withParams(criteria, { category: undefined, cursor: undefined })} aria-current={selectedCategories.length === 0 ? "true" : undefined}>
             All spaces
-          </a>
+          </FilterChip>
           {CATEGORY_CODES.map((code) => (
-            <a key={code} className="chip" href={withParams(criteria, { category: code, cursor: undefined })}
+            <FilterChip key={code} href={withParams(criteria, { category: code, cursor: undefined })}
               aria-current={selectedCategories.length === 1 && selectedCategories[0] === code ? "true" : undefined}>
               {tagLabel(code)}
-            </a>
+            </FilterChip>
           ))}
         </nav>
         <nav aria-label="Result view" className="chips">
-          <a className="chip" href={withParams(criteria, { view: "list", cursor: undefined })} aria-current={view === "list" ? "page" : undefined}>
+          <FilterChip href={withParams(criteria, { view: "list", cursor: undefined })} aria-current={view === "list" ? "page" : undefined}>
             <List size={15} aria-hidden="true" />
             List
-          </a>
-          <a className="chip" href={withParams(criteria, { view: "map", cursor: undefined })} aria-current={view === "map" ? "page" : undefined}>
+          </FilterChip>
+          <FilterChip href={withParams(criteria, { view: "map", cursor: undefined })} aria-current={view === "map" ? "page" : undefined}>
             <MapIcon size={15} aria-hidden="true" />
             List + map
-          </a>
+          </FilterChip>
         </nav>
       </div>
 
@@ -368,9 +369,9 @@ export default async function VenuesPage({ searchParams }: { searchParams: Searc
             </ol>
             {result.next_cursor ? (
               <nav className="pagination" aria-label="More results">
-                <a className="chip" href={withParams(criteria, { cursor: result.next_cursor })}>
+                <FilterChip href={withParams(criteria, { cursor: result.next_cursor })}>
                   More results →
-                </a>
+                </FilterChip>
               </nav>
             ) : null}
           </section>

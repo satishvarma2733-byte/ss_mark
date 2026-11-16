@@ -6,6 +6,7 @@ import { resolveIdentity } from "../../lib/auth/identity";
 import { formatInrPaise, formatVenueTime } from "../../lib/format";
 import { bookingStatusLabel } from "../../lib/labels";
 import { longDate } from "../../components/booking-parts";
+import { Button, ButtonLink, Card, StatusPill } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -103,7 +104,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                 const cancellable = b.status === "CONFIRMED" && Date.parse(b.server_now) < Date.parse(b.start_at);
                 return (
                   <li key={b.booking_id}>
-                    <article className="card book-card" data-testid="booking-card" aria-labelledby={`b-${b.booking_id}`}>
+                    <Card className="book-card" as="article" data-testid="booking-card" aria-labelledby={`b-${b.booking_id}`}>
                       <h2 id={`b-${b.booking_id}`}>
                         {GROUP_LABEL[kind]} · {b.venue.name}
                       </h2>
@@ -113,7 +114,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                           {bookingStatusLabel(b.status, b.hold_active)}
                           {b.status === "COMPLETED" && !b.review ? " · Eligible for review" : ""}
                         </span>
-                        {b.venue.is_synthetic ? <span className="status-pill neutral">Synthetic demo</span> : null}
+                        {b.venue.is_synthetic ? <StatusPill tone="neutral">Synthetic demo</StatusPill> : null}
                       </div>
                       <p className="book-when">
                         {b.public_ref} · {b.table.label} · {b.party_size} {b.party_size === 1 ? "guest" : "guests"}
@@ -145,29 +146,29 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                       </dl>
                       <div className="action-row">
                         {holding ? (
-                          <a className="button" href={href}>
+                          <ButtonLink href={href}>
                             Continue to payment
-                          </a>
+                          </ButtonLink>
                         ) : kind === "upcoming" ? (
                           <>
-                            <a className="button" href={href}>
+                            <ButtonLink href={href}>
                               Open booking pass
-                            </a>
-                            <a className="button secondary" href={href}>
+                            </ButtonLink>
+                            <ButtonLink variant="secondary" href={href}>
                               Receipt
-                            </a>
+                            </ButtonLink>
                             {cancellable ? (
-                              <a className="button secondary" href={`/bookings/${b.booking_id}/cancel`}>
+                              <ButtonLink variant="secondary" href={`/bookings/${b.booking_id}/cancel`}>
                                 Manage booking
-                              </a>
+                              </ButtonLink>
                             ) : null}
                           </>
                         ) : kind === "completed" ? (
                           <>
                             {b.status === "COMPLETED" ? (
-                              <a className="button" href={`/bookings/${b.booking_id}/review`}>
+                              <ButtonLink href={`/bookings/${b.booking_id}/review`}>
                                 {b.review ? "View review" : "Write a review"}
-                              </a>
+                              </ButtonLink>
                             ) : null}
                             <a className={`button${b.status === "COMPLETED" ? " secondary" : ""}`} href={href}>
                               Receipt
@@ -175,13 +176,13 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                           </>
                         ) : (
                           <>
-                            <a className="button secondary" href={href}>
+                            <ButtonLink variant="secondary" href={href}>
                               {refund ? "Track refund" : "View booking"}
-                            </a>
+                            </ButtonLink>
                           </>
                         )}
                       </div>
-                    </article>
+                    </Card>
                   </li>
                 );
               })}
@@ -212,9 +213,9 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
                 ))}
               </select>
             </div>
-            <button className="button secondary" type="submit">
+            <Button variant="secondary" type="submit">
               Apply filters
-            </button>
+            </Button>
           </form>
           <div className="notice info">
             <Info size={20} aria-hidden="true" />
@@ -223,13 +224,13 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
               <p>A booking pass, a completed stay and a refund status have different purposes. A pending refund is not money credited yet.</p>
             </div>
           </div>
-          <section className="card book-card" aria-labelledby="hand-heading">
+          <Card className="book-card" aria-labelledby="hand-heading">
             <h2 id="hand-heading">Need a hand?</h2>
             <p className="book-when">Open a booking to raise a linked support case. Your booking ID helps us investigate without asking for payment details.</p>
-            <a className="button secondary" href="/help">
+            <ButtonLink variant="secondary" href="/help">
               Open support centre
-            </a>
-          </section>
+            </ButtonLink>
+          </Card>
         </aside>
       </div>
     </main>

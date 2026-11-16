@@ -4,6 +4,7 @@ import { resolveIdentity } from "../../../../lib/auth/identity";
 import { loadBookingDetail } from "../../../../lib/bookings";
 import { longDate } from "../../../../components/booking-parts";
 import { ExtendPanel } from "./extend-panel";
+import { StatusPill } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export default async function ExtendPage({ params }: { params: Promise<{ id: str
       </div>
       {booking.venue.is_synthetic ? (
         <div className="pill-row">
-          <span className="status-pill neutral">Synthetic demo booking · mock payment, no real charge</span>
+          <StatusPill tone="neutral">Synthetic demo booking · mock payment, no real charge</StatusPill>
         </div>
       ) : null}
       <ExtendPanel initial={booking} />

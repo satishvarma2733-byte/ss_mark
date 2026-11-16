@@ -5,6 +5,7 @@ import { formatInrPaise, venueLocalDate } from "../../lib/format";
 import { PortalBlocked, gatePortal } from "../../lib/portal-page";
 import { TableScroll } from "../../lib/table-scroll";
 import { AdminNav } from "../../lib/admin-nav";
+import { ButtonLink, Card, FilterChip, StatusPill } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -111,10 +112,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             <MapPin size={18} aria-hidden="true" />
             Bengaluru
           </span>
-          <a className="button" href={`/admin/metrics?from=${today}&to=${today}`}>
+          <ButtonLink href={`/admin/metrics?from=${today}&to=${today}`}>
             <CalendarDays size={18} aria-hidden="true" />
             Today · {dayLabel(today)}
-          </a>
+          </ButtonLink>
         </div>
       </div>
 
@@ -178,7 +179,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       </section>
 
       <div className="ops-columns wide-side">
-        <section className="card" aria-labelledby="trend-heading">
+        <Card aria-labelledby="trend-heading">
           <div className="section-heading">
             <div className="stacked-copy">
               <h2 id="trend-heading">A week of good hours</h2>
@@ -207,9 +208,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               </li>
             ))}
           </ol>
-        </section>
+        </Card>
 
-        <section className="card" aria-labelledby="health-heading">
+        <Card aria-labelledby="health-heading">
           <h2 id="health-heading">Keep the day moving</h2>
           <dl className="detail-rows">
             {operations ? (
@@ -236,10 +237,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             </div>
           </dl>
           <hr />
-          <span className="status-pill">
+          <StatusPill>
             <img src="/design/status-dot-available.svg" alt="" width={5} height={5} />
             Overlapping reservations blocked by the database
-          </span>
+          </StatusPill>
           <p className="fine-print">Availability checks include holds, closures and cleaning; a database constraint rejects any overlap.</p>
           {tickets && urgent > 0 ? (
             <div className="notice warm">
@@ -252,11 +253,11 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               </div>
             </div>
           ) : null}
-        </section>
+        </Card>
       </div>
 
       {operations ? (
-        <section className="card flush" aria-labelledby="queue-heading">
+        <Card className="flush" aria-labelledby="queue-heading">
           <div className="card-section">
             <div className="section-heading">
               <h2 id="queue-heading">Your operational queue</h2>
@@ -265,15 +266,15 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               </a>
             </div>
             <nav className="chips" aria-label="Queue">
-              <a className="chip" href="/admin" aria-current={queueFilter === "all" ? "true" : undefined}>
+              <FilterChip href="/admin" aria-current={queueFilter === "all" ? "true" : undefined}>
                 Priority items · {queue.length}
-              </a>
-              <a className="chip" href="/admin?queue=review" aria-current={queueFilter === "review" ? "true" : undefined}>
+              </FilterChip>
+              <FilterChip href="/admin?queue=review" aria-current={queueFilter === "review" ? "true" : undefined}>
                 Partner review · {reviews.length}
-              </a>
-              <a className="chip" href="/admin?queue=support" aria-current={queueFilter === "support" ? "true" : undefined}>
+              </FilterChip>
+              <FilterChip href="/admin?queue=support" aria-current={queueFilter === "support" ? "true" : undefined}>
                 Support · {openTickets.length}
-              </a>
+              </FilterChip>
             </nav>
           </div>
           {shownQueue.length === 0 ? (
@@ -315,11 +316,11 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           {tickets && tickets.restricted_count > 0 ? (
             <p className="table-footer">{tickets.restricted_count} confidential tickets are counted but not shown.</p>
           ) : null}
-        </section>
+        </Card>
       ) : null}
 
       {metrics ? (
-        <section className="card" aria-labelledby="q-heading" data-testid="queue-metrics">
+        <Card aria-labelledby="q-heading" data-testid="queue-metrics">
           <h2 id="q-heading">Background work</h2>
           <dl className="detail-rows">
             <div>
@@ -355,7 +356,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               ))}
             </ul>
           )}
-        </section>
+        </Card>
       ) : null}
 
       <p className="fine-print">

@@ -10,6 +10,7 @@ import { cancellationPolicySummary, type BookingDetail, type PaymentOrderStatus 
 import { apiCall, newIdempotencyKey } from "../../../lib/client-api";
 import { FOOD_RULE_LABEL, formatInrPaise, formatVenueTime } from "../../../lib/format";
 import { PriceSummary, VenueIdentity, longDate } from "../../../components/booking-parts";
+import { Button, ButtonLink, Card, StatusPill } from "../../../components/ui";
 
 export function CheckoutPanel({ initial, photo }: { initial: BookingDetail; photo: { id: string; alt_text: string } | null }) {
   const [booking, setBooking] = useState(initial);
@@ -125,7 +126,7 @@ export function CheckoutPanel({ initial, photo }: { initial: BookingDetail; phot
 
       <div className="book-layout checkout-layout">
         <div className="book-main">
-          <section className="card book-card" aria-label="Booking">
+          <Card className="book-card" aria-label="Booking">
             <VenueIdentity photo={photo} venueName={booking.venue.name} detail={`${booking.table.label} · ${guests}`} reference={booking.public_ref} />
             <hr />
             <p className="book-when">{when}</p>
@@ -133,9 +134,9 @@ export function CheckoutPanel({ initial, photo }: { initial: BookingDetail; phot
               {holdLive ? <img src="/design/status-dot-brand.svg" alt="" width={5} height={5} /> : null}
               {holdLive ? "On hold · Payment required" : booking.status === "CANCELLED" ? "Released" : "Hold ended"}
             </span>
-          </section>
+          </Card>
 
-          <section className="card book-card" aria-labelledby="method-heading">
+          <Card className="book-card" aria-labelledby="method-heading">
             <h2 id="method-heading">How you can pay</h2>
             <ul className="choice-pills" aria-label="Payment methods offered on the secure payment page">
               <li className="choice-pill">UPI</li>
@@ -152,9 +153,9 @@ export function CheckoutPanel({ initial, photo }: { initial: BookingDetail; phot
                 <p>We check the provider’s response before a booking pass is issued. A debit alone does not reserve your table.</p>
               </div>
             </div>
-          </section>
+          </Card>
 
-          <section className="card book-card" aria-labelledby="know-heading">
+          <Card className="book-card" aria-labelledby="know-heading">
             <h2 id="know-heading">Know before you book</h2>
             <p className="book-when">{cancellationPolicySummary(policy)}</p>
             <p className="book-when">
@@ -163,19 +164,19 @@ export function CheckoutPanel({ initial, photo }: { initial: BookingDetail; phot
             </p>
             <p className="book-when">✓ You accepted these rules (version {policy.policy_version}) when you held the table.</p>
             <p className="field-hint">The accepted price and policy version are saved with this booking.</p>
-          </section>
+          </Card>
         </div>
 
         <div className="book-side">
-          <section className="card book-card" aria-labelledby="summary-heading">
+          <Card className="book-card" aria-labelledby="summary-heading">
             <h2 id="summary-heading">Payment summary</h2>
-            <span className="status-pill neutral">Mock payment provider · test mode, no real charge</span>
+            <StatusPill tone="neutral">Mock payment provider · test mode, no real charge</StatusPill>
             <PriceSummary price={booking.price_snapshot} totalPaise={booking.total_paise} />
             <p className="field-hint">No tax rate is approved yet. Refreshments are optional and paid at the venue.</p>
-          </section>
+          </Card>
 
           {holdLive ? (
-            <section className="card book-card" aria-labelledby="pay-heading">
+            <Card className="book-card" aria-labelledby="pay-heading">
               <h2 id="pay-heading">Pay securely</h2>
               <p className="book-when">
                 {booking.venue.name} · {booking.table.label}
@@ -191,19 +192,19 @@ export function CheckoutPanel({ initial, photo }: { initial: BookingDetail; phot
               {booking.payment?.payment_state === "FAILED" ? (
                 <p className="status-warning">The last payment attempt failed. You can try again while the table is held.</p>
               ) : null}
-              <button className="button" type="button" onClick={() => void pay()} disabled={busy !== null} aria-busy={busy === "pay"} data-testid="pay">
+              <Button type="button" onClick={() => void pay()} disabled={busy !== null} aria-busy={busy === "pay"} data-testid="pay">
                 {busy === "pay" ? "Opening payment…" : `Pay ${total} securely`}
-              </button>
+              </Button>
               <p className="field-hint">
                 Your booking is confirmed only after a verified payment. If an attempt fails, you can retry while the table is still held.
               </p>
-              <a className="button secondary" href={`/venues/${booking.venue.slug}`}>
+              <ButtonLink variant="secondary" href={`/venues/${booking.venue.slug}`}>
                 Edit table or time
-              </a>
-              <button className="button secondary" type="button" onClick={() => void cancel()} disabled={busy !== null} data-testid="cancel-hold">
+              </ButtonLink>
+              <Button variant="secondary" type="button" onClick={() => void cancel()} disabled={busy !== null} data-testid="cancel-hold">
                 {busy === "cancel" ? "Releasing…" : "Release this table"}
-              </button>
-            </section>
+              </Button>
+            </Card>
           ) : null}
 
           {message ? (

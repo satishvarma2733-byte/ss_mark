@@ -5,6 +5,7 @@ import { gatePortal, PortalBlocked } from "../../../lib/portal-page";
 import { TableScroll } from "../../../lib/table-scroll";
 import { AdminNav } from "../../../lib/admin-nav";
 import { ModerateButtons } from "./moderate-buttons";
+import { Card, StatusPill } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
         </ul>
       </nav>
 
-      <section className="card book-card page-lede" aria-labelledby="queue-heading">
+      <Card className="book-card page-lede" aria-labelledby="queue-heading">
         <h2 id="queue-heading">{STATUSES.find(([s]) => s === status)![1]} · completed-stay reviews</h2>
         {rows.length === 0 ? (
           <p className="book-note">Nothing here.</p>
@@ -78,17 +79,17 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
             </table>
           </TableScroll>
         )}
-      </section>
+      </Card>
 
       {selected ? (
         <div className="partner-layout">
           <div className="book-main">
-            <section className="card book-card" aria-labelledby="selected-heading">
+            <Card className="book-card" aria-labelledby="selected-heading">
               <h2 id="selected-heading">Selected review · {shortId(selected.review_id)}</h2>
-              <span className="status-pill">
+              <StatusPill>
                 <img src="/design/status-dot-available.svg" alt="" width={5} height={5} />
                 Completed stay verified
-              </span>
+              </StatusPill>
               <p className="book-when">
                 {selected.venue_name} · submitted {formatVenueDateTime(selected.created_at)} IST
               </p>
@@ -97,7 +98,7 @@ export default async function AdminReviewsPage({ searchParams }: { searchParams:
               </p>
               <p className="book-when">{selected.body ? `“${selected.body}”` : "No text — rating only."}</p>
               {selected.moderation_reason ? <p className="book-note">Last decision reason: {selected.moderation_reason}</p> : null}
-            </section>
+            </Card>
             <div className="notice info">
               <Info size={20} aria-hidden="true" />
               <div>

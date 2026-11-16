@@ -4,6 +4,7 @@
 import { useState, type FormEvent } from "react";
 import { TICKET_CATEGORIES, TICKET_CATEGORY_LABEL, type Ticket } from "@simply-sit/contracts";
 import { useAction } from "../../lib/use-action";
+import { Button } from "../../components/ui";
 
 export function SupportForm({ bookings }: { bookings: { id: string; label: string }[] }) {
   const action = useAction();
@@ -70,9 +71,9 @@ export function SupportForm({ bookings }: { bookings: { id: string; label: strin
           {action.message.text}
         </p>
       ) : null}
-      <button className="button" type="submit" disabled={action.busy !== null} data-testid="ticket-submit">
+      <Button type="submit" disabled={action.busy !== null} data-testid="ticket-submit">
         {action.busy ? "Sending…" : "Submit support ticket"}
-      </button>
+      </Button>
     </form>
   );
 }

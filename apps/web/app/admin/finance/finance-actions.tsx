@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAction } from "../../../lib/use-action";
+import { Button } from "../../../components/ui";
 
 // datetime-local values are the admin's local time; the API takes ISO instants with an offset.
 const toIso = (local: string) => new Date(local).toISOString();
@@ -37,9 +38,9 @@ export function ReconcileForm() {
         To
         <input className="input" type="datetime-local" step={1} value={to} onChange={(e) => setTo(e.target.value)} data-testid="reconcile-to" required />
       </label>
-      <button className="button" type="submit" disabled={action.busy !== null} data-testid="reconcile-run">
+      <Button type="submit" disabled={action.busy !== null} data-testid="reconcile-run">
         {action.busy ? "Reconciling..." : "Run reconciliation"}
-      </button>
+      </Button>
       {result ? <span className="status-success" role="status" data-testid="reconcile-result">{result}</span> : null}
       <Message message={action.message} />
     </form>
@@ -50,11 +51,11 @@ export function DraftPayoutButton({ partnerId }: { partnerId: string }) {
   const action = useAction();
   return (
     <span className="inline-form">
-      <button className="button secondary" type="button" disabled={action.busy !== null} data-testid={`draft-payout-${partnerId}`}
+      <Button variant="secondary" type="button" disabled={action.busy !== null} data-testid={`draft-payout-${partnerId}`}
         onClick={() => void action.run("draft", "POST", "/api/v1/admin/payout-batches", { partner_id: partnerId },
           { idempotent: true, success: "Payout drafted." })}>
         Draft payout
-      </button>
+      </Button>
       <Message message={action.message} />
     </span>
   );
@@ -74,11 +75,11 @@ export function PayoutActions({ batchId, status, version, createdByMe }: { batch
         createdByMe ? (
           <span className="food-note">Another finance person must approve this draft.</span>
         ) : (
-          <button className="button" type="button" disabled={busy} data-testid={`approve-payout-${batchId}`}
+          <Button type="button" disabled={busy} data-testid={`approve-payout-${batchId}`}
             onClick={() => void action.run("approve", "POST", `/api/v1/admin/payout-batches/${batchId}/approve`, { expected_version: version },
               { idempotent: true, success: "Approved." })}>
             Approve
-          </button>
+          </Button>
         )
       ) : null}
       {status === "APPROVED" || status === "PROCESSING" ? (
@@ -89,15 +90,15 @@ export function PayoutActions({ batchId, status, version, createdByMe }: { batch
               data-testid={`payout-reference-${batchId}`} />
           </label>
           {status === "APPROVED" ? (
-            <button className="button secondary" type="button" disabled={busy}
+            <Button variant="secondary" type="button" disabled={busy}
               onClick={() => mark("PROCESSING", reference.trim() ? { reference: reference.trim() } : {}, "Marked as processing.")}>
               Transfer started
-            </button>
+            </Button>
           ) : null}
-          <button className="button" type="button" disabled={busy || reference.trim().length < 6} data-testid={`mark-paid-${batchId}`}
+          <Button type="button" disabled={busy || reference.trim().length < 6} data-testid={`mark-paid-${batchId}`}
             onClick={() => mark("PAID", { reference: reference.trim() }, "Marked as paid.")}>
             Mark paid
-          </button>
+          </Button>
         </>
       ) : null}
       {status === "DRAFT" || status === "APPROVED" || status === "PROCESSING" ? (
@@ -106,11 +107,11 @@ export function PayoutActions({ batchId, status, version, createdByMe }: { batch
             Reason
             <input className="input" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} />
           </label>
-          <button className="button secondary" type="button" disabled={busy || reason.trim().length < 3}
+          <Button variant="secondary" type="button" disabled={busy || reason.trim().length < 3}
             onClick={() => mark(status === "DRAFT" ? "CANCELLED" : "FAILED", { reason: reason.trim() },
                                 status === "DRAFT" ? "Draft cancelled." : "Marked as failed; the amounts are available again.")}>
             {status === "DRAFT" ? "Cancel draft" : "Mark failed"}
-          </button>
+          </Button>
         </>
       ) : null}
       <Message message={action.message} />
@@ -150,9 +151,9 @@ export function FeeConfigForm() {
         Effective from (must be in the future)
         <input className="input" type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} data-testid="fee-from" required />
       </label>
-      <button className="button" type="submit" disabled={!valid || action.busy !== null} data-testid="fee-submit">
+      <Button type="submit" disabled={!valid || action.busy !== null} data-testid="fee-submit">
         Save draft
-      </button>
+      </Button>
       <Message message={action.message} />
     </form>
   );
@@ -162,11 +163,11 @@ export function ApproveFeeButton({ feeConfigId, version }: { feeConfigId: string
   const action = useAction();
   return (
     <span className="inline-form">
-      <button className="button secondary" type="button" disabled={action.busy !== null} data-testid={`approve-fee-${feeConfigId}`}
+      <Button variant="secondary" type="button" disabled={action.busy !== null} data-testid={`approve-fee-${feeConfigId}`}
         onClick={() => void action.run("approve", "POST", `/api/v1/admin/fee-configurations/${feeConfigId}/approve`, { expected_version: version },
           { idempotent: true, success: "Approved." })}>
         Approve
-      </button>
+      </Button>
       <Message message={action.message} />
     </span>
   );

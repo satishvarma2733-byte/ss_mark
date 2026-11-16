@@ -3,6 +3,7 @@
 // Figma "Record a reasoned decision": publish, or hide with a policy reason. Both keep the original text and are audited.
 import { useState } from "react";
 import { useAction } from "../../../lib/use-action";
+import { Button, Card } from "../../../components/ui";
 
 export function ModerateButtons({ reviewId, version, status }: { reviewId: string; version: number; status: string }) {
   const action = useAction();
@@ -10,7 +11,7 @@ export function ModerateButtons({ reviewId, version, status }: { reviewId: strin
   const [checked, setChecked] = useState(false);
   const path = `/api/v1/admin/reviews/${reviewId}/moderate`;
   return (
-    <section className="card book-card" aria-labelledby="decision-heading">
+    <Card className="book-card" aria-labelledby="decision-heading">
       <h2 id="decision-heading">Record a reasoned decision</h2>
       {status !== "HIDDEN" ? (
         <div className="field">
@@ -25,16 +26,16 @@ export function ModerateButtons({ reviewId, version, status }: { reviewId: strin
         <span>I checked the review text and that it comes from a completed stay.</span>
       </label>
       {status !== "PUBLISHED" ? (
-        <button className="button" type="button" disabled={action.busy !== null} data-testid={`publish-${reviewId}`}
+        <Button type="button" disabled={action.busy !== null} data-testid={`publish-${reviewId}`}
           onClick={() => void action.run("publish", "POST", path, { decision: "PUBLISH", expected_version: version }, { success: "Published." })}>
           Confirm publish
-        </button>
+        </Button>
       ) : null}
       {status !== "HIDDEN" ? (
-        <button className="button secondary" type="button" disabled={action.busy !== null || reason.trim().length < 3 || !checked}
+        <Button variant="secondary" type="button" disabled={action.busy !== null || reason.trim().length < 3 || !checked}
           onClick={() => void action.run("hide", "POST", path, { decision: "HIDE", reason, expected_version: version }, { success: "Hidden." })}>
           Hide with policy reason
-        </button>
+        </Button>
       ) : null}
       <p className="field-hint">Every decision keeps the original text, actor, reason and time. Hiding keeps the review internally.</p>
       {action.message ? (
@@ -42,6 +43,6 @@ export function ModerateButtons({ reviewId, version, status }: { reviewId: strin
           {action.message.text}
         </p>
       ) : null}
-    </section>
+    </Card>
   );
 }

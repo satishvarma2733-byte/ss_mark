@@ -6,6 +6,7 @@ import { loadBookingDetail, loadCancelPreview } from "../../../../lib/bookings";
 import { formatVenueTime } from "../../../../lib/format";
 import { VenueIdentity, longDate } from "../../../../components/booking-parts";
 import { CancelPanel } from "./cancel-panel";
+import { Card, StatusPill } from "../../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -41,29 +42,29 @@ export default async function CancelBookingPage({ params }: { params: Promise<{ 
       </div>
       {booking.venue.is_synthetic ? (
         <div className="pill-row">
-          <span className="status-pill neutral">Synthetic demo booking · mock refund, no real money</span>
+          <StatusPill tone="neutral">Synthetic demo booking · mock refund, no real money</StatusPill>
         </div>
       ) : null}
       <div className="book-layout refund-layout">
         <div className="book-main">
-          <section className="card book-card" aria-label="Booking">
+          <Card className="book-card" aria-label="Booking">
             <VenueIdentity photo={photos[0] ?? null} venueName={booking.venue.name} detail={`${booking.table.label} · ${guests}`} reference={booking.public_ref} />
             <hr />
             <p className="book-when">
               {longDate(booking.start_at, tz)} · {formatVenueTime(booking.start_at, tz)}–{formatVenueTime(booking.end_at, tz)} IST
             </p>
-            <span className="status-pill">
+            <StatusPill>
               <img src="/design/status-dot-available.svg" alt="" width={5} height={5} />
               Confirmed · Pass still valid
-            </span>
-          </section>
-          <section className="card book-card" aria-labelledby="policy-heading">
+            </StatusPill>
+          </Card>
+          <Card className="book-card" aria-labelledby="policy-heading">
             <h2 id="policy-heading">Accepted cancellation policy</h2>
             <p className="book-when">{cancellationPolicySummary(booking.policy_snapshot)}</p>
             <p className="field-hint">
               Policy version {booking.policy_snapshot.policy_version}, accepted at booking. Current venue rules are not applied retroactively.
             </p>
-          </section>
+          </Card>
         </div>
         <div className="book-side">
           <CancelPanel bookingId={id} initial={preview} />
