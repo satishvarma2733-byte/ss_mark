@@ -79,7 +79,7 @@ export function PartnerNav({ current, memberships, active }: { current: Membersh
           <strong>{ROLE_LABEL[current.role] ?? current.role}</strong>
           <span>{isManager ? "Operations and venue settings" : "Arrivals and table readiness"}</span>
           {current.role !== "OWNER" ? <span className="portal-access-note">Owner-only finance controls locked</span> : null}
-          <a href="/help">
+          <a href={`/partner/support?venue=${current.venue_id}`} aria-current={active === "/partner/support" ? "page" : undefined}>
             <CircleHelp size={16} aria-hidden="true" />
             Support centre
           </a>

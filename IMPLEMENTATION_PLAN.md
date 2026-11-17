@@ -28,7 +28,7 @@
 - Build `Tabs`, `FilterChip`, `Card`, `DatePicker`, `TimeSelector`, `QrBookingCard`.
 - Migrate pages group by group (customer, partner, admin), keeping e2e selectors, and delete the class rules each group no longer needs so there is one system, not two.
 
-### D. Missing screens and states — PARTLY DONE 16 Nov (payment outcomes, portal notification centres, notification preferences; partner arrival progression, partner support centre and three admin screens still open)
+### D. Missing screens and states — DONE 16 Nov for web (see HANDOFF for what each screen deliberately leaves out)
 - Customer: recovery states on checkout, payment return, booking and extension pages; notification preferences; privacy and preferences.
 - Partner: arrival progression steps, support centre, portal notification centre.
 - Admin: notification centre, partner-and-venue management, system settings, secure admin access.

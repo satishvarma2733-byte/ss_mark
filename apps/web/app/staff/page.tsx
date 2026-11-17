@@ -1,3 +1,4 @@
+import { PartnerNav } from "../../lib/partner-page";
 import { PortalBlocked, gatePortal } from "../../lib/portal-page";
 import { StaffArrivals } from "./staff-arrivals";
 import { StaffExtensions } from "./staff-extensions";
@@ -12,23 +13,16 @@ export default async function StaffArrivalsPage({ searchParams }: { searchParams
   const memberships = gate.me.venue_memberships;
   const current = memberships.find((m) => m.venue_id === venue) ?? memberships[0]!;
 
+  const q = `?venue=${current.venue_id}`;
   return (
     <main>
       <h1>Staff arrivals</h1>
-      {memberships.length > 1 ? (
-        <nav aria-label="Venue" className="view-toggle">
-          {memberships.map((m) => (
-            <a key={m.venue_id} href={`/staff?venue=${m.venue_id}`} aria-current={m.venue_id === current.venue_id ? "page" : undefined}>
-              {m.venue_name}
-            </a>
-          ))}
-        </nav>
-      ) : null}
-      <p className="lede">
-        {current.venue_name} ({current.role.toLowerCase()})
+      <PartnerNav current={current} memberships={memberships} active="/staff" />
+      <p className="lede page-lede">
+        {current.venue_name} ({current.role.toLowerCase()}) · Validate the guest, not the screenshot: check the code here, never a photo of a pass.
       </p>
       <StaffExtensions venueId={current.venue_id} />
-      <StaffArrivals venueId={current.venue_id} />
+      <StaffArrivals venueId={current.venue_id} incidentHref={`/partner/incidents/new${q}`} todayHref={`/partner${q}`} />
     </main>
   );
 }

@@ -12,7 +12,19 @@ const query = (overrides: Partial<VenueSearchInput> = {}): VenueSearchInput => (
   requirements: null, environment: null, amenities: null, available_only: false, offset: 0, limit: 100, ...overrides
 });
 const search = (q: Partial<VenueSearchInput>) => asAnon(sql, (tx) => searchVenues(tx, query(q)));
-const ids = (result: Awaited<ReturnType<typeof search>>) => result.venues.map((v) => v.id);
+// The database caps one page at 100 results and this file's venues share a database with every other test run, so a
+// single page can miss them. These assertions walk every page instead of trusting the first one.
+const searchAll = async (q: Partial<VenueSearchInput>): Promise<{ venues: Record<string, unknown>[] }> => {
+  const venues: Record<string, unknown>[] = [];
+  let offset = 0;
+  for (;;) {
+    const page = await asAnon(sql, (tx) => searchVenues(tx, query({ ...q, offset })));
+    venues.push(...page.venues);
+    if (page.next_offset === null) return { venues };
+    offset = page.next_offset;
+  }
+};
+const ids = (result: { venues: Record<string, unknown>[] }) => result.venues.map((v) => v.id);
 
 beforeAll(async () => {
   sql = openDb();
@@ -28,7 +40,7 @@ afterAll(async () => {
 
 describe("venue search (T01)", () => {
   it("returns published venues only, with rules and an indicative from-price", async () => {
-    const result = await search({});
+    const result = await searchAll({});
     expect(ids(result)).toContain(venue.venueId);
     expect(ids(result)).not.toContain(draft.venueId);
     expect(ids(result)).not.toContain("22222222-2222-4222-8222-000000000008"); // seeded draft
@@ -37,36 +49,36 @@ describe("venue search (T01)", () => {
   });
 
   it("filters by party size, tags and amenities, and rejects nothing silently", async () => {
-    expect(ids(await search({ party_size: 3 }))).not.toContain(venue.venueId);
-    expect(ids(await search({ environment: ["QUIET"], requirements: ["STUDY"], amenities: ["WIFI"] }))).toContain(venue.venueId);
-    expect(ids(await search({ environment: ["QUIET", "OUTDOOR"] }))).not.toContain(venue.venueId);
-    expect(ids(await search({ categories: ["BREWERY"] }))).not.toContain(venue.venueId);
+    expect(ids(await searchAll({ party_size: 3 }))).not.toContain(venue.venueId);
+    expect(ids(await searchAll({ environment: ["QUIET"], requirements: ["STUDY"], amenities: ["WIFI"] }))).toContain(venue.venueId);
+    expect(ids(await searchAll({ environment: ["QUIET", "OUTDOOR"] }))).not.toContain(venue.venueId);
+    expect(ids(await searchAll({ categories: ["BREWERY"] }))).not.toContain(venue.venueId);
   });
 
   it("orders by distance from a rounded origin and limits to the radius", async () => {
     // Test venues sit at 12.93, 77.62 (fictional point).
-    const near = await search({ lat: 12.9312, lng: 77.6211, radius_m: 2000 });
+    const near = await searchAll({ lat: 12.9312, lng: 77.6211, radius_m: 2000 });
     const item = near.venues.find((v) => v.id === venue.venueId);
     expect(item?.distance_m).toBeTypeOf("number");
-    const far = await search({ lat: 13.2, lng: 77.9, radius_m: 2000 });
+    const far = await searchAll({ lat: 13.2, lng: 77.9, radius_m: 2000 });
     expect(ids(far)).not.toContain(venue.venueId);
     // Precision beyond about 1 km is discarded: two nearby origins give the same distances.
-    const a = await search({ lat: 12.93111, lng: 77.62111 });
-    const b = await search({ lat: 12.93444, lng: 77.62444 });
+    const a = await searchAll({ lat: 12.93111, lng: 77.62111 });
+    const b = await searchAll({ lat: 12.93444, lng: 77.62444 });
     expect(a.venues.find((v) => v.id === venue.venueId)?.distance_m).toBe(b.venues.find((v) => v.id === venue.venueId)?.distance_m);
   });
 
   it("reports availability for a slot and can hide fully booked venues", async () => {
     const slot = istSlot(4, "11:00");
-    const before = await search({ start_at: slot, duration_minutes: 60, party_size: 2 });
+    const before = await searchAll({ start_at: slot, duration_minutes: 60, party_size: 2 });
     expect(before.venues.find((v) => v.id === venue.venueId)?.availability).toEqual({ available_tables: 1, checked_tables: 1, problems: [] });
 
     await holdTable(sql, await createUser(sql), venue, slot);
-    const after = await search({ start_at: slot, duration_minutes: 60, party_size: 2 });
+    const after = await searchAll({ start_at: slot, duration_minutes: 60, party_size: 2 });
     expect(after.venues.find((v) => v.id === venue.venueId)?.availability).toEqual({ available_tables: 0, checked_tables: 1, problems: ["BOOKED"] });
-    expect(ids(await search({ start_at: slot, duration_minutes: 60, party_size: 2, available_only: true }))).not.toContain(venue.venueId);
+    expect(ids(await searchAll({ start_at: slot, duration_minutes: 60, party_size: 2, available_only: true }))).not.toContain(venue.venueId);
 
-    const night = await search({ start_at: istSlot(4, "23:00"), duration_minutes: 60, party_size: 2 });
+    const night = await searchAll({ start_at: istSlot(4, "23:00"), duration_minutes: 60, party_size: 2 });
     expect(night.venues.find((v) => v.id === venue.venueId)?.availability?.problems).toEqual(["OUTSIDE_HOURS"]);
   });
 

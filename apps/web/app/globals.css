@@ -4799,3 +4799,158 @@ tbody tr:hover > td {
     flex-basis: calc(100% - 56px);
   }
 }
+
+/* Arrival desk (Figma "Partner · Scan and validate / Arrival checked in / Cleaning in progress / Table ready"). */
+.arrival-confirmed {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 16px;
+  border-color: var(--status-success-text);
+}
+
+.arrival-confirmed-copy {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.arrival-confirmed h2,
+.arrival-confirmed p {
+  margin: 0;
+}
+
+.arrival-state-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill);
+  background: var(--status-success-surface);
+  color: var(--status-success-text);
+}
+
+.arrival-state-icon.small {
+  width: 32px;
+  height: 32px;
+}
+
+.arrival-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.arrival-facts dt {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.arrival-facts dd {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.table-state-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.table-state p {
+  margin: 0;
+}
+
+.table-state-note {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.table-state-cleaning .arrival-state-icon,
+.table-state-occupied .arrival-state-icon {
+  background: var(--status-warm-surface);
+  color: var(--status-warm);
+}
+
+.table-state-out_of_service .arrival-state-icon {
+  background: var(--status-neutral-surface);
+  color: var(--text-muted);
+}
+
+@media (max-width: 479px) {
+  .arrival-confirmed {
+    flex-direction: column;
+  }
+}
+
+/* Access gate (Figma "Admin · Secure admin access") reuses the message-page card. */
+.access-gate .notice {
+  border: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.access-gate .eyebrow {
+  font-size: 11px;
+}
+
+/* System settings (Figma "Admin · System settings"): label, value and a one-line explanation per row. */
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.settings-list > div {
+  display: grid;
+  grid-template-columns: minmax(140px, 220px) minmax(0, 1fr);
+  gap: 4px 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--brand-sand);
+}
+
+.settings-list > div:last-child {
+  border-bottom: 0;
+}
+
+.settings-list dt {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.settings-list dd {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+
+.settings-list dd strong {
+  font-weight: 600;
+}
+
+.settings-list dd span {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 639px) {
+  .settings-list > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

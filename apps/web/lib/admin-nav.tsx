@@ -2,15 +2,14 @@
 // workspace bar. Pages render it inside their <main>; globals.css lays it out beside the content (portal-shell rules).
 // UI only: every admin page and API re-checks the caller's platform role.
 import { ThemeToggle } from "../components/theme-toggle";
-import {
-  BadgeCheck, Bell, ChartColumn, CircleHelp, CircleUserRound, FileText, LayoutDashboard, ShieldCheck, Star, Tickets, ToggleRight, UserCog, Users, Wallet
-} from "lucide-react";
+import { BadgeCheck, Bell, ChartColumn, CircleHelp, CircleUserRound, FileText, LayoutDashboard, Settings, ShieldCheck, Star, Store, Tickets, ToggleRight, UserCog, Users, Wallet } from "lucide-react";
 
 type Role = "SUPERADMIN" | "SUPPORT" | "FINANCE" | string;
 
 const SECTIONS = [
   { path: "/admin", label: "Overview", icon: LayoutDashboard, roles: null },
   { path: "/admin/venues", label: "Partner review", icon: BadgeCheck, roles: ["SUPERADMIN", "SUPPORT"] },
+  { path: "/admin/directory", label: "Venue directory", icon: Store, roles: ["SUPERADMIN", "SUPPORT"] },
   { path: "/admin/customers", label: "Customers", icon: Users, roles: ["SUPERADMIN", "SUPPORT"] },
   { path: "/admin/bookings", label: "Booking operations", icon: Tickets, roles: null },
   { path: "/admin/finance", label: "Finance", icon: Wallet, roles: ["SUPERADMIN", "FINANCE"] },
@@ -19,7 +18,8 @@ const SECTIONS = [
   { path: "/admin/metrics", label: "Metrics", icon: ChartColumn, roles: null },
   { path: "/admin/users", label: "Admin permissions", icon: UserCog, roles: ["SUPERADMIN"] },
   { path: "/admin/audit", label: "Audit log", icon: FileText, roles: null },
-  { path: "/admin/release", label: "Release switches", icon: ToggleRight, roles: null }
+  { path: "/admin/release", label: "Release switches", icon: ToggleRight, roles: null },
+  { path: "/admin/settings", label: "System settings", icon: Settings, roles: null }
 ] as const;
 
 const ROLE_LABEL: Record<string, string> = { SUPERADMIN: "Superadmin", SUPPORT: "Support admin", FINANCE: "Finance admin" };

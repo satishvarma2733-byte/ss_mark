@@ -52,6 +52,9 @@ test("search to verified confirmation to staff check-in, check-out and table rea
   await staffPage.getByLabel("PIN", { exact: true }).fill(pin);
   await staffPage.getByTestId("check-in-pin").click();
   await expect(staffPage.getByTestId("check-in-result")).toContainText(`Checked in: ${ref}`);
+  // The confirmation panel repeats the booking, table and party from the server's answer.
+  await expect(staffPage.getByTestId("arrival-confirmed")).toContainText("Guest checked in");
+  await expect(staffPage.getByTestId("arrival-confirmed")).toContainText(ref);
 
   await page.reload();
   await expect(page.getByTestId("booking-status")).toHaveText("Checked in");

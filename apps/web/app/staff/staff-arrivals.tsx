@@ -7,7 +7,8 @@ import type { CheckInResult, StaffArrivals as Arrivals } from "@simply-sit/contr
 import { apiCall, newIdempotencyKey } from "../../lib/client-api";
 import { formatVenueTime } from "../../lib/format";
 import { TableScroll } from "../../lib/table-scroll";
-import { Button, Card } from "../../components/ui";
+import { CircleCheck, Sparkles, Timer } from "lucide-react";
+import { Button, ButtonLink, Card } from "../../components/ui";
 
 type BarcodeDetectorLike = { detect(source: CanvasImageSource): Promise<{ rawValue: string }[]> };
 declare global {
@@ -22,7 +23,7 @@ const NOT_OPEN: Record<string, string> = {
   previous_booking: "The table is still reserved for an earlier booking. Ask the guest to wait until their start time."
 };
 
-export function StaffArrivals({ venueId }: { venueId: string }) {
+export function StaffArrivals({ venueId, incidentHref, todayHref }: { venueId: string; incidentHref: string; todayHref: string }) {
   const [data, setData] = useState<Arrivals | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [ref, setRef] = useState("SS-");
@@ -30,6 +31,8 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [result, setResult] = useState<{ tone: string; text: string } | null>(null);
+  // The last successful check-in, shown as a confirmation panel (Figma "Partner · Arrival checked in").
+  const [checked, setChecked] = useState<CheckInResult | null>(null);
   const [scanning, setScanning] = useState(false);
   const video = useRef<HTMLVideoElement | null>(null);
   const stream = useRef<MediaStream | null>(null);
@@ -58,6 +61,7 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
   async function submitCheckIn(body: Record<string, string>) {
     setBusy("check-in");
     setResult(null);
+    setChecked(null);
     const response = await apiCall<CheckInResult>("POST", "/api/v1/partner/check-in", {
       idempotencyKey: newIdempotencyKey(),
       body: { venue_id: venueId, ...body }
@@ -65,6 +69,7 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
     setBusy(null);
     if (response.ok) {
       const r = response.data;
+      setChecked(r);
       setResult({
         tone: "status-success",
         text: `${r.outcome === "ALREADY_CHECKED_IN" ? "Already checked in" : "Checked in"}: ${r.public_ref}, ${r.table_label}, party of ${r.party_size}.`
@@ -145,6 +150,14 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
   }
 
   const tz = data?.timezone ?? "Asia/Kolkata";
+  const checkedEnd = checked ? data?.bookings.find((b) => b.booking_id === checked.booking_id)?.end_at : undefined;
+  const now = data ? Date.parse(data.server_now) : 0;
+  // What each table is doing, derived from today's bookings (no extra request).
+  const occupant = (resourceId: string) => data?.bookings.find((b) => b.resource_id === resourceId && b.status === "CHECKED_IN");
+  const lastOut = (resourceId: string) =>
+    data?.bookings.filter((b) => b.resource_id === resourceId && b.checked_out_at).sort((a, b) => Date.parse(b.checked_out_at!) - Date.parse(a.checked_out_at!))[0];
+  const nextUp = (resourceId: string) =>
+    data?.bookings.filter((b) => b.resource_id === resourceId && b.status === "CONFIRMED" && Date.parse(b.end_at) > now).sort((a, b) => Date.parse(a.start_at) - Date.parse(b.start_at))[0];
   return (
     <>
       <Card aria-labelledby="checkin-heading">
@@ -192,6 +205,46 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
           </p>
         ) : null}
       </Card>
+
+      {checked ? (
+        <Card className="arrival-confirmed" aria-labelledby="arrival-confirmed-heading" data-testid="arrival-confirmed">
+          <span className="arrival-state-icon" aria-hidden="true">
+            <CircleCheck size={26} />
+          </span>
+          <div className="arrival-confirmed-copy">
+            <h2 id="arrival-confirmed-heading">{checked.outcome === "ALREADY_CHECKED_IN" ? "Guest was already checked in" : "Guest checked in"}</h2>
+            <p className="muted">
+              Arrival recorded {formatVenueTime(checked.checked_in_at, tz)} IST. Payment was verified before this pass could be used.
+            </p>
+            <dl className="arrival-facts">
+              <div>
+                <dt>Booking</dt>
+                <dd>{checked.public_ref}</dd>
+              </div>
+              <div>
+                <dt>Table</dt>
+                <dd>{checked.table_label}</dd>
+              </div>
+              <div>
+                <dt>Guests</dt>
+                <dd>{checked.party_size}</dd>
+              </div>
+              <div>
+                <dt>Ends · IST</dt>
+                <dd>{checkedEnd ? formatVenueTime(checkedEnd, tz) : "See list"}</dd>
+              </div>
+            </dl>
+            <div className="heading-actions">
+              <ButtonLink variant="secondary" href={todayHref}>
+                Return to Today
+              </ButtonLink>
+              <Button variant="ghost" onClick={() => setChecked(null)}>
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        </Card>
+      ) : null}
 
       {loadError ? (
         <p className="notice status-error" role="alert">
@@ -244,22 +297,54 @@ export function StaffArrivals({ venueId }: { venueId: string }) {
       <section aria-labelledby="tables-heading">
         <h2 id="tables-heading">Tables</h2>
         <ul className="grid result-list">
-          {data?.tables.map((t) => (
-            <li key={t.resource_id}>
-              <Card as="article" data-testid={`table-${t.label}`}>
-                <h3>{t.label}</h3>
-                <p className={t.operational_state === "READY" ? "status-success" : "status-warning"}>
-                  {t.operational_state === "READY" ? "Ready" : t.operational_state === "CLEANING" ? "Needs cleaning" : t.operational_state === "OCCUPIED" ? "Occupied" : "Out of service"}
-                </p>
-                {t.operational_state === "CLEANING" ? (
-                  <Button type="button" disabled={busy !== null} onClick={() => void markReady(t.resource_id, t.version)}
-                    data-testid={`ready-${t.label}`}>
-                    Mark ready
-                  </Button>
-                ) : null}
-              </Card>
-            </li>
-          ))}
+          {data?.tables.map((t) => {
+            const state = t.operational_state;
+            const guest = occupant(t.resource_id);
+            const previous = lastOut(t.resource_id);
+            const next = nextUp(t.resource_id);
+            const nextLine = next
+              ? `Next reservation ${formatVenueTime(next.start_at, tz)}-${formatVenueTime(next.end_at, tz)} (${next.public_ref}).`
+              : "No more reservations today.";
+            return (
+              <li key={t.resource_id}>
+                <Card as="article" className={`table-state table-state-${state.toLowerCase()}`} data-testid={`table-${t.label}`}>
+                  <div className="table-state-head">
+                    <h3>{t.label}</h3>
+                    <span className="arrival-state-icon small" aria-hidden="true">
+                      {state === "READY" ? <CircleCheck size={18} /> : state === "CLEANING" ? <Sparkles size={18} /> : <Timer size={18} />}
+                    </span>
+                  </div>
+                  <p className={state === "READY" ? "status-success" : "status-warning"}>
+                    {state === "READY" ? "Ready" : state === "CLEANING" ? "Needs cleaning" : state === "OCCUPIED" ? "Occupied" : "Out of service"}
+                  </p>
+                  {state === "CLEANING" ? (
+                    <>
+                      <p className="table-state-note">
+                        {previous?.checked_out_at ? `Guest checked out at ${formatVenueTime(previous.checked_out_at, tz)} IST. ` : ""}
+                        Do not seat a new guest until cleaning is finished. {nextLine}
+                      </p>
+                      <Button type="button" disabled={busy !== null} onClick={() => void markReady(t.resource_id, t.version)} data-testid={`ready-${t.label}`}>
+                        Mark ready
+                      </Button>
+                      <a className="text-link" href={incidentHref}>
+                        Report a turnover issue
+                      </a>
+                    </>
+                  ) : null}
+                  {state === "OCCUPIED" ? (
+                    <p className="table-state-note">
+                      {guest ? `${guest.public_ref}, party of ${guest.party_size}, until ${formatVenueTime(guest.end_at, tz)} IST. ` : ""}
+                      {nextLine}
+                    </p>
+                  ) : null}
+                  {state === "READY" ? <p className="table-state-note">{nextLine}</p> : null}
+                  {state !== "READY" && state !== "CLEANING" && state !== "OCCUPIED" ? (
+                    <p className="table-state-note">Closed in Inventory. It cannot be booked or used until it is reopened.</p>
+                  ) : null}
+                </Card>
+              </li>
+            );
+          })}
         </ul>
       </section>
     </>

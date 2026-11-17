@@ -428,10 +428,13 @@ describe("payout reconciliation coverage", () => {
     await sql`update mock_gateway.payments set captured_at = captured_at - ${back}::interval where id = ${old.payment.providerPaymentId}`;
     const recent = await paidBooking(venue);
     await complete(venue, recent.bookingId);
-    const windowStart = new Date(Date.now() - 120_000).toISOString();
+    // Only this test's recent capture: a window around its own timestamp. A window of "the last two minutes" also
+    // caught captures written by other test runs, which the local database does not hold, so the run reported MISMATCH.
+    const [{ at: recentAt }] = (await sql`select captured_at as at from public.payment_attempts where booking_id = ${recent.bookingId}::uuid`) as unknown as [{ at: Date }];
+    const ownWindow = { from: new Date(recentAt.getTime() - 2_000).toISOString(), to: new Date(recentAt.getTime() + 2_000).toISOString() };
 
     const batch = await as(finance)((tx) => createPayoutBatch(tx, venue.partnerId)) as { payout_batch_id: string };
-    expect(await runReconciliation(services(), claimsFor(finance, { aal: "aal2" }), { from: windowStart, to: new Date().toISOString() }))
+    expect(await runReconciliation(services(), claimsFor(finance, { aal: "aal2" }), ownWindow))
       .toMatchObject({ status: "MATCHED" });
     expect(await expectDomainError(as(finance2)((tx) => approvePayoutBatch(tx, batch.payout_batch_id, 1)), "RECONCILIATION_REQUIRED"))
       .toMatchObject({ uncovered: 1 });

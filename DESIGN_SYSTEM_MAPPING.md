@@ -85,7 +85,7 @@ Built components live in `apps/web/components/ui/` (`button.tsx`, `form.tsx`, `f
 | `C · Partner desktop · Report incident` | `94:14130` | `/partner/incidents/new` | Implemented |
 | `C · Partner desktop · Check-out and protected turnover` | `94:14225` | `/partner/bookings/[id]` | Implemented |
 | `Partner · Reports and exports` | `94:18577` | `/partner/reports` | Implemented |
-| `Partner · Scan & validate / Checked in / Cleaning / Ready` | `94:19115`–`94:19848` | `/staff`, `/partner/bookings/[id]` | Partial (needs dedicated QR scanner & state steps) |
+| `Partner · Scan & validate / Checked in / Cleaning / Ready` | `94:19115`–`94:19848` | `/staff` (now inside the partner workspace) | Implemented 16 Nov: check-in confirmation panel; table cards show cleaning / occupied / ready with the next reservation. One screen with states, not four separate pages |
 | `F · Partner mobile` (4 frames) | `94:14492`–`94:14749` | Responsive `/partner`, `/staff` | Partial: swipeable menu and two-across figures on phones (12 Nov); frames not compared one by one |
 
 ### Admin Dashboard (`09 — Admin Dashboard`, `94:10`)
@@ -101,11 +101,11 @@ Built components live in `apps/web/components/ui/` (`button.tsx`, `form.tsx`, `f
 | `D · Admin desktop · Reports and exports` | `94:16412` | `/admin/metrics` | Implemented |
 | `Admin · Payment reconciliation` | `94:21409` | `/admin/finance/reconciliation` | Implemented |
 | `Admin · Customer management` | `94:20083` | `/admin/customers` | Implemented 14 Nov (not compared with the frame in this audit) |
-| `Admin · Partner and venue management` | `94:20344` | `/admin/venues` (review-only) | Partial |
-| `Admin · System settings` | `94:20609` | `/admin/release` (switches only) | Partial |
+| `Admin · Partner and venue management` | `94:20344` | `/admin/directory` | Implemented 16 Nov: searchable, read-only directory linking to the review record. No pause-listing action (no audited flow exists) |
+| `Admin · System settings` | `94:20609` | `/admin/settings` | Implemented 16 Nov as read-only configuration; no editable settings (no reviewed change flow exists) |
 | `Admin · Admin users and permissions` | `94:20861` | `/admin/users` | Implemented 14 Nov (not compared with the frame in this audit) |
 | `Admin · Audit log` | `94:21141` | `/admin/audit` | Implemented 14 Nov (not compared with the frame in this audit) |
-| `Admin · Secure admin access` | `94:21670` | `/account/security` (MFA) | Partial |
+| `Admin · Secure admin access` | `94:21670` | portal gate (`lib/portal-page.tsx`), `/account/security` | Implemented 16 Nov: the blocked and authenticator-required states use one access card; sign-in stays the shared email-code page |
 
 ### Notifications and system states (`10 — Notifications & System States`, `94:11`)
 | Figma Frame | Node ID | Existing route | Status |
@@ -146,3 +146,8 @@ Restyle status comes from the 9 November handoff; no screen was checked on a dev
 | `Customer · Privacy and preferences` | `94:17597` | — | **Missing** |
 | `Customer · Nearby spaces · Map` | `94:17707` | `(tabs)/index.tsx` | Not verified |
 | `B · Payment pending / failed / hold expired / slot unavailable / extension unavailable` | `94:16726`-`94:17030` | `payment-return.tsx`, `checkout`, `book`, `extend` | Works functionally; state screens pending |
+
+### Added 16 Nov, not in the earlier tables
+| Figma Frame | Node ID | Route | Status |
+| --- | --- | --- | --- |
+| `Partner · Support centre` | `94:18856` | `/partner/support` | Implemented: own cases table and the existing ticket form; case conversation opens on `/support/[id]` (customer layout) |
