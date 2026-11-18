@@ -8,7 +8,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "@simply-sit/design-tokens";
-import monogramCream from "../assets/brand/monogram-cream.png";
+import monogramWhite from "../assets/brand/monogram-white.png";
 import { fonts, minTouchTarget } from "./ui";
 
 export type NavKey = "index" | "bookings" | "help" | "account";
@@ -27,7 +27,7 @@ export function BrandHeader() {
     <View style={[shell.header, { paddingTop: insets.top }]}>
       <View style={shell.headerRow}>
         <View style={shell.brand} accessible accessibilityRole="header" accessibilityLabel="Simply Sit. Your Space. Your Time.">
-          <Image source={monogramCream} style={shell.monogram} resizeMode="contain" accessible={false} />
+          <Image source={monogramWhite} style={shell.monogram} resizeMode="contain" accessible={false} />
           <View>
             <Text style={shell.brandName}>SIMPLY SIT</Text>
             <Text style={shell.brandTag}>Your Space. Your Time.</Text>

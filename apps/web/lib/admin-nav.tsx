@@ -37,12 +37,8 @@ export function AdminNav({ roles, active }: { roles: Role[]; active: string }) {
   return (
     <>
       <aside className="portal-sidebar" aria-label="Marketplace admin">
-        <a className="brand" href="/">
-          <img className="brand-mark" src="/brand/monogram-cream.png" alt="" width={40} height={30} />
-          <span className="brand-name">
-            <strong>SIMPLY SIT</strong>
-            <small>Your Space. Your Time.</small>
-          </span>
+        <a className="brand" href="/" aria-label="Simply Sit home">
+          <img className="brand-logo" src="/brand/logo-horizontal-white.png" alt="Simply Sit. Your Space. Your Time." width={200} height={41} />
         </a>
         <p className="portal-label">Marketplace admin</p>
         <nav aria-label="Admin sections" className="portal-nav">

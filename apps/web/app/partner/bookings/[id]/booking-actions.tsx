@@ -37,6 +37,12 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
   return (
     <div className="partner-layout">
       <div className="book-main">
+        {/* Outside the cancel form: the refresh after a service cancel removes that form, and its message with it. */}
+        {cancel.message ? (
+          <p className={`book-when status-${cancel.message.tone}`} role="status" data-testid="service-cancel-message">
+            {cancel.message.text}
+          </p>
+        ) : null}
         <Card className="book-card" aria-labelledby="departure-heading">
           <h2 id="departure-heading">{checkedIn ? "Review actual departure" : "Booking"}</h2>
           <span className={`status-pill${checkedIn || confirmed ? "" : " neutral"}`} data-testid="partner-booking-status">
@@ -187,11 +193,6 @@ export function BookingActions({ booking, table, next, viewer }: { booking: Part
             <Button variant="danger" type="submit" disabled={cancel.busy !== null} data-testid="service-cancel">
               Cancel booking with full refund
             </Button>
-            {cancel.message ? (
-              <p className={`book-when status-${cancel.message.tone}`} role="status">
-                {cancel.message.text}
-              </p>
-            ) : null}
           </form>
         ) : null}
       </div>

@@ -126,7 +126,7 @@ test("a closure over a paid booking is refused with its reference; pause, cancel
   await m.goto(`/partner/bookings/${hold.booking_id}`);
   await m.getByTestId("service-cancel-reason").fill("Floor repair (e2e)");
   await m.getByTestId("service-cancel").click();
-  await expect(m.getByText("Cancelled. A full refund has been requested.")).toBeVisible();
+  await expect(m.getByTestId("service-cancel-message")).toHaveText("Cancelled. A full refund has been requested.");
   await evidence(m, "web-m43-08-service-cancel");
 
   await m.goto(`/partner/closures?venue=${venue.venueId}`);

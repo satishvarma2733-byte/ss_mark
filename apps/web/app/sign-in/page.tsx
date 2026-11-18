@@ -18,6 +18,10 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
       </div>
       <div className="auth-layout">
         <aside className="auth-aside">
+          <span className="auth-logos">
+            <img className="logo-on-light" src="/brand/logo-stacked-olive.png" alt="Simply Sit" width={150} height={91} />
+            <img className="logo-on-dark" src="/brand/logo-stacked-white.png" alt="" aria-hidden="true" width={150} height={91} />
+          </span>
           {/* Decorative venue photograph from the Figma frame; the copy beside it carries the meaning. */}
           <img className="auth-photo" src="/design/sign-in-venue.jpg" alt="" width={1584} height={672} />
           <h2 className="auth-aside-title">A little space. All yours.</h2>

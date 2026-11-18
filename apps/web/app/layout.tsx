@@ -32,13 +32,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           Skip to content
         </a>
         <header className="site-header">
-          <Link className="brand" href="/">
-            {/* Owner-supplied monogram (references/brand/logo). Decorative here: the link text names the brand. */}
-            <img className="brand-mark" src="/brand/monogram-cream.png" alt="" width={40} height={30} />
-            <span className="brand-name">
-              <strong>SIMPLY SIT</strong>
-              <small>Your Space. Your Time.</small>
-            </span>
+          <Link className="brand" href="/" aria-label="Simply Sit home">
+            {/* Owner-supplied horizontal lockup, white for the olive header (wordmark and tagline are part of the artwork). */}
+            <img className="brand-logo" src="/brand/logo-horizontal-white.png" alt="Simply Sit. Your Space. Your Time." width={200} height={41} />
           </Link>
           <SiteNav />
         </header>
@@ -49,7 +45,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <div id="main">{children}</div>
         </ToastProvider>
         <footer className="site-footer">
-          <p className="footer-brand">SIMPLY SIT · Your Space. Your Time.</p>
+          <span className="footer-logos">
+            <img className="logo-on-light" src="/brand/logo-horizontal-olive.png" alt="Simply Sit. Your Space. Your Time." width={180} height={37} />
+            <img className="logo-on-dark" src="/brand/logo-horizontal-white.png" alt="" aria-hidden="true" width={180} height={37} />
+          </span>
           <nav aria-label="Footer">
             <Link href="/help">Help &amp; safety</Link>
             <Link href="/partner/apply">Partner with us</Link>
