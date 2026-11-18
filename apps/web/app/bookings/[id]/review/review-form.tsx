@@ -8,11 +8,23 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
   const action = useAction();
   const [rating, setRating] = useState(0);
   const [body, setBody] = useState("");
+  const [sent, setSent] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    await action.run("review", "POST", `/api/v1/bookings/${bookingId}/reviews`,
-      { rating, ...(body.trim() ? { body: body.trim() } : {}) }, { idempotent: true, success: "Thanks for your review." });
+    // No page refresh: a refresh would replace this form and its confirmation. The review is shown once it is checked.
+    const result = await action.run("review", "POST", `/api/v1/bookings/${bookingId}/reviews`,
+      { rating, ...(body.trim() ? { body: body.trim() } : {}) }, { idempotent: true, refresh: false, success: "Thanks for your review." });
+    if (result.ok) setSent(true);
+  }
+
+  if (sent) {
+    return (
+      <section className="card" aria-live="polite">
+        <p className="status-success" role="status" data-testid="review-sent">Thanks for your review.</p>
+        <p className="food-note">Reviews are checked before they appear on the venue page.</p>
+      </section>
+    );
   }
 
   return (
