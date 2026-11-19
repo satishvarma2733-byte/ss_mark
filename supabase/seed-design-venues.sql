@@ -123,3 +123,58 @@ update public.venues v
  where p.venue_id = v.id and p.status = 'PUBLISHED' and v.active_policy_id is null
    and v.id in ('22222222-2222-4222-8222-000000000101', '22222222-2222-4222-8222-000000000102',
                 '22222222-2222-4222-8222-000000000103', '22222222-2222-4222-8222-000000000104');
+
+-- Seating areas and published floor plans (seat-map phase 1). Copper Yard: indoor hall + open-air courtyard;
+-- Chapter & Co.: one reading room. Layout rows are inserted as DRAFT, filled, then published (published ones are frozen,
+-- so re-running skips the element inserts).
+insert into public.venue_zones (id, venue_id, name, kind, floor_level, features, default_hourly_paise, sort_order)
+select z.id::uuid, z.venue_id::uuid, z.name, z.kind, z.floor_level, z.features::text[], z.paise, z.sort_order
+from (values
+  ('55555555-5555-4555-8555-000000001031', '22222222-2222-4222-8222-000000000103', 'Brewery hall', 'INDOOR', 0, '{AIR_CONDITIONED}', 25000, 0),
+  ('55555555-5555-4555-8555-000000001032', '22222222-2222-4222-8222-000000000103', 'Courtyard', 'OUTDOOR', 0, '{STEP_FREE}', 25000, 1),
+  ('55555555-5555-4555-8555-000000001041', '22222222-2222-4222-8222-000000000104', 'Reading room', 'INDOOR', 0, '{QUIET,AIR_CONDITIONED}', 15000, 0)
+) as z (id, venue_id, name, kind, floor_level, features, paise, sort_order)
+on conflict do nothing;
+
+update public.resources r set zone_id = t.zone_id::uuid, shape = t.shape, features = t.features::text[]
+from (values
+  ('33333333-3333-4333-8333-000000001031', '55555555-5555-4555-8555-000000001031', 'RECTANGLE', '{POWER_SOCKET}'),
+  ('33333333-3333-4333-8333-000000001032', '55555555-5555-4555-8555-000000001031', 'RECTANGLE', '{}'),
+  ('33333333-3333-4333-8333-000000001033', '55555555-5555-4555-8555-000000001032', 'ROUND', '{VIEW}'),
+  ('33333333-3333-4333-8333-000000001034', '55555555-5555-4555-8555-000000001032', 'SQUARE', '{}'),
+  ('33333333-3333-4333-8333-000000001041', '55555555-5555-4555-8555-000000001041', 'RECTANGLE', '{WINDOW,POWER_SOCKET,QUIET}'),
+  ('33333333-3333-4333-8333-000000001042', '55555555-5555-4555-8555-000000001041', 'BAR_STOOL', '{POWER_SOCKET}')
+) as t (id, zone_id, shape, features)
+where r.id = t.id::uuid and r.zone_id is null;
+
+insert into public.floor_layouts (id, zone_id, venue_id, layout_version, width, height)
+select l.id::uuid, l.zone_id::uuid, l.venue_id::uuid, 1, l.width, l.height
+from (values
+  ('66666666-6666-4666-8666-000000001031', '55555555-5555-4555-8555-000000001031', '22222222-2222-4222-8222-000000000103', 600, 400),
+  ('66666666-6666-4666-8666-000000001032', '55555555-5555-4555-8555-000000001032', '22222222-2222-4222-8222-000000000103', 500, 360),
+  ('66666666-6666-4666-8666-000000001041', '55555555-5555-4555-8555-000000001041', '22222222-2222-4222-8222-000000000104', 500, 360)
+) as l (id, zone_id, venue_id, width, height)
+on conflict do nothing;
+
+insert into public.layout_elements (layout_id, element_type, resource_id, label, x, y, width, height, rotation, sort_order)
+select e.layout_id::uuid, e.element_type, e.resource_id::uuid, e.label, e.x, e.y, e.width, e.height, 0, e.sort_order
+from (values
+  ('66666666-6666-4666-8666-000000001031', 'TABLE', '33333333-3333-4333-8333-000000001031', null, 60, 80, 240, 80, 0),
+  ('66666666-6666-4666-8666-000000001031', 'TABLE', '33333333-3333-4333-8333-000000001032', null, 60, 220, 240, 80, 1),
+  ('66666666-6666-4666-8666-000000001031', 'COUNTER', null, 'Bar · order here', 380, 40, 180, 60, 2),
+  ('66666666-6666-4666-8666-000000001031', 'DOOR', null, 'Entrance', 470, 360, 110, 30, 3),
+  ('66666666-6666-4666-8666-000000001032', 'TABLE', '33333333-3333-4333-8333-000000001033', null, 80, 100, 110, 110, 0),
+  ('66666666-6666-4666-8666-000000001032', 'TABLE', '33333333-3333-4333-8333-000000001034', null, 260, 110, 90, 90, 1),
+  ('66666666-6666-4666-8666-000000001032', 'PLANT', null, null, 40, 280, 40, 40, 2),
+  ('66666666-6666-4666-8666-000000001032', 'LABEL', null, 'Open air', 380, 300, 100, 30, 3),
+  ('66666666-6666-4666-8666-000000001041', 'WINDOW', null, 'Windows', 0, 20, 10, 300, 0),
+  ('66666666-6666-4666-8666-000000001041', 'TABLE', '33333333-3333-4333-8333-000000001041', null, 80, 80, 120, 70, 1),
+  ('66666666-6666-4666-8666-000000001041', 'TABLE', '33333333-3333-4333-8333-000000001042', null, 300, 90, 50, 50, 2),
+  ('66666666-6666-4666-8666-000000001041', 'COUNTER', null, 'Counter', 300, 280, 160, 60, 3)
+) as e (layout_id, element_type, resource_id, label, x, y, width, height, sort_order)
+where exists (select 1 from public.floor_layouts f where f.id = e.layout_id::uuid and f.status = 'DRAFT')
+  and not exists (select 1 from public.layout_elements x where x.layout_id = e.layout_id::uuid and x.sort_order = e.sort_order);
+
+update public.floor_layouts set status = 'PUBLISHED', published_at = now()
+where id in ('66666666-6666-4666-8666-000000001031', '66666666-6666-4666-8666-000000001032', '66666666-6666-4666-8666-000000001041')
+  and status = 'DRAFT';

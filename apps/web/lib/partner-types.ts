@@ -27,7 +27,7 @@ export type VenueOverview = {
   resources: PartnerResource[];
   hours: { weekday: number; opens_local: string; closes_local: string; closes_next_day: boolean }[];
   closures: { id: string; resource_id: string; resource_label: string; starts_at: string; ends_at: string; reason: string }[];
-  media: { id: string; alt_text: string; status: "PENDING" | "APPROVED" | "REJECTED"; sort_order: number }[];
+  media: { id: string; alt_text: string; status: "PENDING" | "APPROVED" | "REJECTED"; sort_order: number; kind: "PHOTO" | "LOGO" }[];
   amenities: { code: string; details: string | null; verified: boolean }[];
   tags: { group: "REQUIREMENT" | "ENVIRONMENT"; code: string }[];
   publication_gaps: string[];

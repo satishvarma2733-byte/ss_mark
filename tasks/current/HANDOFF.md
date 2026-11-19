@@ -277,3 +277,100 @@ Android and iOS bundles.
 
 Checks: mobile typecheck clean; eslint clean on the screen; `pnpm test:unit` 79 passed; `pnpm test:mobile` exported
 Android and iOS bundles.
+
+## Step F, slice 6 - native extension (19 November 2026, in progress)
+
+- `apps/mobile/app/extend/[bookingId].tsx` rebuilt to Figma "Customer · Active booking and extension" (94:10575) in the
+  shared shell: stay card with minutes remaining, +N min choices, "Your updated time" (estimate with ≈ from the booked
+  hourly rate until the venue answers, then the request's price, as on the web), request / approved / held / declined
+  states, unavailable-slot notice and a "Get help with this booking" link to `/support/new`. Test ids kept.
+- Verified on the Android emulator: request, "Waiting for the venue" countdown, staff approval (via `app.decide_extension`
+  in psql) showing "Check availability & pay", and withdraw. Extension payment not exercised.
+- Local test data changed for this: SS-KFBXXEVT38 set to CHECKED_IN directly (its check-in window had closed) and a STAFF
+  membership added for Chapter & Co. (venue `...0104`). Both test requests were withdrawn (CANCELLED).
+- Fixed: after Withdraw, the "Ask the venue for 30 minutes" label was cut to "Ask the venue for 30" on Android. A uiautomator
+  dump showed the TextView sized exactly to the full text and one line tall; the redraw wrapped the last word onto a hidden
+  second line. `Button` labels in `components/ui.tsx` are now single-line (`numberOfLines={1}`; a too-long label ends in
+  "…"). Tried and rejected: React keys, `textBreakStrategy="simple"` (no effect), `flexGrow` on the label (stretched the
+  venue footer button over the price), `adjustsFontSizeToFit` (shrank every label). Re-checked on the emulator after a
+  real request and withdraw; the venue footer and +/- steppers are unchanged.
+
+## Venue profile header (19 November 2026)
+
+- `apps/mobile/app/venue/[id].tsx`: cover photo (photo count chip, opens the gallery) with an overlapping logo badge,
+  category eyebrow, name, short location ("HAL 2nd Stage, Bengaluru": area plus the address's last part) with
+  Directions, and an icon card: address, hours today ("Open now · until 20:00" / "Closed now · opens 09:00"), current
+  date and IST time, next free table for the selected day (from the availability call), rating and food rule.
+- The logo is a monogram of the venue's initials: venues have no logo field yet. A real logo needs a schema field,
+  partner upload and moderation (follow-up).
+- Verified on the Android emulator with Chapter & Co.
+
+## Venue logo (19 November 2026)
+
+- Migration `supabase/migrations/20261119000100_venue_logo.sql` (applied locally with `npx supabase migration up`, no
+  reset): `venue_media.kind` PHOTO/LOGO; partial unique indexes allow one APPROVED and one PENDING logo per venue;
+  trigger `venue_media_logo_replace` retires the shown logo when a new one is approved (single review or whole-venue
+  approval); `app.partner_add_logo` (manager/owner with TOTP, same key and alt-text rules as photos, withdraws an
+  earlier pending logo, audit `logo.add`); public `app.venue_logo`. Photos-only filters added to `venue_photos`,
+  `partner_add_media` (12-photo limit), `venue_publication_gaps` ("photo" gap); `partner_venue_overview` and
+  `admin_venue_detail` media rows now carry `kind`. Rollback steps are in the migration header.
+- Decision: no `logo_media_id` column on `venues` - `venues.version` is the partner editor's concurrency token and logo
+  moderation must not invalidate an open venue form (photos do not either). The "reference" is the single APPROVED
+  LOGO row, enforced by the unique index.
+- Contracts: `venueMediaRefSchema`, `venueDetailSchema.logo` (nullable `{id, alt_text}`, default null), shared
+  `venueMonogram`. API `GET /api/v1/venues/{id}` returns `logo`; new `POST /api/v1/partner/venues/{id}/logo`; photo and
+  logo uploads share `apps/web/lib/venue-upload.ts`. Removal uses the existing `DELETE /api/v1/partner/media/{id}`.
+  Docs 05 and 07 updated.
+- Partner portal `/partner/venue`: new "Logo" card (shown logo, replacement waiting, not approved; upload/replace,
+  remove); photo strip excludes logos. Admin `/admin/venues/[id]`: "Photos and logo", logos labelled, cover photo and
+  pending text exclude/mention logos.
+- Display: web venue page header shows the logo (64 px) or a monogram; native `apps/mobile/app/venue/[id].tsx`
+  `VenueBadge` shows the logo image, falling back to the monogram when absent or if the image fails to load.
+- Tests: 3 integration tests in `tests/integration/partner-operations.test.ts` (logo is not a photo, approved with the
+  listing, public only when approved; replace/reject/approve keeps one shown logo and leaves `venues.version`
+  unchanged; permissions and key validation), 2 unit tests in `packages/contracts/src/contracts.test.ts`.
+- Local data changed for the display check: a synthetic PNG logo (128 px olive roundel, generated) uploaded to local
+  Storage with the local service key and inserted APPROVED for Chapter & Co. (`...0104`); Copper Yard has none.
+- Verified: `GET /api/v1/venues/...0104` returns the logo, `GET /api/v1/media/{id}` 200 image/png; web venue page shows
+  the logo for Chapter & Co. and the "CY" monogram for Copper Yard (browser pane, local dev server).
+- NOT verified: partner Logo card and admin review in a browser (needs a TOTP partner/admin sign-in; covered by
+  integration tests at the database level and typecheck only); the native badge on the emulator (typecheck and bundle
+  export only). No e2e spec added.
+
+Checks (local Supabase, MOCK providers): `pnpm lint` clean; `pnpm typecheck` clean; `pnpm test:unit` 14 files / 81
+tests passed; `pnpm test:integration` 18 files / 181 tests passed; `pnpm test:mobile` exported Android and iOS bundles.
+`next build` and `pnpm test:e2e` not run. Nothing committed.
+
+## Seat-map phase 1 - seating areas, floor plans and area prices (19 November 2026)
+
+Plan and designs: `docs/concepts/seat-map/PLAN.md` (Figma screens linked there). Phase 1 is data and API only; no
+screens use it yet.
+
+- Migration `supabase/migrations/20261119000200_seating_layouts.sql` (applied locally with `npx supabase migration up`):
+  `venue_zones`; `resources` + `zone_id`, `shape`, `features`, `photo_media_id`; `floor_layouts` (DRAFT -> PUBLISHED ->
+  ARCHIVED, published rows frozen by trigger) and `layout_elements` (writes only into a draft). RLS forced, no client
+  grants. Functions: `app.partner_create_zone`, `partner_update_zone`, `partner_archive_zone`, `partner_set_table_details`,
+  `partner_save_layout_draft`, `partner_publish_layout`, `partner_set_zone_price`, `partner_seating`, public
+  `app.venue_seating` and `app.venue_seat_map`. Rollback steps are in the migration header.
+- Area price writes ordinary `resource_rates` versions (same rules as `app.partner_set_rate`; logic duplicated, not
+  refactored, to leave the existing function untouched). Tables whose price differs from the area's previous price keep
+  it unless `keep_custom_prices=false`. Quotes and bookings keep their snapshot (tested).
+- Contracts (`packages/contracts`): zone/table/layout/price request schemas, `venueSeatingSchema`, `seatMapSchema`.
+  DB wrappers: `packages/db/src/seating.ts`. Routes: `GET /api/v1/venues/{id}/seating`, `GET /api/v1/venues/{id}/seat-map`,
+  `GET /api/v1/partner/venues/{id}/seating`, `POST /api/v1/partner/venues/{id}/zones`, `PATCH /api/v1/partner/zones/{id}`,
+  `POST .../zones/{id}/archive`, `PUT .../zones/{id}/layout-draft`, `POST .../zones/{id}/publish-layout`,
+  `POST .../zones/{id}/price`, `PATCH /api/v1/partner/resources/{id}/details`. Documented in docs/05 and docs/07.
+- Seed (`supabase/seed-design-venues.sql`, appended, re-runnable): Copper Yard "Brewery hall" (indoor, L01, L02) and
+  "Courtyard" (outdoor, C01, C02); Chapter & Co. "Reading room" (D01, D02), each with a published drawing. Applied to the
+  running local DB by piping only that block (the file's earlier opening-hours insert is not re-runnable on a live DB).
+- Live check on a production server (`next start --port 3101`, stopped after): seating 200; seat map shows Copper Yard
+  tables UNAVAILABLE (OUTSIDE_HOURS) at 11:00 and FREE at 18:00, C02 TOO_SMALL for 4; no internal price fields; partner
+  route 401 without a session; a start time without an offset is 422.
+- Note: the `simply-sit-web` dev server on port 3000 (another session's preview) showed a stale compile error after
+  `pnpm build` wrote into the shared `apps/web/.next`; restart that preview to clear it.
+- Not done (later phases): partner editor and pricing screens, customer seat map (mobile, web), busy-hour pricing,
+  per-seat booking (owner decision). No e2e spec yet.
+
+Checks: `pnpm lint` clean; `pnpm typecheck` clean; `pnpm test:unit` 14 files / 85 tests passed (4 new contract tests);
+`pnpm test:integration` 19 files / 187 tests passed (new `tests/integration/seating.test.ts`, 6 tests); `pnpm build`
+passed; `pnpm secrets:check` clean. `pnpm test:e2e` not run. Nothing committed.

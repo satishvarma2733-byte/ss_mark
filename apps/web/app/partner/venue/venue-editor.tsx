@@ -73,6 +73,7 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
   const [uploadState, setUploadState] = useState<ActionMessage | null>(null);
   const live = v.status === "PUBLISHED" || v.status === "PAUSED";
   const editable = v.status === "DRAFT" || live;
+  const photoMedia = overview.media.filter((m) => m.kind !== "LOGO");
 
   async function saveProfile(event: FormEvent) {
     event.preventDefault();
@@ -108,24 +109,10 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
   async function upload(event: FormEvent) {
     event.preventDefault();
     if (!file) return;
-    const data = new FormData();
-    data.set("file", file);
-    data.set("alt_text", alt);
     photos.clear();
     setUploadState({ tone: "warning", text: "Uploading..." });
-    // Multipart upload: the shared JSON helper cannot send files, so this one call uses fetch directly.
-    const response = await fetch(`${base}/media`, { method: "POST", body: data, credentials: "same-origin" }).catch(() => null);
-    if (response?.ok) {
-      window.location.reload();
-      return;
-    }
-    const json = (await response?.json().catch(() => null)) as { error?: { message: string; details?: { reason?: string } } } | null;
-    const reason = json?.error?.details?.reason;
-    setUploadState({
-      tone: "error",
-      text: reason === "type" ? "That file is not a JPEG, PNG or WebP image." : reason === "size" || reason === "too_large"
-        ? "That photo is larger than 5 MB." : json?.error?.message ?? "Upload failed. Check your connection and try again."
-    });
+    const failed = await uploadVenueImage(`${base}/media`, file, alt, "photo");
+    if (failed) setUploadState(failed);
   }
 
   return (
@@ -296,9 +283,9 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
       <Card style={{ marginTop: 16 }} aria-labelledby="photos-heading">
         <h2 id="photos-heading">Photos</h2>
         <p className="food-note">JPEG, PNG or WebP up to 5 MB. Photos stay private until Simply Sit approves them.</p>
-        {overview.media.length > 0 ? (
+        {photoMedia.length > 0 ? (
           <div className="photo-strip" data-testid="partner-photos">
-            {overview.media.map((m) => (
+            {photoMedia.map((m) => (
               <figure key={m.id} style={{ margin: 0 }}>
                 <img src={`/api/v1/media/${m.id}`} alt={m.alt_text} width={240} height={150} style={{ width: 240, height: 150, objectFit: "cover" }} />
                 <figcaption>
@@ -327,6 +314,94 @@ export function VenueEditor({ overview }: { overview: VenueOverview }) {
         </form>
         <Status message={uploadState ?? photos.message} />
       </Card>
+
+      <LogoCard base={base} media={overview.media} editable={editable} />
     </>
+  );
+}
+
+// Multipart upload: the shared JSON helper cannot send files, so uploads use fetch directly. Reloads on success;
+// otherwise returns the message to show.
+async function uploadVenueImage(url: string, file: File, alt: string, noun: "photo" | "logo"): Promise<ActionMessage | null> {
+  const data = new FormData();
+  data.set("file", file);
+  data.set("alt_text", alt);
+  const response = await fetch(url, { method: "POST", body: data, credentials: "same-origin" }).catch(() => null);
+  if (response?.ok) {
+    window.location.reload();
+    return null;
+  }
+  const json = (await response?.json().catch(() => null)) as { error?: { message: string; details?: { reason?: string } } } | null;
+  const reason = json?.error?.details?.reason;
+  return {
+    tone: "error",
+    text: reason === "type" ? "That file is not a JPEG, PNG or WebP image." : reason === "size" || reason === "too_large"
+      ? `That ${noun} is larger than 5 MB.` : json?.error?.message ?? "Upload failed. Check your connection and try again."
+  };
+}
+
+// Venue logo: one shown (approved) logo and at most one replacement waiting for approval. Same moderation as photos.
+function LogoCard({ base, media, editable }: { base: string; media: VenueOverview["media"]; editable: boolean }) {
+  const remove = useAction();
+  const [file, setFile] = useState<File | null>(null);
+  const [alt, setAlt] = useState("");
+  const [state, setState] = useState<ActionMessage | null>(null);
+  const logos = media.filter((m) => m.kind === "LOGO");
+  const current = logos.find((m) => m.status === "APPROVED") ?? null;
+  const pending = logos.find((m) => m.status === "PENDING") ?? null;
+  const rejected = !pending ? logos.find((m) => m.status === "REJECTED") ?? null : null;
+
+  async function upload(event: FormEvent) {
+    event.preventDefault();
+    if (!file) return;
+    remove.clear();
+    setState({ tone: "warning", text: "Uploading..." });
+    const failed = await uploadVenueImage(`${base}/logo`, file, alt, "logo");
+    if (failed) setState(failed);
+  }
+
+  const tile = (m: VenueOverview["media"][number], label: string) => (
+    <figure key={m.id} style={{ margin: 0 }} data-testid={`partner-logo-${m.status.toLowerCase()}`}>
+      <img src={`/api/v1/media/${m.id}`} alt={m.alt_text} width={96} height={96}
+        style={{ width: 96, height: 96, objectFit: "cover", borderRadius: 16 }} />
+      <figcaption>
+        {label} ·{" "}
+        <Button type="button" variant="secondary" disabled={remove.busy !== null}
+          onClick={() => void remove.run(m.id, "DELETE", `/api/v1/partner/media/${m.id}`, undefined, { success: "Logo removed." })}>
+          Remove
+        </Button>
+      </figcaption>
+    </figure>
+  );
+
+  return (
+    <Card style={{ marginTop: 16 }} aria-labelledby="logo-heading" data-testid="partner-logo">
+      <h2 id="logo-heading">Logo</h2>
+      <p className="food-note">
+        A square JPEG, PNG or WebP up to 5 MB. Shown on your venue page once Simply Sit approves it; until then customers
+        see your initials. A new logo replaces the current one only after approval.
+      </p>
+      {current || pending || rejected ? (
+        <div className="photo-strip">
+          {current ? tile(current, "Shown to customers") : null}
+          {pending ? tile(pending, current ? "Replacement waiting for approval" : "Waiting for approval") : null}
+          {rejected ? tile(rejected, "Not approved") : null}
+        </div>
+      ) : null}
+      <form className="inline-form" onSubmit={(e) => void upload(e)}>
+        <label>
+          {current || pending ? "New logo" : "Logo"}
+          <input type="file" accept="image/jpeg,image/png,image/webp" required onChange={(e) => setFile(e.target.files?.[0] ?? null)} data-testid="logo-file" />
+        </label>
+        <label>
+          Describe the logo (for screen readers)
+          <input className="input" required minLength={3} maxLength={250} value={alt} onChange={(e) => setAlt(e.target.value)} data-testid="logo-alt" />
+        </label>
+        <Button type="submit" disabled={!editable || !file} data-testid="logo-upload">
+          {current || pending ? "Replace logo" : "Upload logo"}
+        </Button>
+      </form>
+      <Status message={state ?? remove.message} />
+    </Card>
   );
 }

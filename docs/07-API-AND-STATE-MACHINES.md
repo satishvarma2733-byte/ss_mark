@@ -107,6 +107,7 @@ The remaining command surface is explicit below. All writes use idempotency, rol
 | `POST /partner/applications` | signed-in proposed owner; `{partner_legal_name,venue_name,category_code,address,lat,lng}` | 201 pending partner + draft venue + scoped owner membership; application_id is venue ID. No publication or payment capability implied. |
 | `POST /partner/venues/{id}/submit` | scoped owner/manager, expected_version | 202 PENDING_REVIEW after required profile/media/rules/inventory/rates/hours and provider eligibility fields validate. Admin review approves or requests changes. |
 | `POST /partner/venues/{id}/media-upload` | manager; `{mime_type,size_bytes,alt_text}` | 201 short-lived upload target + media ID; file remains private/pending until content/rights checks and approval. No SVG/HTML execution. |
+| `POST /partner/venues/{id}/logo` | manager; multipart `file` + `alt_text` (as photos) | 201 `{media_id,status:PENDING,kind:LOGO}`. Replaces any earlier pending logo; the approved logo stays shown until the new one is approved (`POST /admin/media/{id}/review`). Public venue detail returns `logo: {id,alt_text} | null`, served by `GET /media/{id}`. (19 Nov 2026) |
 | `POST /partner/venues/{id}/resources` | manager; `{label,kind:TABLE,capacity}` | 201 exclusive resource; kind validation prevents unsupported nested capacity. |
 | `PATCH /partner/resources/{id}` | manager; `{label?,capacity?,expected_version}` | 200 only after checking future commitments; cannot reduce capacity beneath booked party sizes or bypass closures. |
 | `POST /partner/resources/{id}/pause` | manager; `{reason,expected_version}` | 200 PAUSED under venue/resource locks; immediately rejects new holds, preserves existing holds/bookings for explicit recovery. This can precede a conflicting closure request. |
@@ -130,6 +131,21 @@ The remaining command surface is explicit below. All writes use idempotency, rol
 | `GET /me/notification-preferences`, `PUT /me/notification-preferences` | authenticated owner; body `{email_copies, marketing}` | 200 own choices (defaults when never saved). Affects only optional email copies; essential messages and the inbox are never switched off. Added 16 Nov 2026. |
 
 Resource availability is not a generic DELETE endpoint: historical inventory stays referentially intact. Policy/rate/hour mutations and pause/resume acquire the same venue/resource lock path as holds, so a configuration change cannot race a reservation into an invalid state.
+
+### Seating areas, floor plans and area prices (seat-map phase 1)
+
+| Method / route | Input | Output / rules |
+|---|---|---|
+| `GET /venues/{id}/seating` | - | Published venue only (else 404). Active areas that have active tables, each with `from_hourly_paise`, `table_count` and its published drawing (tables carry shape, features, approved photo, bookable flag, current hourly rate). `unzoned_table_count` for tables in no area. |
+| `GET /venues/{id}/seat-map?start_at&duration_minutes&party_size` | `start_at` with offset | Every active table's `state` FREE/BOOKED/TOO_SMALL/UNAVAILABLE (+ `reason` code such as OUTSIDE_HOURS) and customer price for that time. Advisory, no-store; the hold is the only commitment; never says who booked. |
+| `GET /partner/venues/{id}/seating` | - | Manager/owner (TOTP): areas with published and draft drawings, every non-retired table with area, shape, features, photo, rate, version. |
+| `POST /partner/venues/{id}/zones` | `{name,kind?,floor_level?,features?}` + Idempotency-Key | 201 area. Unique active name per venue; at most 20 areas. |
+| `PATCH /partner/zones/{id}` | `{name?,kind?,floor_level?,features?,sort_order?,expected_version}` | 200 area. |
+| `POST /partner/zones/{id}/archive` | `{expected_version}` | 409 `area_has_tables` unless empty; archives the published drawing, drops the draft. |
+| `PATCH /partner/resources/{id}/details` | `{zone_id?,shape?,features?,photo_media_id?,expected_version}` (null clears) | 200. Area change refused (`table_on_floor_plan`) while any draft or published drawing shows the table. |
+| `PUT /partner/zones/{id}/layout-draft` | `{width,height,elements[],expected_version}` (version or null) | 200 draft. Refused whole (422 `problems[]`: duplicate_table, table_in_other_area, table_retired, overlaps_table, outside_canvas, geometry ...). |
+| `POST /partner/zones/{id}/publish-layout` | `{expected_version}` | 200 published. Re-validates, needs at least one table and a current rate for each placed table; archives the previous version. Bookings untouched. |
+| `POST /partner/zones/{id}/price` | `{hourly_paise,effective_from?,keep_custom_prices=true,expected_version}` | 201 `{updated[],kept_custom[]}`: new rate version per table from now/later; tables whose price differs from the previous area price keep it unless `keep_custom_prices=false`. Quotes and bookings keep their snapshot. |
 
 ## 5. Booking and turnover transitions
 

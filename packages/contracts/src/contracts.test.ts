@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   apiErrorSchema, cancellationNotice, cancellationPolicySummary, cancelRequestSchema, checkInRequestSchema, checkoutRequestSchema,
   coarseCoordinate, decodeCursor, DOMAIN_ERRORS, encodeCursor, isDomainErrorCode, isOlderVersion, moneySchema, refundStatusText, venueSearchQuerySchema,
-  venueSummarySchema
+  venueDetailSchema, venueMonogram, venueSummarySchema
 } from "./index";
 
 describe("contracts", () => {
@@ -128,5 +128,52 @@ describe("contracts", () => {
     expect(isOlderVersion("2.0.0", "1.9.9")).toBe(false);
     expect(isOlderVersion("garbage", "1.0.0")).toBe(true);
     expect(isOlderVersion("1.0.0", "not-a-version")).toBe(false);
+  });
+
+  it("builds the fallback venue monogram from up to two initials", () => {
+    expect(venueMonogram("Chapter & Co.")).toBe("CC");
+    expect(venueMonogram("the  quiet   room upstairs")).toBe("TQ");
+    expect(venueMonogram("42 Brew")).toBe("B");
+    expect(venueMonogram("")).toBe("S");
+  });
+
+  it("returns the venue logo as a nullable media reference", () => {
+    const logo = venueDetailSchema.shape.logo;
+    expect(logo.parse(undefined)).toBeNull();
+    expect(logo.parse(null)).toBeNull();
+    const ref = { id: "00000000-0000-4000-8000-000000000999", alt_text: "Round olive logo" };
+    expect(logo.parse(ref)).toEqual(ref);
+    expect(logo.safeParse({ id: "not-a-uuid", alt_text: "x" }).success).toBe(false);
+  });
+});
+
+
+describe("seating contracts (seat-map phase 1)", async () => {
+  const { layoutElementSchema, layoutDraftSchema, seatMapQuerySchema, tableDetailsSchema, zonePriceSchema } = await import("./index");
+  const id = "33333333-3333-4333-8333-000000001041";
+
+  it("requires a table reference on tables and only on tables", () => {
+    expect(layoutElementSchema.safeParse({ type: "TABLE", resource_id: id, x: 0, y: 0, width: 80, height: 80 }).success).toBe(true);
+    expect(layoutElementSchema.safeParse({ type: "TABLE", x: 0, y: 0, width: 80, height: 80 }).success).toBe(false);
+    expect(layoutElementSchema.safeParse({ type: "DOOR", resource_id: id, x: 0, y: 0, width: 80, height: 30 }).success).toBe(false);
+    expect(layoutElementSchema.safeParse({ type: "WALL", x: 0, y: 0, width: 80, height: 4, rotation: 45 }).success).toBe(false);
+  });
+
+  it("bounds the canvas and the number of elements", () => {
+    const wall = { type: "WALL", x: 0, y: 0, width: 10, height: 10 };
+    expect(layoutDraftSchema.safeParse({ width: 400, height: 300, elements: [wall], expected_version: null }).success).toBe(true);
+    expect(layoutDraftSchema.safeParse({ width: 100, height: 300, elements: [], expected_version: null }).success).toBe(false);
+    expect(layoutDraftSchema.safeParse({ width: 400, height: 300, elements: Array(301).fill(wall), expected_version: 1 }).success).toBe(false);
+  });
+
+  it("keeps custom table prices unless told otherwise and needs an offset on times", () => {
+    expect(zonePriceSchema.parse({ hourly_paise: 15000, expected_version: 1 }).keep_custom_prices).toBe(true);
+    expect(seatMapQuerySchema.safeParse({ start_at: "2026-11-20T11:00:00", duration_minutes: "60", party_size: "2" }).success).toBe(false);
+    expect(seatMapQuerySchema.parse({ start_at: "2026-11-20T11:00:00+05:30", duration_minutes: "60", party_size: "2" }).party_size).toBe(2);
+  });
+
+  it("uses null to clear a table's area or photo", () => {
+    expect(tableDetailsSchema.parse({ zone_id: null, photo_media_id: null, expected_version: 3 })).toEqual({ zone_id: null, photo_media_id: null, expected_version: 3 });
+    expect(tableDetailsSchema.safeParse({ shape: "TRIANGLE", expected_version: 3 }).success).toBe(false);
   });
 });

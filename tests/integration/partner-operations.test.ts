@@ -3,11 +3,11 @@
 // changes refuse (409 with references) rather than invalidate holds or bookings; nothing is cancelled silently.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
-  acceptInvitation, adminReviewVenue, asAnon, asUser, asWorker, createQuote, createVenueClosure, invitationDelivery, mediaObject,
-  myInvitations, partnerAddMedia, partnerApply, partnerBookingDetail, partnerCalendar, partnerCreateResource, partnerInvite,
-  partnerReleaseClosure, partnerRevokeInvitation, partnerRevokeMember, partnerSavePolicyDraft, partnerSetAmenitiesTags, partnerSetHours, partnerSetRate,
+  acceptInvitation, adminReviewMedia, adminReviewVenue, asAnon, asUser, asWorker, createQuote, createVenueClosure, invitationDelivery, mediaObject,
+  myInvitations, partnerAddLogo, partnerAddMedia, partnerApply, partnerBookingDetail, partnerCalendar, partnerCreateResource, partnerInvite,
+  partnerReleaseClosure, partnerRemoveMedia, partnerRevokeInvitation, partnerRevokeMember, partnerSavePolicyDraft, partnerSetAmenitiesTags, partnerSetHours, partnerSetRate,
   partnerSetResourceStatus, partnerStaff, partnerSubmitVenue, partnerUpdateResource, partnerUpdateVenue, partnerVenueOverview,
-  recordInvitationToken, serviceCancelBooking, staffCheckIn, staffMarkNoShow, venuePhotos, type Sql
+  recordInvitationToken, serviceCancelBooking, staffCheckIn, staffMarkNoShow, venueLogo, venuePhotos, type Sql
 } from "@simply-sit/db";
 import { arrivalCodes, invitationToken, invitationTokenHash } from "@simply-sit/domain";
 import { applyPayment, startCheckout } from "@simply-sit/payments";
@@ -152,6 +152,84 @@ describe("onboarding and review (P01, P03, P04, A02)", () => {
     await expectDomainError(as(support, "aal1")(async (tx) =>
       adminReviewVenue(tx, venueId, { decision: "APPROVE", reason: "No TOTP", expected_version: await venueVersion(venueId) })), "REAUTH_REQUIRED");
     await expectDomainError(as(staff)((tx) => partnerVenueOverview(tx, venueId)), "FORBIDDEN");
+  });
+});
+
+describe("venue logo (same media pipeline and moderation as photos)", () => {
+  const addLogo = (user: TestUser, venueId: string, alt = "Round olive logo (test)", aal: "aal1" | "aal2" = "aal2") => {
+    const id = crypto.randomUUID();
+    return as(user, aal)((tx) => partnerAddLogo(tx, venueId, id, `${venueId}/${id}.png`, alt)).then(() => id);
+  };
+  const statusOf = async (id: string) => (await sql`select status from public.venue_media where id = ${id}::uuid`)[0]!.status as string;
+
+  it("is not a photo, is approved with the listing, and is public only once approved", async () => {
+    const owner = await createUser(sql);
+    const { venueId, mediaId } = await configuredVenue(owner, { photo: false });
+    const logoId = await addLogo(owner, venueId);
+    // A logo does not satisfy the photo requirement and never appears in the photo list.
+    expect(await as(owner)((tx) => partnerVenueOverview(tx, venueId))).toMatchObject({
+      publication_gaps: ["photo"], media: [{ id: logoId, kind: "LOGO", status: "PENDING" }]
+    });
+    await expectDomainError(asAnon(sql, (tx) => mediaObject(tx, logoId)), "NOT_FOUND");
+    expect(await as(owner)((tx) => mediaObject(tx, logoId))).toMatchObject({ public: false });
+
+    await as(owner)((tx) => partnerAddMedia(tx, venueId, mediaId, `${venueId}/${mediaId}.jpg`, "Window table in daylight"));
+    await as(owner)(async (tx) => partnerSubmitVenue(tx, venueId, await venueVersion(venueId)));
+    expect(await asAnon(sql, (tx) => venueLogo(tx, venueId))).toBeNull();
+    await as(support)(async (tx) => adminReviewVenue(tx, venueId, { decision: "APPROVE", reason: "Checked (test)", expected_version: await venueVersion(venueId) }));
+
+    expect(await asAnon(sql, (tx) => venueLogo(tx, venueId))).toEqual({ id: logoId, alt_text: "Round olive logo (test)" });
+    expect(await asAnon(sql, (tx) => venuePhotos(tx, venueId))).toEqual([{ id: mediaId, alt_text: "Window table in daylight" }]);
+    expect(await asAnon(sql, (tx) => mediaObject(tx, logoId))).toMatchObject({ public: true });
+  });
+
+  it("keeps the shown logo until a replacement is approved, then retires it", async () => {
+    const owner = await createUser(sql);
+    const { venueId } = await publishedVenue(owner);
+    const first = await addLogo(owner, venueId, "First logo (test)");
+    await as(support)((tx) => adminReviewMedia(tx, first, "APPROVE", null));
+    const version = await venueVersion(venueId);
+
+    // Two uploads in a row: only the newest waits for review; the shown logo is unchanged meanwhile.
+    const superseded = await addLogo(owner, venueId, "Draft logo (test)");
+    const second = await addLogo(owner, venueId, "Second logo (test)");
+    expect(await statusOf(superseded)).toBe("REMOVED");
+    expect(await asAnon(sql, (tx) => venueLogo(tx, venueId))).toEqual({ id: first, alt_text: "First logo (test)" });
+
+    // A rejected replacement leaves the current logo in place.
+    await as(support)((tx) => adminReviewMedia(tx, second, "REJECT", "Blurry (test)"));
+    expect(await asAnon(sql, (tx) => venueLogo(tx, venueId))).toMatchObject({ id: first });
+
+    const third = await addLogo(owner, venueId, "Third logo (test)");
+    await as(support)((tx) => adminReviewMedia(tx, third, "APPROVE", null));
+    expect(await asAnon(sql, (tx) => venueLogo(tx, venueId))).toEqual({ id: third, alt_text: "Third logo (test)" });
+    expect(await statusOf(first)).toBe("REMOVED");
+    await expectDomainError(asAnon(sql, (tx) => mediaObject(tx, first)), "NOT_FOUND");
+    // Logo moderation does not bump the venue version (no stale-form conflicts for the manager).
+    expect(await venueVersion(venueId)).toBe(version);
+    // Never two approved logos, even when written directly.
+    await expect(sql`update public.venue_media set status = 'APPROVED' where id = ${second}::uuid`).resolves.toBeDefined();
+    expect((await sql`select count(*)::int as n from public.venue_media where venue_id = ${venueId}::uuid and kind = 'LOGO' and status = 'APPROVED'`)[0]).toEqual({ n: 1 });
+
+    await as(owner)((tx) => partnerRemoveMedia(tx, second));
+    expect(await asAnon(sql, (tx) => venueLogo(tx, venueId))).toBeNull();
+    const audit = await sql`select action from public.audit_events where venue_id = ${venueId}::uuid and action like 'logo.%'`;
+    expect(audit).toHaveLength(4);
+  });
+
+  it("lets only the venue's managers with TOTP upload a logo, under the venue's own key", async () => {
+    const owner = await createUser(sql);
+    const [staff, outsider] = [await createUser(sql), await createUser(sql)];
+    const { venueId } = await configuredVenue(owner);
+    await grantVenueRole(sql, venueId, staff, "STAFF");
+    await expectDomainError(addLogo(staff, venueId), "FORBIDDEN");
+    await expectDomainError(addLogo(outsider, venueId), "NOT_FOUND");
+    await expectDomainError(addLogo(customer, venueId), "NOT_FOUND");
+    await expectDomainError(addLogo(owner, venueId, "Logo (test)", "aal1"), "REAUTH_REQUIRED");
+    await expectDomainError(addLogo(owner, venueId, "no"), "VALIDATION_FAILED");
+    const other = crypto.randomUUID();
+    await expectDomainError(as(owner)((tx) => partnerAddLogo(tx, venueId, other, `${crypto.randomUUID()}/${other}.png`, "Logo (test)")), "VALIDATION_FAILED");
+    await expectDomainError(as(owner)((tx) => partnerAddLogo(tx, venueId, other, `${venueId}/${other}.svg`, "Logo (test)")), "VALIDATION_FAILED");
   });
 });
 

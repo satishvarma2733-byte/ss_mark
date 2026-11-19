@@ -291,6 +291,11 @@ export const venueReviewsSchema = z.object({
   recent: z.array(z.object({ rating: z.number().int(), body: z.string().nullable(), month: z.string() }))
 });
 export type VenueReviews = z.infer<typeof venueReviewsSchema>;
+export const venueMediaRefSchema = z.object({ id: z.uuid(), alt_text: z.string() });
+export type VenueMediaRef = z.infer<typeof venueMediaRefSchema>;
+// Fallback badge when a venue has no approved logo: up to two initials of words that start with a letter.
+export const venueMonogram = (name: string) =>
+  name.split(/\s+/).filter((w) => /^[A-Za-z]/.test(w)).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("") || "S";
 export const venueDetailSchema = z.object({
   id: z.uuid(),
   slug: z.string(),
@@ -310,7 +315,9 @@ export const venueDetailSchema = z.object({
   requirements: z.array(z.string()),
   environment: z.array(z.string()),
   // Approved photos only; images are served by GET /api/v1/media/{id}.
-  photos: z.array(z.object({ id: z.uuid(), alt_text: z.string() })).default([]),
+  photos: z.array(venueMediaRefSchema).default([]),
+  // Approved venue logo (same media pipeline and moderation as photos) or null; clients fall back to a monogram.
+  logo: venueMediaRefSchema.nullable().default(null),
   // Published reviews only (M4.5).
   reviews: venueReviewsSchema.default({ count: 0, average: null, recent: [] })
 });
@@ -1089,3 +1096,129 @@ export function isOlderVersion(version: string, minimum: string): boolean {
   }
   return false;
 }
+
+// Seating areas, floor layouts and area prices (seat-map phase 1; docs/concepts/seat-map/PLAN.md) -----------------------
+// The drawing is presentation only: availability and prices stay server-side (app.venue_seat_map, resource_rates).
+export const ZONE_KINDS = ["INDOOR", "OUTDOOR", "ROOFTOP", "PRIVATE_ROOM"] as const;
+export const ZONE_FEATURES = ["AIR_CONDITIONED", "COVERED", "QUIET", "SMOKING_ALLOWED", "PET_FRIENDLY", "STEP_FREE"] as const;
+export const TABLE_SHAPES = ["ROUND", "SQUARE", "RECTANGLE", "BAR_STOOL", "SOFA"] as const;
+export const TABLE_FEATURES = ["WINDOW", "POWER_SOCKET", "AIR_CONDITIONED", "SOFA_SEATING", "STEP_FREE", "QUIET", "VIEW"] as const;
+export const LAYOUT_ELEMENT_TYPES = ["TABLE", "WALL", "DOOR", "WINDOW", "COUNTER", "STAIRS", "PILLAR", "PLANT", "LABEL"] as const;
+export const SEAT_STATES = ["FREE", "BOOKED", "TOO_SMALL", "UNAVAILABLE"] as const;
+
+const zoneName = z.string().trim().min(1).max(60);
+const floorLevel = z.number().int().min(-2).max(20);
+const canvasSize = z.number().int().min(200).max(4000);
+
+export const zoneCreateSchema = z.strictObject({
+  name: zoneName,
+  kind: z.enum(ZONE_KINDS).optional(),
+  floor_level: floorLevel.optional(),
+  features: z.array(z.enum(ZONE_FEATURES)).max(ZONE_FEATURES.length).optional()
+});
+export const zoneUpdateSchema = z.strictObject({
+  name: zoneName.optional(),
+  kind: z.enum(ZONE_KINDS).optional(),
+  floor_level: floorLevel.optional(),
+  features: z.array(z.enum(ZONE_FEATURES)).max(ZONE_FEATURES.length).optional(),
+  sort_order: z.number().int().min(0).max(99).optional(),
+  expected_version: versionField
+});
+// null clears the area or photo; leaving a field out keeps it.
+export const tableDetailsSchema = z.strictObject({
+  zone_id: z.uuid().nullable().optional(),
+  shape: z.enum(TABLE_SHAPES).optional(),
+  features: z.array(z.enum(TABLE_FEATURES)).max(TABLE_FEATURES.length).optional(),
+  photo_media_id: z.uuid().nullable().optional(),
+  expected_version: versionField
+});
+export const layoutElementSchema = z.strictObject({
+  type: z.enum(LAYOUT_ELEMENT_TYPES),
+  resource_id: z.uuid().optional(),
+  label: z.string().trim().min(1).max(40).optional(),
+  x: z.number().int().min(0).max(4000),
+  y: z.number().int().min(0).max(4000),
+  width: z.number().int().min(4).max(4000),
+  height: z.number().int().min(4).max(4000),
+  rotation: z.union([z.literal(0), z.literal(90), z.literal(180), z.literal(270)]).optional()
+}).refine((e) => (e.type === "TABLE") === (e.resource_id !== undefined), { message: "Only tables (and every table) reference a resource." });
+export type LayoutElementInput = z.infer<typeof layoutElementSchema>;
+export const layoutDraftSchema = z.strictObject({
+  width: canvasSize,
+  height: canvasSize,
+  elements: z.array(layoutElementSchema).max(300),
+  // null when the area has no draft yet.
+  expected_version: versionField.nullable()
+});
+export const zonePriceSchema = z.strictObject({
+  hourly_paise: z.number().int().min(100).max(10_000_000),
+  effective_from: z.iso.datetime({ offset: true }).optional(),
+  keep_custom_prices: z.boolean().default(true),
+  expected_version: versionField
+});
+export const seatMapQuerySchema = z.strictObject({
+  start_at: z.iso.datetime({ offset: true }),
+  duration_minutes: z.coerce.number().int().min(15).max(1440),
+  party_size: z.coerce.number().int().min(1).max(50)
+});
+
+const layoutTableSchema = z.object({
+  label: z.string(),
+  capacity: z.number().int(),
+  shape: z.enum(TABLE_SHAPES),
+  features: z.array(z.string()),
+  bookable: z.boolean(),
+  hourly_paise: z.number().int().nullable(),
+  photo: z.object({ id: z.uuid(), alt_text: z.string() }).nullable()
+});
+export const layoutElementViewSchema = z.object({
+  type: z.enum(LAYOUT_ELEMENT_TYPES),
+  resource_id: z.uuid().nullable(),
+  label: z.string().nullable(),
+  x: z.number().int(),
+  y: z.number().int(),
+  width: z.number().int(),
+  height: z.number().int(),
+  rotation: z.number().int(),
+  table: layoutTableSchema.nullable()
+});
+export const venueSeatingSchema = z.object({
+  venue_id: z.uuid(),
+  zones: z.array(z.object({
+    id: z.uuid(),
+    name: z.string(),
+    kind: z.enum(ZONE_KINDS),
+    floor_level: z.number().int(),
+    features: z.array(z.string()),
+    from_hourly_paise: z.number().int().nullable(),
+    table_count: z.number().int(),
+    layout: z.object({
+      id: z.uuid(),
+      layout_version: z.number().int(),
+      width: z.number().int(),
+      height: z.number().int(),
+      published_at: z.string(),
+      elements: z.array(layoutElementViewSchema)
+    }).nullable()
+  })),
+  unzoned_table_count: z.number().int()
+});
+export type VenueSeating = z.infer<typeof venueSeatingSchema>;
+export const seatMapSchema = z.object({
+  venue_id: z.uuid(),
+  start_at: z.string(),
+  end_at: z.string(),
+  duration_minutes: z.number().int(),
+  party_size: z.number().int(),
+  tables: z.array(z.object({
+    resource_id: z.uuid(),
+    label: z.string(),
+    zone_id: z.uuid().nullable(),
+    capacity: z.number().int(),
+    state: z.enum(SEAT_STATES),
+    reason: z.string().nullable(),
+    price: z.union([priceSnapshotSchema, z.object({ error: z.string() })])
+  })),
+  checked_at: z.string()
+});
+export type SeatMap = z.infer<typeof seatMapSchema>;

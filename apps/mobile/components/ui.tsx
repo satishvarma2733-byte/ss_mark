@@ -56,7 +56,11 @@ export function Button(props: {
       ]}
     >
       {props.busy ? <ActivityIndicator color={secondary ? colors.brandPrimary : colors.surfaceCard} /> : null}
-      <Text style={[ui.buttonText, secondary && ui.buttonTextSecondary]}>{props.label}</Text>
+      {/* One line: a multi-line label sized exactly to its text can, on Android redraws, wrap its last word onto a hidden
+          second line ("Ask the venue for 30" instead of "... 30 minutes"). A label too long for its button ends in "…". */}
+      <Text style={[ui.buttonText, secondary && ui.buttonTextSecondary]} numberOfLines={1}>
+        {props.label}
+      </Text>
     </Pressable>
   );
 }

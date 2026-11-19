@@ -4394,6 +4394,39 @@ tbody tr:hover > td {
   margin: 0;
 }
 
+.venue-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.venue-title-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.venue-logo {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: var(--surface-card);
+  border: 1px solid var(--brand-sand);
+}
+
+.venue-logo-monogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-primary);
+  color: var(--on-brand);
+  font-family: var(--heading-font);
+  font-size: 26px;
+}
+
 .venue-header .lede {
   display: flex;
   align-items: flex-start;

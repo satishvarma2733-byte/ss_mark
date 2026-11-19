@@ -16,7 +16,7 @@ export type AdminVenue = {
   draft_policy: (Record<string, unknown> & { id: string; version: number; submitted_at: string | null }) | null;
   resources: { label: string; capacity: number; status: string; hourly_paise: number | null }[];
   hours: { weekday: number; opens_local: string; closes_local: string }[];
-  media: { id: string; alt_text: string; status: string }[];
+  media: { id: string; alt_text: string; status: string; kind?: "PHOTO" | "LOGO" }[];
   amenities: { code: string; details: string | null }[];
   tags: { group: string; code: string }[];
   publication_gaps: string[];
@@ -53,8 +53,8 @@ export function ReviewPanel({ detail }: { detail: AdminVenue }) {
     <>
       <Card aria-labelledby="photos-heading">
         <div className="section-heading stacked">
-          <h2 id="photos-heading">Photos</h2>
-          {detail.venue.status === "PENDING_REVIEW" ? <p className="small">Approving the listing approves its pending photos.</p> : null}
+          <h2 id="photos-heading">Photos and logo</h2>
+          {detail.venue.status === "PENDING_REVIEW" ? <p className="small">Approving the listing approves its pending photos and logo.</p> : null}
         </div>
         {detail.media.length === 0 ? <p className="notice">No photos.</p> : (
           <ul className="review-photos">
@@ -63,18 +63,18 @@ export function ReviewPanel({ detail }: { detail: AdminVenue }) {
                 <figure>
                   <VenuePhoto mediaId={m.id} alt={m.alt_text} className="review-photo" width={240} height={150} />
                   <figcaption>
-                    <span className="small">{m.alt_text}</span>
+                    <span className="small">{m.kind === "LOGO" ? <strong data-testid="review-logo">Logo · </strong> : null}{m.alt_text}</span>
                     <span className={`status-pill${MEDIA_TONE[m.status] ?? " neutral"}`}>{m.status.toLowerCase()}</span>
                   </figcaption>
                 </figure>
                 {m.status === "PENDING" && detail.venue.status !== "PENDING_REVIEW" ? (
                   <div className="row-buttons">
                     <Button variant="secondary" type="button" disabled={media.busy !== null}
-                      onClick={() => void media.run(m.id, "POST", `/api/v1/admin/media/${m.id}/review`, { decision: "APPROVE" }, { success: "Photo approved." })}>
+                      onClick={() => void media.run(m.id, "POST", `/api/v1/admin/media/${m.id}/review`, { decision: "APPROVE" }, { success: m.kind === "LOGO" ? "Logo approved. It replaces the previous logo." : "Photo approved." })}>
                       Approve
                     </Button>
                     <Button variant="secondary" type="button" disabled={media.busy !== null}
-                      onClick={() => void media.run(m.id, "POST", `/api/v1/admin/media/${m.id}/review`, { decision: "REJECT" }, { success: "Photo rejected." })}>
+                      onClick={() => void media.run(m.id, "POST", `/api/v1/admin/media/${m.id}/review`, { decision: "REJECT" }, { success: m.kind === "LOGO" ? "Logo rejected." : "Photo rejected." })}>
                       Reject
                     </Button>
                   </div>

@@ -110,6 +110,12 @@ export function partnerAddMedia(tx: Tx, venueId: string, mediaId: string, storag
     select app.partner_add_media(${venueId}::uuid, ${mediaId}::uuid, ${storageKey}, ${altText}, ${requestId}::uuid) as result`);
 }
 
+// Logo upload/replace: recorded PENDING (an earlier pending logo is withdrawn); shown once a platform admin approves it.
+export function partnerAddLogo(tx: Tx, venueId: string, mediaId: string, storageKey: string, altText: string, requestId: string | null = null) {
+  return callJson(tx`
+    select app.partner_add_logo(${venueId}::uuid, ${mediaId}::uuid, ${storageKey}, ${altText}, ${requestId}::uuid) as result`);
+}
+
 export function partnerRemoveMedia(tx: Tx, mediaId: string, requestId: string | null = null) {
   return callJson(tx`select app.partner_remove_media(${mediaId}::uuid, ${requestId}::uuid) as result`);
 }
@@ -224,4 +230,9 @@ export function mediaObject(tx: Tx, mediaId: string) {
 
 export function venuePhotos(tx: Tx, venueId: string) {
   return callJson<{ id: string; alt_text: string }[]>(tx`select app.venue_photos(${venueId}::uuid) as result`);
+}
+
+// The approved logo of a published venue, or null.
+export function venueLogo(tx: Tx, venueId: string) {
+  return callJson<{ id: string; alt_text: string } | null>(tx`select app.venue_logo(${venueId}::uuid) as result`);
 }

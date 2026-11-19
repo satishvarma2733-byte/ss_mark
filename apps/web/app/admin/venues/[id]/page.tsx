@@ -81,7 +81,8 @@ export default async function AdminVenuePage({ params, searchParams }: { params:
   const active = detail.active_policy as Policy | null;
   const draft = detail.draft_policy as Policy | null;
   const proposed = draft ?? (v.status === "PENDING_REVIEW" ? active : null);
-  const cover = detail.media.find((m) => m.status === "APPROVED") ?? detail.media[0];
+  const photoMedia = detail.media.filter((m) => m.kind !== "LOGO");
+  const cover = photoMedia.find((m) => m.status === "APPROVED") ?? photoMedia[0];
   const seats = detail.resources.reduce((sum, r) => sum + r.capacity, 0);
   const prices = detail.resources.map((r) => r.hourly_paise).filter((p): p is number => p !== null);
   const pendingMedia = detail.media.filter((m) => m.status === "PENDING").length;
@@ -208,7 +209,7 @@ export default async function AdminVenuePage({ params, searchParams }: { params:
               <h2 id="change-heading">What changed in this submission</h2>
               <p className="small">
                 {draft ? "A rule change is waiting. It applies to new bookings only once approved." : v.status === "PENDING_REVIEW" ? "New listing. Nothing is public until approved." : "No rule change is waiting."}
-                {pendingMedia > 0 ? ` ${pendingMedia} ${pendingMedia === 1 ? "photo is" : "photos are"} waiting below.` : ""}
+                {pendingMedia > 0 ? ` ${pendingMedia} ${pendingMedia === 1 ? "image" : "images"} (photos or logo) waiting below.` : ""}
               </p>
             </div>
             <div className="panel-row">

@@ -121,3 +121,4 @@ export * from "./support";
 export * from "./finance";
 export * from "./notifications";
 export * from "./release";
+export * from "./seating";

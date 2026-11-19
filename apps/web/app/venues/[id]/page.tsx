@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import type { VenueAvailability, VenueDetail } from "@simply-sit/contracts";
-import { asAnon, getDb, serviceStatus, venueDayAvailability, venueDetail, venueIdBySlug, venuePhotos, venueReviews } from "@simply-sit/db";
+import { venueMonogram, type VenueAvailability, type VenueDetail } from "@simply-sit/contracts";
+import { asAnon, getDb, serviceStatus, venueDayAvailability, venueDetail, venueIdBySlug, venueLogo, venuePhotos, venueReviews } from "@simply-sit/db";
 import { FOOD_RULE_LABEL, formatInrPaise, formatVenueTime, istInstant, venueLocalDate } from "../../../lib/format";
 import { tagLabel } from "../../../lib/labels";
 import { WEEKDAYS } from "../../../lib/venues";
@@ -27,8 +27,8 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
   if (!venueId) notFound();
   const venue = (await asAnon(db, (tx) => venueDetail(tx, venueId))) as VenueDetail | null;
   if (!venue) notFound();
-  const [photos, reviews, status] = await asAnon(db, async (tx) =>
-    [await venuePhotos(tx, venueId), await venueReviews(tx, venueId), await serviceStatus(tx)] as const);
+  const [photos, logo, reviews, status] = await asAnon(db, async (tx) =>
+    [await venuePhotos(tx, venueId), await venueLogo(tx, venueId), await venueReviews(tx, venueId), await serviceStatus(tx)] as const);
   const policy = venue.policy;
 
   const today = venueLocalDate();
@@ -61,8 +61,20 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
         </a>
       </p>
       <header className="venue-header">
-        <p className="eyebrow">{tagLabel(venue.category_code)}</p>
-        <h1>{venue.name}</h1>
+        <div className="venue-title-row">
+          {/* Approved logo (served by the media proxy) or, without one, a monogram of the venue's initials. */}
+          {logo ? (
+            <img className="venue-logo" src={`/api/v1/media/${logo.id}`} alt={logo.alt_text} width={64} height={64} data-testid="venue-logo" />
+          ) : (
+            <span className="venue-logo venue-logo-monogram" role="img" aria-label={`${venue.name} logo`} data-testid="venue-logo">
+              {venueMonogram(venue.name)}
+            </span>
+          )}
+          <div>
+            <p className="eyebrow">{tagLabel(venue.category_code)}</p>
+            <h1>{venue.name}</h1>
+          </div>
+        </div>
         <p className="lede">
           <MapPin size={15} aria-hidden="true" />
           {tagLabel(venue.category_code)} · {venue.locality} · {venue.address}

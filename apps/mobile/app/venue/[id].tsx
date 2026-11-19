@@ -2,13 +2,13 @@
 // quick facts, amenities, tables with their hourly price and free start times, food rules, house rules, a recent review
 // and a pinned price bar. Rules come before any selection; times are advisory and checked again when a table is held.
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useCallback, useEffect, useRef, useState, type ComponentRef } from "react";
+import { useCallback, useEffect, useRef, useState, type ComponentProps, type ComponentRef } from "react";
 import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import type { VenueAvailability, VenueDetail } from "@simply-sit/contracts";
+import { venueMonogram, type VenueAvailability, type VenueDetail } from "@simply-sit/contracts";
 import { colors, radius, spacing } from "@simply-sit/design-tokens";
 import { Screen } from "../../components/shell";
-import { Button, Card, Chip, MockBadge, Notice, StatusPill, fonts, ui } from "../../components/ui";
+import { Button, Card, Chip, MockBadge, Notice, fonts, ui } from "../../components/ui";
 import { api, apiUrl } from "../../lib/api";
 import { FOOD_RULE_LABEL, durationLabel, formatInrPaise, formatIstDate, formatIstTime, istDateKey } from "../../lib/format";
 import { tagLabel } from "../../lib/labels";
@@ -18,6 +18,36 @@ import { useSalesState } from "../../lib/service-status";
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 // Today's weekday in India (the venues' timezone), whatever the phone's own timezone is.
 const istWeekday = () => new Date(Date.now() + 330 * 60_000).getUTCDay();
+// "Chapter & Co." -> "CC": first letters of the first two words that start with a letter.
+// Venue badge: the approved logo when there is one, else (or if the image fails to load) a monogram of the initials.
+function VenueBadge({ venue }: { venue: VenueDetail }) {
+  const [failed, setFailed] = useState(false);
+  const logo = venue.logo && apiUrl && !failed ? venue.logo : null;
+  return (
+    <View style={s.logo} accessible accessibilityRole="image" accessibilityLabel={logo ? logo.alt_text : `${venue.name} logo`} testID="venue-logo">
+      {logo ? (
+        <Image source={{ uri: `${apiUrl}/api/v1/media/${logo.id}` }} style={s.logoImage} resizeMode="cover" accessible={false}
+          onError={() => setFailed(true)} testID="venue-logo-image" />
+      ) : (
+        <Text style={s.logoText}>{venueMonogram(venue.name)}</Text>
+      )}
+    </View>
+  );
+}
+
+function InfoRow(props: { icon: ComponentProps<typeof Ionicons>["name"]; label: string; value: string; tone?: "open"; testID?: string }) {
+  return (
+    <View style={s.infoRow} accessible accessibilityLabel={`${props.label}: ${props.value}`}>
+      <View style={s.infoIcon}>
+        <Ionicons name={props.icon} size={18} color={colors.brandPrimary} accessible={false} />
+      </View>
+      <View style={{ flex: 1, gap: 1 }}>
+        <Text style={s.infoLabel}>{props.label}</Text>
+        <Text style={[ui.body, props.tone === "open" && s.infoOpen]} testID={props.testID}>{props.value}</Text>
+      </View>
+    </View>
+  );
+}
 
 export default function VenueScreen() {
   const params = useLocalSearchParams<{ id: string; date?: string; duration?: string; party?: string }>();
@@ -79,6 +109,20 @@ export default function VenueScreen() {
   const firstPhoto = venue.photos[0];
   const dayLabel = dayKey === istDateKey(0) ? "Today" : dayKey === istDateKey(1) ? "Tomorrow" : formatIstDate(`${dayKey}T12:00:00+05:30`);
   const openGallery = () => router.push({ pathname: "/gallery/[id]", params: { id: venue.id } });
+  // Short location: the area, plus the city when the address ends with one ("..., HAL 2nd Stage, Bengaluru").
+  const city = venue.address.split(",").map((part) => part.trim()).filter(Boolean).at(-1);
+  const shortLocation = city && city !== venue.locality ? `${venue.locality}, ${city}` : venue.locality;
+  // Hours today against the IST clock; a venue may list more than one opening span.
+  const nowIso = new Date().toISOString();
+  const nowHm = formatIstTime(nowIso);
+  const spans = today.map((h) => ({ opens: h.opens.slice(0, 5), closes: h.closes.slice(0, 5), overnight: h.closes_next_day }));
+  const current = spans.find((h) => nowHm >= h.opens && (h.overnight || nowHm < h.closes));
+  const later = spans.filter((h) => nowHm < h.opens).sort((a, b) => a.opens.localeCompare(b.opens))[0];
+  const openNow = !!current;
+  const openState = current
+    ? `Open now · until ${current.closes}${current.overnight ? " (next day)" : ""}`
+    : later ? `Closed now · opens ${later.opens}` : spans.length ? "Closed for the rest of today" : "Closed today";
+  const nextFree = (slots?.tables ?? []).flatMap((t) => t.starts).sort()[0] ?? null;
 
   const footer = (
     <View style={s.footerRow}>
@@ -97,44 +141,56 @@ export default function VenueScreen() {
 
   return (
     <Screen title={venue.name} subtitle={venue.locality} back nav="index" footer={footer} scrollRef={scrollRef}>
-      {firstPhoto && apiUrl ? (
-        // Approved photos only, served by the API proxy (public for published venues). Tapping opens the gallery.
-        <Pressable onPress={openGallery} accessibilityRole="button" testID="venue-photos"
-          accessibilityLabel={`Open photo gallery, ${venue.photos.length} ${venue.photos.length === 1 ? "photo" : "photos"}. ${firstPhoto.alt_text}`}>
-          <Image source={{ uri: `${apiUrl}/api/v1/media/${firstPhoto.id}` }} style={s.hero} resizeMode="cover" accessible={false} />
-          <View style={s.heroCaption}>
-            <Ionicons name="images-outline" size={14} color={colors.surfaceCard} accessible={false} />
-            <Text style={s.heroCaptionText} numberOfLines={1}>{`1 / ${venue.photos.length} · ${firstPhoto.alt_text}`}</Text>
+      {/* Cover photo with the venue's badge overlapping its lower edge. */}
+      <View>
+        {firstPhoto && apiUrl ? (
+          // Approved photos only, served by the API proxy (public for published venues). Tapping opens the gallery.
+          <Pressable onPress={openGallery} accessibilityRole="button" testID="venue-photos"
+            accessibilityLabel={`Open photo gallery, ${venue.photos.length} ${venue.photos.length === 1 ? "photo" : "photos"}. ${firstPhoto.alt_text}`}>
+            <Image source={{ uri: `${apiUrl}/api/v1/media/${firstPhoto.id}` }} style={s.cover} resizeMode="cover" accessible={false} />
+            <View style={s.photoCount}>
+              <Ionicons name="images-outline" size={14} color={colors.surfaceCard} accessible={false} />
+              <Text style={s.photoCountText}>{`${venue.photos.length} ${venue.photos.length === 1 ? "photo" : "photos"}`}</Text>
+            </View>
+          </Pressable>
+        ) : (
+          <View style={[s.cover, s.coverEmpty]}>
+            <Ionicons name="image-outline" size={28} color={colors.textMuted} accessible={false} />
+            <Text style={ui.small}>Photos coming soon</Text>
           </View>
-        </Pressable>
-      ) : (
-        <View style={[s.hero, s.heroEmpty]}>
-          <Ionicons name="image-outline" size={28} color={colors.textMuted} accessible={false} />
-          <Text style={ui.small}>Photos coming soon</Text>
-        </View>
-      )}
+        )}
+        <VenueBadge venue={venue} />
+      </View>
 
-      <View style={{ gap: spacing.sm }}>
+      <View style={s.identity}>
         <Text style={s.eyebrow}>{`${tagLabel(venue.category_code)} · Table reservations`}</Text>
         <Text style={ui.display} accessibilityRole="header">{venue.name}</Text>
-        {venue.description ? <Text style={ui.muted}>{venue.description}</Text> : null}
-        <View style={s.metaRow}>
-          <Text style={ui.body} testID="venue-rating">
-            {venue.reviews.count > 0 && venue.reviews.average !== null
-              ? `★ ${venue.reviews.average.toFixed(1)} · ${venue.reviews.count} guest ${venue.reviews.count === 1 ? "review" : "reviews"}`
-              : "New on Simply Sit"}
-          </Text>
+        <View style={s.shortLocation}>
+          <Ionicons name="location-outline" size={15} color={colors.brandPrimary} accessible={false} />
+          <Text style={s.shortLocationText} numberOfLines={1}>{shortLocation}</Text>
           <Pressable accessibilityRole="link" accessibilityLabel="Directions in OpenStreetMap" style={s.link} hitSlop={8}
             onPress={() => void Linking.openURL(`https://www.openstreetmap.org/?mlat=${venue.lat}&mlon=${venue.lng}#map=17/${venue.lat}/${venue.lng}`)}>
             <Text style={s.linkText}>Directions</Text>
             <Ionicons name="open-outline" size={14} color={colors.brandPrimary} accessible={false} />
           </Pressable>
         </View>
-        <Text style={ui.small}>{venue.address}</Text>
-        <View style={ui.row}>
-          <StatusPill tone="sage" label={today.length ? `Open ${today.map((h) => `${h.opens}–${h.closes}`).join(", ")}` : "Closed today"} />
-          <StatusPill tone="sage" label="No compulsory order" />
-        </View>
+      </View>
+
+      <Card>
+        <InfoRow icon="map-outline" label="Address" value={venue.address} />
+        <InfoRow icon="time-outline" label="Hours today" value={openState} tone={openNow ? "open" : undefined} />
+        <InfoRow icon="calendar-outline" label="Date & time" value={`${formatIstDate(nowIso)} · ${formatIstTime(nowIso)} IST`} />
+        <InfoRow icon="hourglass-outline" label="Next free table"
+          value={paused ? "Bookings paused" : nextFree ? `${formatIstTime(nextFree)} · ${dayLabel}` : slots ? `None free ${dayLabel.toLowerCase() === "today" ? "today" : `on ${dayLabel}`}` : "Checking..."} />
+        <InfoRow icon="star-outline" label="Rating" testID="venue-rating"
+          value={venue.reviews.count > 0 && venue.reviews.average !== null
+            ? `★ ${venue.reviews.average.toFixed(1)} · ${venue.reviews.count} guest ${venue.reviews.count === 1 ? "review" : "reviews"}`
+            : "New on Simply Sit"} />
+        <InfoRow icon="restaurant-outline" label="Food" value={`No compulsory order · Outside food ${FOOD_RULE_LABEL[p.byo_food].toLowerCase()}`} />
+      </Card>
+
+      <View style={{ gap: spacing.sm }}>
+        {venue.description ? <Text style={ui.muted}>{venue.description}</Text> : null}
         {venue.is_synthetic ? <MockBadge text="Synthetic demo venue - fictional prices and rules" /> : null}
       </View>
 
@@ -260,15 +316,27 @@ export default function VenueScreen() {
 }
 
 const s = StyleSheet.create({
-  hero: { width: "100%", height: 260, borderRadius: radius.card, backgroundColor: colors.mapSurface },
-  heroEmpty: { alignItems: "center", justifyContent: "center", gap: 6 },
-  heroCaption: {
-    position: "absolute", left: 12, right: 12, bottom: 12, flexDirection: "row", alignItems: "center", gap: 6,
-    backgroundColor: "rgba(46, 46, 46, 0.72)", borderRadius: 100, paddingHorizontal: 12, paddingVertical: 6, alignSelf: "flex-start"
+  cover: { width: "100%", height: 220, borderRadius: radius.card, backgroundColor: colors.mapSurface },
+  coverEmpty: { alignItems: "center", justifyContent: "center", gap: 6 },
+  photoCount: {
+    position: "absolute", top: 12, right: 12, flexDirection: "row", alignItems: "center", gap: 6,
+    backgroundColor: "rgba(46, 46, 46, 0.72)", borderRadius: 100, paddingHorizontal: 12, paddingVertical: 6
   },
-  heroCaptionText: { fontFamily: fonts.medium, fontSize: 12, color: colors.surfaceCard, flexShrink: 1 },
+  photoCountText: { fontFamily: fonts.medium, fontSize: 12, color: colors.surfaceCard },
+  logo: {
+    position: "absolute", left: 16, bottom: -36, width: 76, height: 76, borderRadius: 20, borderWidth: 4, borderColor: colors.surfaceCanvas,
+    backgroundColor: colors.brandPrimary, alignItems: "center", justifyContent: "center", overflow: "hidden"
+  },
+  logoImage: { width: "100%", height: "100%", backgroundColor: colors.surfaceCard },
+  logoText: { fontFamily: fonts.display, fontSize: 28, color: colors.surfaceCanvas },
+  identity: { gap: 4, marginTop: 16 },
   eyebrow: { fontFamily: fonts.semibold, fontSize: 11, letterSpacing: 0.4, color: colors.brandPrimary, textTransform: "uppercase" },
-  metaRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: spacing.sm },
+  shortLocation: { flexDirection: "row", alignItems: "center", gap: 6 },
+  shortLocationText: { fontFamily: fonts.medium, fontSize: 14, color: colors.textMuted, flex: 1 },
+  infoRow: { flexDirection: "row", alignItems: "flex-start", gap: spacing.md },
+  infoIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surfaceCanvas, alignItems: "center", justifyContent: "center" },
+  infoLabel: { fontFamily: fonts.medium, fontSize: 11, letterSpacing: 0.3, color: colors.textMuted, textTransform: "uppercase" },
+  infoOpen: { color: colors.statusSuccess },
   link: { flexDirection: "row", alignItems: "center", gap: 4, minHeight: 44 },
   linkText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.brandPrimary },
   amenityGrid: { flexDirection: "row", flexWrap: "wrap", rowGap: spacing.md },

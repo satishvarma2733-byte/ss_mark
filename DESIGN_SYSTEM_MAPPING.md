@@ -131,7 +131,7 @@ Restyle status comes from the 9 November handoff; no screen was checked on a dev
 | `Customer · Checkout and payment` | `94:10244` | `checkout/[bookingId].tsx`, `payment-return.tsx` | Restyled 19 Nov; hold, checkout and mock payment checked on the Android emulator. Payment method is chosen on the provider page, not in the app |
 | `Customer · Confirmed booking pass` | `94:10372` | `booking/[id].tsx` | Restyled 19 Nov: headline, status pill, summary card, QR + PIN pass, Directions/Receipt, refund card, house rules, receipt. Checked on the Android emulator |
 | `Customer · My bookings` | `94:10467` | `(tabs)/bookings.tsx` | Restyled 19 Nov: Upcoming / Completed / Cancelled tabs with counts, state-specific cards, notifications bell. Venue photo not shown (not in the booking list API). Checked on the Android emulator |
-| `Customer · Active booking and extension` | `94:10575` | `extend/[bookingId].tsx` | Works; restyle pending |
+| `Customer · Active booking and extension` | `94:10575` | `extend/[bookingId].tsx` | Restyled 19 Nov and checked on the Android emulator (request, approve, withdraw) |
 | `Customer · Cancellation refund and help` | `94:10690` | `cancel/[bookingId].tsx`, `(tabs)/help.tsx` | Works; restyle pending |
 | `A · Sign in`, `A · Verify OTP`, `Customer · Email sign-in` | `94:10818`, `94:10876`, `94:17657` | `(tabs)/account.tsx` | Restyled 9 Nov (email code, not SMS) |
 | `A · Manual location` | `94:10943` | `location.tsx` | Restyled 9 Nov |
