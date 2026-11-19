@@ -5134,3 +5134,8 @@ tbody tr:hover > td {
     max-width: 1440px;
   }
 }
+
+/* The skip-link target takes focus programmatically; it is a region, not a control, so it shows no ring. */
+#main:focus {
+  outline: none;
+}

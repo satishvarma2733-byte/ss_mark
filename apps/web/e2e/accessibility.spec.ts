@@ -208,3 +208,56 @@ test("dark mode passes WCAG 2.2 A/AA checks on customer, partner and admin pages
   report(findings);
   expect(findings).toEqual([]);
 });
+
+// Keyboard (19 Nov 2026): the skip link is the first stop and moves focus into the content, and every Tab stop shows
+// a visible focus indicator (an outline or ring on the control, or on the chip/field that wraps it).
+async function keyboardWalk(page: Page, path: string, label: string, limit = 60): Promise<string[]> {
+  const problems: string[] = [];
+  await page.goto(path);
+  await page.waitForLoadState("networkidle");
+  await page.keyboard.press("Tab");
+  if (!(await page.evaluate(() => document.activeElement?.classList.contains("skip-link")))) problems.push(`${label}: first stop is not the skip link`);
+  await page.keyboard.press("Enter");
+  if ((await page.evaluate(() => document.activeElement?.id)) !== "main") problems.push(`${label}: skip link did not move focus to #main`);
+  await page.goto(path);
+  await page.waitForLoadState("networkidle");
+  const seen = new Set<string>();
+  for (let i = 0; i < limit; i += 1) {
+    await page.keyboard.press("Tab");
+    const stop = await page.evaluate(() => {
+      const el = document.activeElement;
+      if (!el || el === document.body) return null;
+      const ring = (node: Element) => {
+        const cs = getComputedStyle(node);
+        return (cs.outlineStyle !== "none" && parseFloat(cs.outlineWidth) > 0) || (cs.boxShadow !== "" && cs.boxShadow !== "none");
+      };
+      const wrapper = el.closest("label.chip, .field-control, .venue-card, .choice-pill");
+      const r = el.getBoundingClientRect();
+      const name = (el.getAttribute("aria-label") || el.textContent || el.id || el.tagName).trim().replace(/\s+/g, " ").slice(0, 40);
+      return { key: `${el.tagName}|${name}|${Math.round(r.left)},${Math.round(r.top + scrollY)}`, name, visible: ring(el) || (!!wrapper && wrapper !== el && ring(wrapper)) };
+    });
+    if (!stop || seen.has(stop.key)) break;
+    seen.add(stop.key);
+    if (!stop.visible) problems.push(`${label}: no visible focus on "${stop.name}"`);
+  }
+  return problems;
+}
+
+test("keyboard: the skip link moves focus into the content and every Tab stop shows focus", async ({ page }) => {
+  test.setTimeout(240_000);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const venue = await createQuickVenue({ tables: 2 });
+  const problems: string[] = [];
+  for (const [path, label] of [["/", "home"], ["/venues", "venues"], [`/venues/${venue.slug}`, "venue"], ["/sign-in", "sign-in"], ["/help", "help"]] as const) {
+    problems.push(...await keyboardWalk(page, path, label));
+  }
+  const user = await createFixtureUser();
+  await db()`insert into public.venue_memberships (venue_id, user_id, role, status, accepted_at)
+             select ${venue.venueId}::uuid, p.id, 'OWNER', 'ACTIVE', now() from public.profiles p where p.auth_user_id = ${user.id}::uuid`;
+  await grantPlatformRole(user.id, "SUPERADMIN");
+  await signInWithMfa(page, user.email, `/partner?venue=${venue.venueId}`);
+  for (const [path, label] of [[`/partner?venue=${venue.venueId}`, "partner today"], [`/staff?venue=${venue.venueId}`, "staff arrivals"], ["/admin", "admin"], ["/admin/settings", "admin settings"]] as const) {
+    problems.push(...await keyboardWalk(page, path, label));
+  }
+  expect(problems).toEqual([]);
+});

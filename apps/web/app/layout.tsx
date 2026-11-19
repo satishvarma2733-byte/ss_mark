@@ -42,7 +42,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {SYNTHETIC_BANNER}
         </div>
         <ToastProvider>
-          <div id="main">{children}</div>
+          {/* tabIndex -1: the skip link moves keyboard focus here, not only the address. */}
+          <div id="main" tabIndex={-1}>{children}</div>
         </ToastProvider>
         <footer className="site-footer">
           <span className="footer-logos">
