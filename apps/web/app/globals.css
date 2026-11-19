@@ -5125,3 +5125,12 @@ tbody tr:hover > td {
     object-fit: cover;
   }
 }
+
+/* Wide screens: portal content keeps a readable measure (like the 1440 px customer container). The sidebar and the
+   top bar stay full width; content stays left-aligned with the breadcrumb. */
+@media (min-width: 1700px) {
+  body:has(.portal-sidebar) main > :not(.portal-sidebar):not(.portal-topbar) {
+    width: 100%;
+    max-width: 1440px;
+  }
+}

@@ -34,7 +34,7 @@
 - Admin: notification centre, partner-and-venue management, system settings, secure admin access.
 - Each screen only where the API already stores the data; anything needing a new table gets a migration and integration test first.
 
-### E. Responsive and accessibility sweep (1–2 days)
+### E. Responsive and accessibility sweep — responsive part DONE 19 Nov (38 routes x 6 widths, 0 overflow; portal capped at 1440 px on wide screens). Keyboard pass not done.
 - All routes at 360, 430, 768, 1024, 1280, 1440, 1920: no horizontal overflow, no clipped logos, tables scroll inside their region.
 - Keyboard pass and axe scan on every route, both themes.
 
