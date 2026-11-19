@@ -127,7 +127,7 @@ Restyle status comes from the 9 November handoff; no screen was checked on a dev
 | `Customer · Discover` | `94:9701` | `(tabs)/index.tsx` | Restyled 9 Nov, with empty/loading/error states |
 | `Customer · Search results` | `94:9836` | `(tabs)/index.tsx` | Restyled 9 Nov |
 | `Customer · Venue detail` | `94:9976` | `venue/[id].tsx` | Restyled 19 Nov; checked on the Android emulator |
-| `Customer · Select table and time` | `94:10119` | `book.tsx` | Works; restyle pending |
+| `Customer · Select table and time` | `94:10119` | `book.tsx` (review half; table and time are picked on the venue page) | Restyled 19 Nov; signed-out, quote and hold checked on the Android emulator |
 | `Customer · Checkout and payment` | `94:10244` | `checkout/[bookingId].tsx` | Works; restyle pending |
 | `Customer · Confirmed booking pass` | `94:10372` | `booking/[id].tsx` | Works; restyle pending |
 | `Customer · My bookings` | `94:10467` | `(tabs)/bookings.tsx` | Works; restyle pending |

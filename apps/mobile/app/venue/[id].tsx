@@ -212,7 +212,7 @@ export default function VenueScreen() {
                     <Chip key={start} label={formatIstTime(start)} selected={false} testID="slot"
                       onPress={() => router.push({
                         pathname: "/book",
-                        params: { venueId: venue.id, venueName: venue.name, resourceId: table.resource_id, start, duration: String(duration), party: String(party) }
+                        params: { venueId: venue.id, venueName: venue.name, resourceId: table.resource_id, tableLabel: table.label, seats: String(table.capacity), start, duration: String(duration), party: String(party) }
                       })} />
                   ))}
                 </View>

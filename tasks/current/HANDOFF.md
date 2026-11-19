@@ -207,3 +207,20 @@ filters its search. `pnpm test:unit` not re-run in this step.
 
 Checks: `pnpm --filter @simply-sit/mobile typecheck` clean (after Metro regenerated typed routes); `pnpm lint` clean;
 `pnpm test:unit` 79 passed; `pnpm test:mobile` exported Android and iOS bundles.
+
+## Step F, slice 2 - native book (review and hold) screen (19 November 2026)
+
+- `apps/mobile/app/book.tsx` rebuilt to Figma "Customer · Select table and time" (94:10119), review half: shared
+  `Screen` shell, three-step indicator, date / party / start / duration facts with "Change table or time", the
+  selected table card (label and seats passed from the venue page as `tableLabel` and `seats`), the cleaning note
+  from the policy buffer, price rows from the server quote (hourly, platform fee, taxes "Not configured", total),
+  the rules switch and "Hold table and continue to payment". Hold behaviour, idempotency and test ids
+  (`go-sign-in`, `book-problem`, `quote-total`, `accept-rules`, `hold-table`) are unchanged.
+- Verified on the Android emulator with a fresh local test account (signed in by email code from Mailpit): signed-out
+  state, quote state, hold button disabled until the rules are accepted, hold succeeded and opened checkout. The test
+  hold SS-MEXVK3GHYJ was released (CANCELLED).
+- Found: the checkout screen still uses the old layout and its mock-payment label overlaps the status bar (no safe
+  area). Next slice.
+
+Checks: mobile typecheck clean; `pnpm lint` clean; `pnpm test:unit` 79 passed; `pnpm test:mobile` exported Android
+and iOS bundles.
