@@ -38,7 +38,7 @@
 - All routes at 360, 430, 768, 1024, 1280, 1440, 1920: no horizontal overflow, no clipped logos, tables scroll inside their region.
 - Keyboard pass and axe scan on every route, both themes.
 
-### F. Native app (4–5 days, needs the Android emulator)
+### F. Native app — IN PROGRESS (19 Nov: venue detail restyled and venue gallery added, checked on the Android emulator)
 - Finish the Figma pass on the remaining Expo screens, add gallery, advanced filters and calendar, verify on a device.
 
 ### G. Production preparation — blocked on the owner

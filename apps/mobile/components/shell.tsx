@@ -4,7 +4,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { BottomTabBarProps } from "expo-router/build/layouts/Tabs";
 import { router } from "expo-router";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, ComponentRef, ReactNode, RefObject } from "react";
 import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "@simply-sit/design-tokens";
@@ -107,11 +107,15 @@ export function Screen(props: {
   refreshing?: boolean;
   onRefresh?: () => void;
   testID?: string;
+  // Optional bar pinned above the navigation (a price and its action), and a handle to scroll the page to a section.
+  footer?: ReactNode;
+  scrollRef?: RefObject<ComponentRef<typeof ScrollView> | null>;
 }) {
   return (
     <View style={shell.root} testID={props.testID}>
       <BrandHeader />
       <ScrollView
+        ref={props.scrollRef}
         contentContainerStyle={shell.scroll}
         keyboardShouldPersistTaps="handled"
         refreshControl={props.onRefresh ? <RefreshControl refreshing={!!props.refreshing} onRefresh={props.onRefresh} /> : undefined}
@@ -119,6 +123,7 @@ export function Screen(props: {
         <PageNav title={props.title} subtitle={props.subtitle} back={props.back} />
         <View style={shell.content}>{props.children}</View>
       </ScrollView>
+      {props.footer ? <View style={shell.footer}>{props.footer}</View> : null}
       {props.nav ? <PrimaryNav active={props.nav} /> : null}
     </View>
   );
@@ -140,6 +145,10 @@ const shell = StyleSheet.create({
   pageTitle: { fontFamily: fonts.semibold, fontSize: 18, lineHeight: 27, color: colors.textPrimary },
   pageSubtitle: { fontFamily: fonts.regular, fontSize: 11, lineHeight: 16, color: colors.textMuted },
   content: { padding: 24, gap: 24 },
+  footer: {
+    backgroundColor: colors.surfaceCard, borderTopWidth: 1, borderTopColor: colors.brandSand, paddingHorizontal: 24, paddingVertical: 14,
+    gap: 10
+  },
   nav: {
     flexDirection: "row", justifyContent: "space-between", backgroundColor: colors.surfaceCard, borderTopWidth: 1,
     borderTopColor: colors.brandSand, paddingTop: 15, paddingHorizontal: 20

@@ -53,6 +53,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surfaceCanvas } }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="venue/[id]" />
+        <Stack.Screen name="gallery/[id]" />
         <Stack.Screen name="book" />
         <Stack.Screen name="checkout/[bookingId]" />
         <Stack.Screen name="payment-return" />

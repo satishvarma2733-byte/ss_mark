@@ -188,3 +188,22 @@ Checks: `pnpm typecheck` clean; `pnpm lint` clean; `next build` OK; `npx playwri
 the test venue on its first page). Cause: 236 venues created by e2e runs on 16 Nov in the un-reset local database; the
 same file passed (175/175) earlier the same day. NOT fixed: needs `pnpm db:reset` (wipes local data) or a test that
 filters its search. `pnpm test:unit` not re-run in this step.
+
+## Step F, slice 1 - native venue page and gallery (19 November 2026, Expo app)
+
+- `apps/mobile/app/venue/[id].tsx` rebuilt to Figma "Customer · Venue detail" (94:9976) inside the shared `Screen`
+  shell (brand header, back bar, tab bar): large first photo with "1 / n" caption opening the gallery, category line,
+  display title, rating or "New on Simply Sit", Directions (OpenStreetMap), address, today's hours, amenities with
+  unverified ones marked, table cards with hourly price and free start times, food notice, house rules and hours,
+  a recent review, and a pinned price bar whose button scrolls to the tables. Booking behaviour and test ids
+  (`venue-rating`, `venue-photos`, `bookings-paused`, `table-slots`, `slot`) are unchanged.
+- New `apps/mobile/app/gallery/[id].tsx` (Figma 94:17490), registered in `app/_layout.tsx`; new `lib/labels.ts`
+  (same catalogue labels as the web). `components/shell.tsx` `Screen` gained optional `footer` and `scrollRef`.
+- Distance is not in the venue data, so the frame's "1.2 km" is not shown. "No food minimum" is shown as
+  "No compulsory order" (the product promise; no minimum-spend field exists).
+- Verified on the Android emulator (simplysit_api36, dev build, Metro in CI mode): venue page, pinned button scroll,
+  gallery open and back. The final text trim of the price bar was checked by typecheck and export only.
+- Not done: the remaining Expo screens in the mapping table; new app icons need a native rebuild to appear.
+
+Checks: `pnpm --filter @simply-sit/mobile typecheck` clean (after Metro regenerated typed routes); `pnpm lint` clean;
+`pnpm test:unit` 79 passed; `pnpm test:mobile` exported Android and iOS bundles.

@@ -126,7 +126,7 @@ Restyle status comes from the 9 November handoff; no screen was checked on a dev
 | --- | --- | --- | --- |
 | `Customer · Discover` | `94:9701` | `(tabs)/index.tsx` | Restyled 9 Nov, with empty/loading/error states |
 | `Customer · Search results` | `94:9836` | `(tabs)/index.tsx` | Restyled 9 Nov |
-| `Customer · Venue detail` | `94:9976` | `venue/[id].tsx` | Works; restyle pending |
+| `Customer · Venue detail` | `94:9976` | `venue/[id].tsx` | Restyled 19 Nov; checked on the Android emulator |
 | `Customer · Select table and time` | `94:10119` | `book.tsx` | Works; restyle pending |
 | `Customer · Checkout and payment` | `94:10244` | `checkout/[bookingId].tsx` | Works; restyle pending |
 | `Customer · Confirmed booking pass` | `94:10372` | `booking/[id].tsx` | Works; restyle pending |
@@ -141,7 +141,7 @@ Restyle status comes from the 9 November handoff; no screen was checked on a dev
 | `A · Support case detail` | `94:11240` | `support/[id].tsx` | Works; restyle pending |
 | `A · Review cancellation` | `94:11328` | `cancel/[bookingId].tsx` | Works; restyle pending |
 | `Customer · Advanced filters` | `94:17429` | — | **Missing** |
-| `Customer · Venue gallery` | `94:17490` | — | **Missing** on native (web has `ImageGallery`) |
+| `Customer · Venue gallery` | `94:17490` | `gallery/[id].tsx` | Implemented 19 Nov; checked on the Android emulator |
 | `Customer · Date and time calendar` | `94:17537` | — | **Missing** (native selects today) |
 | `Customer · Privacy and preferences` | `94:17597` | — | **Missing** |
 | `Customer · Nearby spaces · Map` | `94:17707` | `(tabs)/index.tsx` | Not verified |
