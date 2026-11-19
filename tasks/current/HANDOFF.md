@@ -243,3 +243,20 @@ and iOS bundles.
 
 Checks: mobile typecheck clean; `pnpm lint` clean; `pnpm test:unit` 79 passed; `pnpm test:mobile` exported Android
 and iOS bundles.
+
+## Step F, slice 4 - native booking pass (19 November 2026)
+
+- `apps/mobile/app/booking/[id].tsx` rebuilt to Figma "Customer · Confirmed booking pass" (94:10372) in the shared
+  shell ("Your booking", subtitle the booking reference): status headline, "See you at <venue>", status pill, booking
+  ID, summary card (venue, area, table, guests, date, time, duration), check-in pass (QR, PIN, handover instructions,
+  check-in opens 15 min before start, reserved time), Directions (OpenStreetMap) and Receipt (scrolls to the receipt),
+  "Cancellation & refunds" while CONFIRMED (deadline, says when it has passed, Manage booking while cancellable), house
+  rules, receipt with extension lines and payment state. Checked-in, completed, cancelled and refund notices and all
+  test ids (`booking-status`, `booking-ref`, `arrival-pin`, `cancel-booking`, `extend-booking`, `review-booking`,
+  `extension-line`) kept.
+- Verified on the Android emulator with SS-KFBXXEVT38 (CONFIRMED): every section renders; Receipt scrolls to the receipt
+  card. Fixed a doubled period when the venue name ends in "." ("Chapter & Co."). Other states (checked in, completed,
+  cancelled) checked by code review only.
+
+Checks: mobile typecheck clean; eslint clean on the screen; `pnpm test:unit` 79 passed; `pnpm test:mobile` exported
+Android and iOS bundles.
