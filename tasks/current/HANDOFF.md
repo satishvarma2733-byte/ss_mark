@@ -260,3 +260,20 @@ and iOS bundles.
 
 Checks: mobile typecheck clean; eslint clean on the screen; `pnpm test:unit` 79 passed; `pnpm test:mobile` exported
 Android and iOS bundles.
+
+## Step F, slice 5 - native my bookings (19 November 2026)
+
+- `apps/mobile/app/(tabs)/bookings.tsx` rebuilt to Figma "Customer · My bookings" (94:10467) in the shared shell ("Your
+  hours, in one place"). Upcoming / Completed / Cancelled tabs with counts: both API scopes (`upcoming`, `past`) load
+  together and past is split by status; ended holds count as cancelled. Upcoming card: status pill ("Confirmed ·
+  Today"), venue, table, guests, ref, date and time, paid amount, "View pass & check in" (or "Complete payment" for a
+  live hold), Directions / Receipt / Manage links. Completed card: Write a review (or Your review) and Receipt.
+  Cancelled card: refund amount and status with "Track refund & get help", or "Nothing was charged" for released
+  holds. Notifications moved to a bell button (`open-notifications` kept); `booking-card` and `booking-status` kept.
+- Not built: the venue photo thumbnail (the booking list API has no photo) and the frame's "View all" link.
+- Verified on the Android emulator: Upcoming (SS-KFBXXEVT38), Completed (empty state) and Cancelled (two released
+  holds); "View pass & check in" opens the booking pass. The completed card and refund rows were checked by code
+  review only (no such bookings in the local data). The "Paid" label tweak after the run was not re-checked on device.
+
+Checks: mobile typecheck clean; eslint clean on the screen; `pnpm test:unit` 79 passed; `pnpm test:mobile` exported
+Android and iOS bundles.
