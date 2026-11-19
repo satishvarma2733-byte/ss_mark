@@ -224,3 +224,22 @@ Checks: `pnpm --filter @simply-sit/mobile typecheck` clean (after Metro regenera
 
 Checks: mobile typecheck clean; `pnpm lint` clean; `pnpm test:unit` 79 passed; `pnpm test:mobile` exported Android
 and iOS bundles.
+
+## Step F, slice 3 - native checkout and payment status (19 November 2026)
+
+- `apps/mobile/app/checkout/[bookingId].tsx` rebuilt to Figma "Customer · Checkout and payment" (94:10244) in the shared
+  shell: "Review & pay · Step 2 of 3", hold countdown notice, booking summary (venue, area, table, guests, date, time,
+  duration, reference, "On hold · Payment required"), price rows from the booking's price snapshot, "How you will pay"
+  (method chosen on the provider page; the app collects no payment details - the frame's UPI chooser is not built),
+  "Know before you book" (refund cutoff from the policy snapshot; says when the free window has already closed), pay,
+  release, and the verification note. Pay, release, polling and deep-link return are unchanged; test ids kept.
+- `apps/mobile/app/payment-return.tsx` moved into the shared shell ("Payment status · Step 3 of 3") with a state icon;
+  copy, logic and test ids unchanged. Fixes the mock-payment label overlapping the status bar on both screens.
+- Verified on the Android emulator: hold, checkout, Pay, mock gateway "Pay (success)", return to the app and
+  "Booking confirmed" (SS-KFBXXEVT38 CONFIRMED in the database), payment status screen in the new shell, and a second
+  hold (SS-7GD7QETE4M) released. The "refund window closed" wording was checked by code review only (no bookable start
+  had a passed cutoff during the run).
+- Noticed, not changed: the web mock-gateway page shows the customer phone tab bar inside the provider stand-in.
+
+Checks: mobile typecheck clean; `pnpm lint` clean; `pnpm test:unit` 79 passed; `pnpm test:mobile` exported Android
+and iOS bundles.

@@ -1,13 +1,15 @@
 // C07 native: the provider's redirect (simplysit-dev://payment-return?...) lands here, including on a cold start after
 // the app was killed while the customer paid. The query values are hints; the server fetches the payment itself and
 // this screen says "confirmed" only when the server's booking is CONFIRMED.
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, ScrollView, Text } from "react-native";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { ApiError } from "@simply-sit/api-client";
 import type { PaymentOrderStatus } from "@simply-sit/contracts";
 import { colors } from "@simply-sit/design-tokens";
-import { Button, Card, MockBadge, Notice, ui } from "../components/ui";
+import { Screen } from "../components/shell";
+import { Button, Card, MockBadge, Notice, tints, ui } from "../components/ui";
 import { api } from "../lib/api";
 import { formatInrPaise, formatIstTime } from "../lib/format";
 import { clearPendingPayment } from "../lib/pending-payment";
@@ -115,29 +117,37 @@ export default function PaymentReturnScreen() {
     };
   }, [orderId, session, params.provider_payment_id, params.signature, params.status]);
 
-  if (!ready) return <ActivityIndicator style={{ marginTop: 48 }} color={colors.brandPrimary} />;
-  if (!orderId) return <Notice tone="error">This payment link is incomplete. Open Bookings to see the current status.</Notice>;
+  const shell = (children: ReactNode) => (
+    <Screen title="Payment status" subtitle="Step 3 of 3" nav="bookings">
+      {children}
+    </Screen>
+  );
+  if (!ready) return shell(<ActivityIndicator color={colors.brandPrimary} accessibilityLabel="Loading" />);
+  if (!orderId) return shell(<Notice tone="error">This payment link is incomplete. Open Bookings to see the current status.</Notice>);
   if (!session) {
-    return (
-      <ScrollView contentContainerStyle={ui.screen}>
-        <Text style={ui.title}>Sign in to see this payment</Text>
+    return shell(
+      <>
+        <Notice title="Sign in to see this payment">
+          <Text style={ui.noticeText}>Your payment is safe; signing in shows its status.</Text>
+        </Notice>
         <Button label="Sign in on the Account tab" onPress={() => router.push("/account")} />
-      </ScrollView>
+      </>
     );
   }
   const view = state ? describe(state, typeof params.status === "string" ? params.status : undefined, slow) : null;
-  return (
-    <ScrollView contentContainerStyle={ui.screen}>
-      <Stack.Screen options={{ title: "Payment status" }} />
-      <MockBadge text="Mock payment provider - test mode" />
+  const tone = view ? TONE[view.tone] : null;
+  return shell(
+    <>
       {!state && !error ? <ActivityIndicator color={colors.brandPrimary} accessibilityLabel="Checking payment" /> : null}
-      {view && state ? (
-        <Card>
-          <Text style={[ui.title, { color: { success: colors.statusSuccess, warning: colors.statusWarning, error: colors.statusError, info: colors.textPrimary }[view.tone] }]}
-            testID="payment-title" accessibilityLiveRegion="polite">
+      {view && state && tone ? (
+        <Card style={s.outcome}>
+          <View style={[s.icon, { backgroundColor: tone.bg }]}>
+            <Ionicons name={tone.icon} size={30} color={tone.fg} accessible={false} />
+          </View>
+          <Text style={[ui.title, s.center, { color: tone.fg }]} testID="payment-title" accessibilityLiveRegion="polite">
             {view.title}
           </Text>
-          <Text style={ui.body}>{view.body}</Text>
+          <Text style={[ui.muted, s.center]}>{view.body}</Text>
           {view.action === "booking" ? (
             <Button label="View booking and check-in code" testID="view-booking"
               onPress={() => router.replace({ pathname: "/booking/[id]", params: { id: state.booking.booking_id } })} />
@@ -150,9 +160,23 @@ export default function PaymentReturnScreen() {
           ) : null}
           {view.action === "search" ? <Button label="Choose a time again" variant="secondary" onPress={() => router.replace("/")} /> : null}
           {view.action === "bookings" ? <Button label="Your bookings" variant="secondary" onPress={() => router.replace("/bookings")} /> : null}
+          <MockBadge text="Mock payment provider - test mode" />
         </Card>
       ) : null}
       {error ? <Notice tone="error">{error}</Notice> : null}
-    </ScrollView>
+    </>
   );
 }
+
+const TONE: Record<"success" | "warning" | "error" | "info", { bg: string; fg: string; icon: ComponentProps<typeof Ionicons>["name"] }> = {
+  success: { bg: colors.statusSuccessSurface, fg: colors.statusSuccessText, icon: "checkmark-circle-outline" },
+  warning: { bg: tints.warmSurface, fg: tints.warmText, icon: "time-outline" },
+  error: { bg: tints.errorSurface, fg: tints.errorText, icon: "close-circle-outline" },
+  info: { bg: colors.noticeSurface, fg: colors.textPrimary, icon: "information-circle-outline" }
+};
+
+const s = StyleSheet.create({
+  outcome: { alignItems: "stretch" },
+  icon: { alignSelf: "center", width: 60, height: 60, borderRadius: 30, alignItems: "center", justifyContent: "center" },
+  center: { textAlign: "center" }
+});
