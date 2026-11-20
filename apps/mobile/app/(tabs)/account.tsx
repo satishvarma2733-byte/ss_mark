@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ComponentRef, type ReactNode } from "react";
-import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import type { Session } from "@supabase/supabase-js";
 import { ApiError } from "@simply-sit/api-client";
@@ -238,31 +238,6 @@ function SignedIn(props: { email: string; me: Me | null; onChanged: () => Promis
     setBusy(false);
   }
 
-  function confirmDeletion() {
-    Alert.alert(
-      "Request account deletion?",
-      "New bookings pause straight away. Active bookings, payments and refunds are reviewed first, and records we must keep for finance or audit are kept in pseudonymous form.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Request deletion",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const result = await api!.requestPrivacy("DELETE");
-              onMessage(`Deletion request received (${result.status}). New bookings are paused.`);
-              await onChanged();
-            } catch (error) {
-              onMessage(error instanceof ApiError && error.code === "REAUTH_REQUIRED"
-                ? "For your security, sign out and sign in again with a fresh code, then request deletion."
-                : "Could not create the request. Try again.");
-            }
-          }
-        }
-      ]
-    );
-  }
-
   return (
     <>
       <Card title="The essentials">
@@ -295,16 +270,14 @@ function SignedIn(props: { email: string; me: Me | null; onChanged: () => Promis
         <DetailRow label="Booking & payment updates" value="Always on" />
         <Text style={ui.hint}>Essential updates are sent to your verified email.</Text>
         <Divider />
-        <DetailRow label="Marketing messages" value="Not sent" />
         <DetailRow label="City" value="Bengaluru (pilot)" />
       </Card>
 
       <Card title="Privacy & help">
         {me?.status === "DELETION_PENDING" ? (
           <Text style={ui.muted}>A deletion request is in review. New bookings are paused.</Text>
-        ) : (
-          <LinkRow label="Privacy & data requests" onPress={confirmDeletion} disabled={busy || !me} />
-        )}
+        ) : null}
+        <LinkRow label="Privacy and preferences" onPress={() => router.push("/privacy")} disabled={!me} />
         <Divider />
         <LinkRow label="Help centre & your cases" onPress={() => router.navigate("/help")} />
       </Card>

@@ -1,9 +1,9 @@
 // Typed client for the customer/portal web API. Platform-neutral: the caller injects baseUrl, fetch and (for native)
 // a bearer-token getter. Responses are validated with shared contracts. Web pages use cookie sessions instead.
 import {
-  CLIENT_VERSION_HEADER, apiErrorSchema, bookingDetailSchema, serviceStatusSchema, type ServiceStatus, notificationPageSchema, notificationReadResultSchema, type NotificationPage, bookingListSchema, cancelPreviewSchema, cancelResultSchema, extensionSchema, healthSchema, reviewSchema, ticketSchema, holdSchema, meSchema, paymentOrderStatusSchema, quoteSchema,
+  CLIENT_VERSION_HEADER, apiErrorSchema, bookingDetailSchema, serviceStatusSchema, type ServiceStatus, notificationPageSchema, notificationReadResultSchema, type NotificationPage, bookingListSchema, cancelPreviewSchema, cancelResultSchema, extensionSchema, healthSchema, reviewSchema, ticketSchema, holdSchema, meSchema, notificationPreferencesSchema, paymentOrderStatusSchema, quoteSchema,
   seatMapSchema, venueAvailabilitySchema, venueDetailSchema, venueSearchResultSchema, venueSeatingSchema,
-  type BookingDetail, type BookingList, type CancelPreview, type CancelResult, type CustomerCancelReason, type Extension, type Health, type Review, type Ticket, type Hold, type Me, type PaymentOrderStatus, type Quote, type SeatMap, type VenueAvailability, type VenueSeating,
+  type BookingDetail, type BookingList, type CancelPreview, type CancelResult, type CustomerCancelReason, type Extension, type Health, type Review, type Ticket, type Hold, type Me, type NotificationPreferences, type PaymentOrderStatus, type Quote, type SeatMap, type VenueAvailability, type VenueSeating,
   type VenueDetail, type VenueSearchResult
 } from "@simply-sit/contracts";
 
@@ -75,7 +75,7 @@ export function createSimplySitClient(options: ClientOptions) {
   const base = options.baseUrl.replace(/\/$/, "");
 
   async function request<T>(
-    method: "GET" | "POST",
+    method: "GET" | "POST" | "PUT",
     path: string,
     parse: (value: unknown) => T,
     body?: unknown,
@@ -131,6 +131,11 @@ export function createSimplySitClient(options: ClientOptions) {
     acceptTerms: (termsVersion: string, privacyVersion: string): Promise<Me> =>
       request("POST", "/api/v1/me/terms", data((value) => meSchema.parse(value)),
         { terms_version: termsVersion, privacy_version: privacyVersion }, true),
+    // Optional notification choices; essential booking and security messages are always sent.
+    getNotificationPreferences: (): Promise<NotificationPreferences> =>
+      request("GET", "/api/v1/me/notification-preferences", data((value) => notificationPreferencesSchema.parse(value)), undefined, true),
+    setNotificationPreferences: (input: { email_copies: boolean; marketing: boolean }): Promise<NotificationPreferences> =>
+      request("PUT", "/api/v1/me/notification-preferences", data((value) => notificationPreferencesSchema.parse(value)), input, true),
     requestPrivacy: (kind: "EXPORT" | "DELETE") =>
       request("POST", "/api/v1/privacy-requests", data((value) => value as { request_id: string; status: string }), { kind }, true),
     signOut: (): Promise<void> => request("POST", "/api/v1/auth/sign-out", () => undefined, undefined, true),

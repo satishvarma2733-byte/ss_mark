@@ -1,6 +1,6 @@
 // C01/C03 native search. Manual pilot area works without any permission; "Use my location" asks only after a tap,
 // uses approximate location, rounds to about 1 km before sending, and never asks again after a denial.
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -30,7 +30,7 @@ type State = { status: "loading" } | { status: "ready"; result: VenueSearchResul
 export default function SearchScreen() {
   const [origin, setOrigin] = useState<Origin>({ kind: "area", code: "koramangala" });
   // The manual location screen (app/location.tsx) returns a pilot area or a rounded device position.
-  const params = useLocalSearchParams<{ area?: string; lat?: string; lng?: string }>();
+  const params = useLocalSearchParams<{ area?: string; lat?: string; lng?: string; category?: string; environment?: string; amenities?: string; filtersAt?: string }>();
   useEffect(() => {
     if (params.area && PILOT_AREAS.some((a) => a.code === params.area)) setOrigin({ kind: "area", code: params.area });
     else if (params.lat && params.lng && Number.isFinite(Number(params.lat)) && Number.isFinite(Number(params.lng))) {
@@ -43,6 +43,14 @@ export default function SearchScreen() {
   const [party, setParty] = useState(2);
   const [requirement, setRequirement] = useState<string | null>(null);
   const [availableOnly, setAvailableOnly] = useState(false);
+  // Advanced filters (app/filters.tsx) come back as comma-separated params.
+  const [extra, setExtra] = useState<{ category: string[]; environment: string[]; amenities: string[] }>({ category: [], environment: [], amenities: [] });
+  useEffect(() => {
+    if (params.filtersAt === undefined) return;
+    const split = (v: string | undefined) => (v ?? "").split(",").filter(Boolean);
+    setExtra({ category: split(params.category), environment: split(params.environment), amenities: split(params.amenities) });
+  }, [params.filtersAt, params.category, params.environment, params.amenities]);
+  const extraCount = extra.category.length + extra.environment.length + extra.amenities.length;
   const [view, setView] = useState<"list" | "map">("list");
   const [state, setState] = useState<State>({ status: "loading" });
   const [locationNote, setLocationNote] = useState<string | null>(null);
@@ -53,19 +61,26 @@ export default function SearchScreen() {
     ...(origin.kind === "area" ? { area: origin.code } : { lat: origin.lat, lng: origin.lng }),
     ...(time ? { start_at: istInstant(istDateKey(day), time), duration_minutes: duration, available_only: availableOnly } : {}),
     party_size: party,
-    ...(requirement ? { requirement } : {})
-  }), [origin, day, time, duration, party, requirement, availableOnly]);
+    ...(requirement ? { requirement } : {}),
+    ...(extra.category.length ? { category: extra.category } : {}),
+    ...(extra.environment.length ? { environment_tags: extra.environment } : {}),
+    ...(extra.amenities.length ? { amenities: extra.amenities } : {})
+  }), [origin, day, time, duration, party, requirement, availableOnly, extra]);
 
+  // Only the latest search may show its result: an older, slower response must not overwrite a newer one.
+  const latest = useRef(0);
   const search = useCallback(async () => {
     if (!api) {
       setState({ status: "error", message: "This build has no API configured (EXPO_PUBLIC_API_URL)." });
       return;
     }
+    const id = ++latest.current;
     setState((s) => (s.status === "ready" ? { ...s, stale: true } : { status: "loading" }));
     try {
       const result = await api.searchVenues(criteria);
-      setState({ status: "ready", result, stale: false });
+      if (id === latest.current) setState({ status: "ready", result, stale: false });
     } catch (error) {
+      if (id !== latest.current) return;
       const message = error instanceof ApiError && error.code === "NETWORK" ? error.message : "We could not load spaces. Try again.";
       setState((s) => ({ status: "error", message, ...(s.status === "ready" ? { previous: s.result } : {}) }));
     }
@@ -122,7 +137,9 @@ export default function SearchScreen() {
 
   const areaLabel = origin.kind === "area" ? `${PILOT_AREAS.find((a) => a.code === origin.code)?.label ?? origin.code}, Bengaluru` : "Near you (about 1 km)";
   const whenLabel = `${day === 0 ? "today" : day === 1 ? "tomorrow" : formatIstDate(Date.now() + day * 86_400_000)}${time ? ` at ${time} for ${durationLabel(duration)}` : ", any time"}`;
-  const filtered = requirement !== null || availableOnly;
+  const filtered = requirement !== null || availableOnly || extraCount > 0;
+  const openFilters = () => router.push({ pathname: "/filters" as never, params: {
+    category: extra.category.join(","), environment: extra.environment.join(","), amenities: extra.amenities.join(",") } });
   const openLocation = () => router.push({ pathname: "/location" as never, params: origin.kind === "area" ? { area: origin.code } : {} });
 
   return (
@@ -179,6 +196,7 @@ export default function SearchScreen() {
           ))}
         </ScrollView>
         {time ? <Chip label="Only free tables" selected={availableOnly} onPress={() => setAvailableOnly((v) => !v)} testID="available-only" /> : null}
+        <Button label={extraCount > 0 ? `More filters · ${extraCount} on` : "More filters"} variant="secondary" onPress={openFilters} testID="open-filters" />
       </Card>
 
       {state.status === "loading" ? (
@@ -233,7 +251,7 @@ export default function SearchScreen() {
               There are no matching tables for your area, time, party and filters. Try fewer filters or a nearby neighbourhood.
             </Text>
           </View>
-          {filtered ? <Button label="Clear filters & search again" onPress={() => { setRequirement(null); setAvailableOnly(false); }} /> : null}
+          {filtered ? <Button label="Clear filters & search again" onPress={() => { setRequirement(null); setAvailableOnly(false); setExtra({ category: [], environment: [], amenities: [] }); }} /> : null}
           {time ? <Button label="Try any time of day" variant={filtered ? "secondary" : "primary"} onPress={() => setTime(null)} /> : null}
           <Button label="Explore another area" variant="secondary" onPress={openLocation} />
           <Notice title="Your search stays with you">

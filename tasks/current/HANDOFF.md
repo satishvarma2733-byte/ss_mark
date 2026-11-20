@@ -506,3 +506,28 @@ passed; `pnpm build` passed; `playwright test e2e/seating.spec.ts` 2 passed; por
   notice instead.
 
 Checks: lint clean; typecheck clean; `pnpm test:unit` 92 passed; `pnpm test:mobile` exported. Nothing committed.
+
+## Step F, slice 7 - remaining native screens (20 November 2026)
+
+- `app/support/[id].tsx` restyled to Figma "Support case detail" (94:11240): status pill, case summary, "What happens
+  next" steps, conversation (read-only: the API has no customer reply yet), safety notice. Test ids kept.
+- New `app/privacy.tsx` (Figma "Privacy and preferences", 94:17597), linked from Account: essential messages always
+  on; email copies and offers switches saved through new api-client methods `getNotificationPreferences` /
+  `setNotificationPreferences` (request helper now allows PUT); location note with a link to the area screen;
+  "Request my data" (EXPORT) and "Request account closure" (DELETE, moved here from Account). The appearance setting is
+  not built (no native dark theme).
+- New `app/filters.tsx` (Figma "Advanced filters", 94:17429) from a "More filters" button on Discover: venue type,
+  atmosphere, facilities and accessibility, sent as the existing `category`, `environment_tags`, `amenities` search
+  params. Budget and food-rule filters are not built (the search API does not support them).
+- Fixed in Discover: an older, slower search response could overwrite a newer one (seen as filters "not applying");
+  only the latest search now updates the list.
+- New `app/calendar/[venueId].tsx` (Figma "Date and time calendar", 94:17537) from a "More dates" chip on the venue
+  page: month grid limited to the venue's booking window, duration, guests, free start times; "Use ..." returns
+  date, duration and party to the venue page.
+- `app/booking/[id].tsx`: refund tracking for cancelled bookings (Figma 94:10690): your refund (original, refunded,
+  not refunded, status pill), follow-your-refund steps from the booking and refund timestamps, contact support.
+- Verified on the Android emulator: refund tracker on SS-YDSD9BS5YU; contact support -> new ticket ST-HHY3Y6Q7 ->
+  case screen; filters (Brewery -> 2 spaces); calendar (27 Nov back on the venue page); privacy (offers switch saved,
+  then turned back off).
+
+Checks: lint clean; typecheck clean; `pnpm test:unit` 92 passed; `pnpm test:mobile` exported. Nothing committed.

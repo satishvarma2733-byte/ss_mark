@@ -2,6 +2,7 @@
 // and PIN (confirmed only), time, receipt and the accepted rules. Cancellation (C10) is offered while CONFIRMED and
 // before the start; the server decides the refund. Other states (checked in, completed, cancelled, refunds) keep
 // their own notices and actions.
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useCallback, useEffect, useRef, useState, type ComponentRef } from "react";
 import { ActivityIndicator, AppState, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
@@ -12,7 +13,7 @@ import {
 import { colors, radius, spacing } from "@simply-sit/design-tokens";
 import { QrCode } from "../../components/QrCode";
 import { Screen } from "../../components/shell";
-import { Button, Card, DetailRow, Divider, MockBadge, Notice, StatusPill, fonts, ui } from "../../components/ui";
+import { Button, Card, DetailRow, Divider, MockBadge, Notice, StatusPill, fonts, tints, ui } from "../../components/ui";
 import { api } from "../../lib/api";
 import { FOOD_RULE_LABEL, durationLabel, formatInrPaise, formatIstDate, formatIstDateTime, formatIstTime } from "../../lib/format";
 
@@ -137,11 +138,7 @@ export default function BookingScreen() {
         <Button label={b.review ? "Your review" : "Rate your visit"} variant="secondary" testID="review-booking"
           onPress={() => router.push({ pathname: "/review/[bookingId]", params: { bookingId: b.booking_id } })} />
       ) : null}
-      {b.refunds.map((r) => (
-        <Notice key={r.refund_id} tone="warning">
-          {`Refund ${formatInrPaise(r.amount_paise)} (${refundReasonText(r.reason_code)}): ${refundStatusText(r.status)}`}
-        </Notice>
-      ))}
+      {b.refunds.length > 0 ? <RefundTracker booking={b} /> : null}
 
       <View style={s.actions}>
         <View style={{ flex: 1 }}>
@@ -205,5 +202,60 @@ const s = StyleSheet.create({
   ref: { fontFamily: fonts.semibold, color: colors.textPrimary },
   qr: { alignItems: "center", paddingVertical: spacing.sm, borderRadius: radius.card },
   pin: { fontFamily: fonts.semibold, fontSize: 30, letterSpacing: 8, color: colors.textPrimary, fontVariant: ["tabular-nums"] },
-  actions: { flexDirection: "row", gap: spacing.md }
+  actions: { flexDirection: "row", gap: spacing.md },
+  step: { flexDirection: "row", alignItems: "flex-start", gap: spacing.md },
+  stepIcon: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" }
 });
+
+// Figma "Customer · Cancellation refund and help" (94:10690), on the booking itself: what is coming back and where the
+// refund stands. Each refund row is the server's state; "credited" is shown only once the provider has processed it.
+function RefundStep({ done, failed, title, detail }: { done: boolean; failed?: boolean; title: string; detail: string }) {
+  return (
+    <View style={s.step}>
+      <View style={[s.stepIcon, { backgroundColor: done ? colors.statusSuccessSurface : failed ? tints.errorSurface : tints.warmSurface }]}>
+        <Ionicons name={done ? "checkmark" : failed ? "alert" : "time-outline"} size={14}
+          color={done ? colors.statusSuccess : failed ? tints.errorText : tints.warmText} accessible={false} />
+      </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={ui.label}>{title}</Text>
+        <Text style={ui.small}>{detail}</Text>
+      </View>
+    </View>
+  );
+}
+
+function RefundTracker({ booking: b }: { booking: BookingDetail }) {
+  const refunded = b.refunds.reduce((sum, r) => sum + r.amount_paise, 0);
+  const latest = b.refunds[b.refunds.length - 1]!;
+  const processed = latest.status === "PROCESSED";
+  const failed = latest.status === "FAILED";
+  return (
+    <>
+      <Card title="Your refund" testID="refund-tracker">
+        <DetailRow label="Original payment" value={formatInrPaise(b.total_paise)} />
+        {b.refunds.map((r) => (
+          <DetailRow key={r.refund_id} label={`Refund · ${refundReasonText(r.reason_code)}`} value={formatInrPaise(r.amount_paise)} />
+        ))}
+        {b.total_paise - refunded > 0 ? <DetailRow label="Not refunded" value={formatInrPaise(b.total_paise - refunded)} /> : null}
+        <Divider />
+        <DetailRow label={processed ? "Refunded" : "Refund being processed"} value={formatInrPaise(refunded)} strong />
+        <StatusPill tone={processed ? "success" : failed ? "danger" : "warm"}
+          label={processed ? "Refunded · Credited by the provider" : failed ? "Refund delayed · Still owed to you" : "Refund pending · Not yet credited"} />
+        <Text style={ui.small}>{`Refund ${refundStatusText(latest.status)}.`}</Text>
+      </Card>
+      <Card title="Follow your refund">
+        {b.cancelled_at ? <RefundStep done title="Cancellation accepted" detail={`${formatIstDateTime(b.cancelled_at)} IST · table released`} /> : null}
+        <RefundStep done title="Refund request created" detail={`${formatIstDateTime(latest.created_at)} IST · ${formatInrPaise(latest.amount_paise)}`} />
+        <RefundStep done={processed} failed={failed} title="Payment provider processing"
+          detail={processed ? "Done" : failed ? "The provider could not complete it yet. It is flagged for follow-up." : "Usually a few business days."} />
+        <RefundStep done={processed} title="Credit to your original payment method"
+          detail={processed ? "Credited" : "Awaiting provider confirmation"} />
+      </Card>
+      <Notice title="Refund taking longer than expected?">
+        <Text style={ui.noticeText}>Contact support with your booking ID. Never share a UPI PIN or one-time code with anyone.</Text>
+        <Button label={`Contact support · ${b.public_ref}`} variant="secondary" testID="refund-support"
+          onPress={() => router.push({ pathname: "/support/new", params: { bookingId: b.booking_id } })} />
+      </Notice>
+    </>
+  );
+}

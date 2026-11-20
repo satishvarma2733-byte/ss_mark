@@ -38,7 +38,7 @@
 - All routes at 360, 430, 768, 1024, 1280, 1440, 1920: no horizontal overflow, no clipped logos, tables scroll inside their region.
 - Keyboard pass and axe scan on every route, both themes.
 
-### F. Native app — IN PROGRESS (19 Nov: venue detail, gallery, book/review, checkout, payment status, booking pass and my bookings done and checked on the Android emulator; extension is next)
+### F. Native app — DONE 20 Nov (every customer frame built and checked on the Android emulator; gaps: payment state screens, customer replies on support cases, budget/food filters, dark theme)
 - Finish the Figma pass on the remaining Expo screens, add gallery, advanced filters and calendar, verify on a device.
 
 ### H. Seat-map booking (zones, floor plans, area prices) — PHASES 1-5 DONE 20 Nov (see docs/concepts/seat-map/PLAN.md)

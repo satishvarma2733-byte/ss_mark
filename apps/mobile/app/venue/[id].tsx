@@ -57,6 +57,12 @@ export default function VenueScreen() {
   const [dayKey, setDayKey] = useState(params.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date) ? params.date : istDateKey(0));
   const [duration, setDuration] = useState(Number(params.duration) || 60);
   const [party, setParty] = useState(Number(params.party) || 2);
+  // The calendar screen returns its choice through the same params.
+  useEffect(() => {
+    if (params.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date)) setDayKey(params.date);
+    if (Number(params.duration)) setDuration(Number(params.duration));
+    if (Number(params.party)) setParty(Number(params.party));
+  }, [params.date, params.duration, params.party]);
   const [slots, setSlots] = useState<VenueAvailability | null>(null);
   const [slotsError, setSlotsError] = useState<string | null>(null);
   // Seat map (phase 3): shown when the venue has a published floor drawing; the table list stays one tap away.
@@ -230,6 +236,9 @@ export default function VenueScreen() {
             <Chip key={key} label={i === 0 ? "Today" : i === 1 ? "Tomorrow" : formatIstDate(Date.now() + i * 86_400_000)} selected={dayKey === key}
               onPress={() => setDayKey(key)} />
           ))}
+          {dayKey > istDateKey(6) ? <Chip label={formatIstDate(`${dayKey}T12:00:00+05:30`)} selected onPress={() => undefined} /> : null}
+          <Chip label="More dates" selected={false} testID="more-dates"
+            onPress={() => router.push({ pathname: "/calendar/[venueId]" as never, params: { venueId: venue.id, date: dayKey, duration: String(duration), party: String(party) } })} />
         </ScrollView>
         <View style={ui.row}>
           {durations.map((d) => (

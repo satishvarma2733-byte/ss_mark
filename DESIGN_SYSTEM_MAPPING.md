@@ -135,18 +135,18 @@ Restyle status comes from the 9 November handoff; no screen was checked on a dev
 | `Customer · Confirmed booking pass` | `94:10372` | `booking/[id].tsx` | Restyled 19 Nov: headline, status pill, summary card, QR + PIN pass, Directions/Receipt, refund card, house rules, receipt. Checked on the Android emulator |
 | `Customer · My bookings` | `94:10467` | `(tabs)/bookings.tsx` | Restyled 19 Nov: Upcoming / Completed / Cancelled tabs with counts, state-specific cards, notifications bell. Venue photo not shown (not in the booking list API). Checked on the Android emulator |
 | `Customer · Active booking and extension` | `94:10575` | `extend/[bookingId].tsx` | Restyled 19 Nov and checked on the Android emulator (request, approve, withdraw) |
-| `Customer · Cancellation refund and help` | `94:10690` | `booking/[id].tsx` (cancelled state), `(tabs)/help.tsx` | Review step restyled 20 Nov (see next row); the post-cancel refund-tracking screen is still pending |
+| `Customer · Cancellation refund and help` | `94:10690` | `booking/[id].tsx` (cancelled state), `(tabs)/help.tsx` | Review step restyled 20 Nov; refund tracking added to the cancelled booking (your refund, follow your refund steps, contact support). Checked on the Android emulator |
 | `A · Sign in`, `A · Verify OTP`, `Customer · Email sign-in` | `94:10818`, `94:10876`, `94:17657` | `(tabs)/account.tsx` | Restyled 9 Nov (email code, not SMS) |
 | `A · Manual location` | `94:10943` | `location.tsx` | Restyled 9 Nov |
 | `A · Account` | `94:11015` | `(tabs)/account.tsx` | Restyled 9 Nov |
 | `A · Completed-stay review` | `94:11087` | `review/[bookingId].tsx` | Restyled 9 Nov |
 | `A · Create support ticket` | `94:11175` | `support/new.tsx` | Restyled 9 Nov |
-| `A · Support case detail` | `94:11240` | `support/[id].tsx` | Works; restyle pending |
+| `A · Support case detail` | `94:11240` | `support/[id].tsx` | Restyled 20 Nov: status pill, case summary, what happens next, conversation (read-only: no customer-reply API yet), safety notice. Checked on the Android emulator |
 | `A · Review cancellation` | `94:11328` | `cancel/[bookingId].tsx` | Restyled 20 Nov: shell, booking card, release warning, what you get back, accepted policy, reason chips, "I understand" switch gating Confirm, Keep my booking as the main action. Checked on the Android emulator |
-| `Customer · Advanced filters` | `94:17429` | — | **Missing** |
+| `Customer · Advanced filters` | `94:17429` | `filters.tsx` (from Discover "More filters") | Implemented 20 Nov: venue type, atmosphere, facilities, accessibility (server-side filters). Budget and food-rule filters not built (search API has none). Checked on the Android emulator |
 | `Customer · Venue gallery` | `94:17490` | `gallery/[id].tsx` | Implemented 19 Nov; checked on the Android emulator |
-| `Customer · Date and time calendar` | `94:17537` | — | **Missing** (native selects today) |
-| `Customer · Privacy and preferences` | `94:17597` | — | **Missing** |
+| `Customer · Date and time calendar` | `94:17537` | `calendar/[venueId].tsx` (venue "More dates") | Implemented 20 Nov: month grid within the booking window, duration, guests, free start times; returns to the venue page. Checked on the Android emulator |
+| `Customer · Privacy and preferences` | `94:17597` | `privacy.tsx` (Account) | Implemented 20 Nov: essential messages (always on), email copies and offers switches (saved), location note, request my data, request account closure. Appearance setting not built (no native dark theme). Checked on the Android emulator |
 | `Customer · Nearby spaces · Map` | `94:17707` | `(tabs)/index.tsx` | Not verified |
 | `B · Payment pending / failed / hold expired / slot unavailable / extension unavailable` | `94:16726`-`94:17030` | `payment-return.tsx`, `checkout`, `book`, `extend` | Works functionally; state screens pending |
 
