@@ -531,3 +531,14 @@ Checks: lint clean; typecheck clean; `pnpm test:unit` 92 passed; `pnpm test:mobi
   then turned back off).
 
 Checks: lint clean; typecheck clean; `pnpm test:unit` 92 passed; `pnpm test:mobile` exported. Nothing committed.
+
+## CI run 14 e2e failure (20 November 2026)
+
+- CI run #14 (`dfe2623`) failed in `pnpm test:e2e`; the log needs GitHub auth and `gh` is not installed here, so the
+  failing test could not be read. Locally the full suite gives 54 passed / 1 failed: `smoke.spec.ts` "customer search
+  shows synthetic venues" - DEMO Cafe Koramangala is pushed off the first results page because every e2e quick venue
+  was created at exactly its coordinates (distance tie). The seating specs added two more such venues before the
+  smoke test runs, which most likely tipped CI over too.
+- Fix: `apps/web/e2e/helpers.ts` `createQuickVenue` now places venues ~140 m away (77.6255, 12.9360). Seating,
+  extension and journey e2e specs still pass (13/13). The local smoke test still fails until the ~500 old local e2e
+  venues are cleared (they keep the old point); CI starts from a fresh database. Confirm on the next CI run.

@@ -181,7 +181,9 @@ export async function createQuickVenue(opts: { tables?: number; overnight?: bool
     insert into public.venues (partner_id, category_code, name, slug, description, address, locality, location, is_synthetic)
     values (${partner!.id as string}::uuid, 'CAFE', ${"E2E Quick Cafe " + suffix}, ${slug}, 'Fictional e2e venue.',
             'E2E address (fictional)', 'E2E locality (fictional)',
-            extensions.st_setsrid(extensions.st_makepoint(77.6245, 12.9352), 4326)::extensions.geography, true)
+            -- About 140 m from DEMO Cafe Koramangala (77.6245, 12.9352): close enough for Koramangala searches, never tied
+            -- with it on distance, so leftover e2e venues cannot push the demo cafe off the first results page.
+            extensions.st_setsrid(extensions.st_makepoint(77.6255, 12.9360), 4326)::extensions.geography, true)
     returning id`;
   const venueId = venue!.id as string;
   const [policy] = await sql`
