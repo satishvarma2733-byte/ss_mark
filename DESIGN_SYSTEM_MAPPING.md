@@ -77,6 +77,9 @@ Built components live in `apps/web/components/ui/` (`button.tsx`, `form.tsx`, `f
 | `Partner · Today and booking operations` | `94:12721` | `/partner`, `/staff` | Implemented |
 | `Partner · Inventory and availability calendar` | `94:12946` | `/partner/calendar` | Implemented |
 | `Partner · Weekly inventory` / `Table and pricing editor` | `94:18003`, `94:13737` | `/partner/inventory` | Implemented |
+| `C · Partner desktop · Dine-in floor setup` | `2067:1575` | `/partner/floor` | Implemented 19 Nov (seat-map phase 2): areas, drag-and-drop floor, table shape/features/photo, overlap check, draft/preview/publish |
+| `C · Partner desktop · Area and table pricing` | `2070:1707` | `/partner/prices` | Implemented 19-20 Nov: area prices, special tables, start time, guest preview, step 3 busy-hour rules (list, week strip, add form with live example, Stop) |
+| `SS / Seat map table` component | `2062:102` | `/partner/floor` (SVG), mobile `components/SeatingSection.tsx` (Views) | Both draw tables in this style: free outlined, your pick filled, booked grey, too small dashed |
 | `Partner · Venue profile and setup` / `Photo management` | `94:13195`, `94:18322` | `/partner/venue` | Implemented |
 | `Partner · Earnings and settlements` / `Owner finance` | `94:13400`, `94:14354` | `/partner/payouts` | Implemented |
 | `C · Partner desktop · New-partner onboarding` | `94:13603` | `/partner/apply` | Implemented |
@@ -132,14 +135,14 @@ Restyle status comes from the 9 November handoff; no screen was checked on a dev
 | `Customer · Confirmed booking pass` | `94:10372` | `booking/[id].tsx` | Restyled 19 Nov: headline, status pill, summary card, QR + PIN pass, Directions/Receipt, refund card, house rules, receipt. Checked on the Android emulator |
 | `Customer · My bookings` | `94:10467` | `(tabs)/bookings.tsx` | Restyled 19 Nov: Upcoming / Completed / Cancelled tabs with counts, state-specific cards, notifications bell. Venue photo not shown (not in the booking list API). Checked on the Android emulator |
 | `Customer · Active booking and extension` | `94:10575` | `extend/[bookingId].tsx` | Restyled 19 Nov and checked on the Android emulator (request, approve, withdraw) |
-| `Customer · Cancellation refund and help` | `94:10690` | `cancel/[bookingId].tsx`, `(tabs)/help.tsx` | Works; restyle pending |
+| `Customer · Cancellation refund and help` | `94:10690` | `booking/[id].tsx` (cancelled state), `(tabs)/help.tsx` | Review step restyled 20 Nov (see next row); the post-cancel refund-tracking screen is still pending |
 | `A · Sign in`, `A · Verify OTP`, `Customer · Email sign-in` | `94:10818`, `94:10876`, `94:17657` | `(tabs)/account.tsx` | Restyled 9 Nov (email code, not SMS) |
 | `A · Manual location` | `94:10943` | `location.tsx` | Restyled 9 Nov |
 | `A · Account` | `94:11015` | `(tabs)/account.tsx` | Restyled 9 Nov |
 | `A · Completed-stay review` | `94:11087` | `review/[bookingId].tsx` | Restyled 9 Nov |
 | `A · Create support ticket` | `94:11175` | `support/new.tsx` | Restyled 9 Nov |
 | `A · Support case detail` | `94:11240` | `support/[id].tsx` | Works; restyle pending |
-| `A · Review cancellation` | `94:11328` | `cancel/[bookingId].tsx` | Works; restyle pending |
+| `A · Review cancellation` | `94:11328` | `cancel/[bookingId].tsx` | Restyled 20 Nov: shell, booking card, release warning, what you get back, accepted policy, reason chips, "I understand" switch gating Confirm, Keep my booking as the main action. Checked on the Android emulator |
 | `Customer · Advanced filters` | `94:17429` | — | **Missing** |
 | `Customer · Venue gallery` | `94:17490` | `gallery/[id].tsx` | Implemented 19 Nov; checked on the Android emulator |
 | `Customer · Date and time calendar` | `94:17537` | — | **Missing** (native selects today) |
@@ -151,3 +154,5 @@ Restyle status comes from the 9 November handoff; no screen was checked on a dev
 | Figma Frame | Node ID | Route | Status |
 | --- | --- | --- | --- |
 | `Partner · Support centre` | `94:18856` | `/partner/support` | Implemented: own cases table and the existing ticket form; case conversation opens on `/support/[id]` (customer layout) |
+| `Customer · Choose seating area and table` | `2063:220` | mobile `venue/[id].tsx` + `components/SeatingSection.tsx`; web `/venues/[id]` (`seat-map.tsx`) | Implemented 19 Nov (seat-map phase 3) on the venue screen: area cards with from-price, start-time chips, floor map coloured for that time, legend, list-view toggle. Checked on the Android emulator |
+| `Customer · Table details sheet` | `2065:270` | mobile `components/SeatingSection.tsx` (`TableSheet`); web side panel in `seat-map.tsx` | Implemented 19 Nov: photo (when set), area, seats, features, price, this table's free starts, total, Hold -> review screen |

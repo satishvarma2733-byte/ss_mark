@@ -5,8 +5,9 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useCallback, useEffect, useRef, useState, type ComponentProps, type ComponentRef } from "react";
 import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { venueMonogram, type VenueAvailability, type VenueDetail } from "@simply-sit/contracts";
+import { venueMonogram, type VenueAvailability, type VenueDetail, type VenueSeating } from "@simply-sit/contracts";
 import { colors, radius, spacing } from "@simply-sit/design-tokens";
+import { SeatingSection, type HoldChoice } from "../../components/SeatingSection";
 import { Screen } from "../../components/shell";
 import { Button, Card, Chip, MockBadge, Notice, fonts, ui } from "../../components/ui";
 import { api, apiUrl } from "../../lib/api";
@@ -58,6 +59,9 @@ export default function VenueScreen() {
   const [party, setParty] = useState(Number(params.party) || 2);
   const [slots, setSlots] = useState<VenueAvailability | null>(null);
   const [slotsError, setSlotsError] = useState<string | null>(null);
+  // Seat map (phase 3): shown when the venue has a published floor drawing; the table list stays one tap away.
+  const [seating, setSeating] = useState<VenueSeating | null>(null);
+  const [listView, setListView] = useState(false);
   const sales = useSalesState();
   const scrollRef = useRef<ComponentRef<typeof ScrollView> | null>(null);
   const tablesY = useRef(0);
@@ -65,6 +69,8 @@ export default function VenueScreen() {
   useEffect(() => {
     if (!api) return;
     api.getVenue(String(params.id)).then(setVenue).catch(() => setError("This venue is not available."));
+    // Optional: without seating data the screen keeps the plain table list.
+    api.getSeating(String(params.id)).then(setSeating).catch(() => setSeating(null));
   }, [params.id]);
 
   const loadSlots = useCallback(async () => {
@@ -123,6 +129,12 @@ export default function VenueScreen() {
     ? `Open now · until ${current.closes}${current.overnight ? " (next day)" : ""}`
     : later ? `Closed now · opens ${later.opens}` : spans.length ? "Closed for the rest of today" : "Closed today";
   const nextFree = (slots?.tables ?? []).flatMap((t) => t.starts).sort()[0] ?? null;
+  const hasMap = !!seating?.zones.some((z) => z.layout);
+  const showMap = hasMap && !listView && !paused;
+  const hold = (c: HoldChoice) => router.push({
+    pathname: "/book",
+    params: { venueId: venue.id, venueName: venue.name, resourceId: c.resourceId, tableLabel: c.label, seats: String(c.capacity), start: c.start, duration: String(duration), party: String(party) }
+  });
 
   const footer = (
     <View style={s.footerRow}>
@@ -244,9 +256,18 @@ export default function VenueScreen() {
             <Button label="Try again" variant="secondary" onPress={() => void loadSlots()} />
           </Notice>
         ) : null}
-        {!slots && !slotsError && !paused ? <ActivityIndicator color={colors.brandPrimary} accessibilityLabel="Loading times" /> : null}
-        {slots && slots.tables.length === 0 ? <Notice>{`No table here seats ${party}.`}</Notice> : null}
-        {(paused ? [] : slots?.tables ?? []).map((table) => {
+        {showMap && seating ? (
+          <>
+            <SeatingSection venueId={venue.id} seating={seating} slots={slots} duration={duration} party={party} onHold={hold} />
+            <Button label="Show tables as a list" variant="secondary" onPress={() => setListView(true)} testID="seat-list-toggle" />
+          </>
+        ) : null}
+        {hasMap && listView && !paused ? (
+          <Button label="Show the floor map" variant="secondary" onPress={() => setListView(false)} testID="seat-map-toggle" />
+        ) : null}
+        {!slots && !slotsError && !paused && !showMap ? <ActivityIndicator color={colors.brandPrimary} accessibilityLabel="Loading times" /> : null}
+        {slots && slots.tables.length === 0 && !showMap ? <Notice>{`No table here seats ${party}.`}</Notice> : null}
+        {(paused || showMap ? [] : slots?.tables ?? []).map((table) => {
           const hourly = priceFor(table.resource_id);
           return (
             <Card key={table.resource_id} testID="table-slots">
@@ -266,16 +287,16 @@ export default function VenueScreen() {
                 <View style={ui.row}>
                   {table.starts.slice(0, 24).map((start) => (
                     <Chip key={start} label={formatIstTime(start)} selected={false} testID="slot"
-                      onPress={() => router.push({
-                        pathname: "/book",
-                        params: { venueId: venue.id, venueName: venue.name, resourceId: table.resource_id, tableLabel: table.label, seats: String(table.capacity), start, duration: String(duration), party: String(party) }
-                      })} />
+                      onPress={() => hold({ resourceId: table.resource_id, label: table.label, capacity: table.capacity, start })} />
                   ))}
                 </View>
               )}
             </Card>
           );
         })}
+        {slots?.has_busy_pricing ? (
+          <Text style={ui.small} testID="busy-pricing-note">Prices shown are the usual table price. Busy-hour prices apply at some times and are shown before you hold.</Text>
+        ) : null}
         <Text style={ui.small}>Times are IST and are checked again when you hold the table.</Text>
       </View>
 

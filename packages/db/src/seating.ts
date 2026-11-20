@@ -97,3 +97,18 @@ export function venueSeatMap(tx: Tx, venueId: string, startAt: string, durationM
   return callJson<Json & { tables: Json[] }>(tx`
     select app.venue_seat_map(${venueId}::uuid, ${startAt}::timestamptz, ${durationMinutes}::integer, ${partySize}::integer) as result`);
 }
+
+export function partnerCreateRateRule(
+  tx: Tx,
+  venueId: string,
+  input: { zone_id?: string | null | undefined; label: string; weekdays: number[]; starts_local: string; ends_local: string; adjustment_bps: number },
+  requestId: string | null = null
+) {
+  return callJson(tx`
+    select app.partner_create_rate_rule(${venueId}::uuid, ${input.zone_id ?? null}::uuid, ${input.label}, ${input.weekdays}::integer[],
+                                        ${input.starts_local}, ${input.ends_local}, ${input.adjustment_bps}::integer, ${requestId}::uuid) as result`);
+}
+
+export function partnerArchiveRateRule(tx: Tx, ruleId: string, requestId: string | null = null) {
+  return callJson(tx`select app.partner_archive_rate_rule(${ruleId}::uuid, ${requestId}::uuid) as result`);
+}

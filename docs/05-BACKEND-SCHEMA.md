@@ -66,7 +66,9 @@ An extension widens its booking's existing claim to the requested end plus buffe
 | `floor_layouts` | `zone_id`, `venue_id` (composite FK to the area), `layout_version int`, `status` = DRAFT/PUBLISHED/ARCHIVED, `width/height int 200-4000`, `published_at`, `published_by`, `version` | One DRAFT and one PUBLISHED per area (partial unique indexes); `(zone_id, layout_version)` unique. Trigger: only DRAFT -> PUBLISHED -> ARCHIVED; published/archived rows frozen; only drafts deletable. |
 | `layout_elements` | `layout_id FK`, `element_type` = TABLE/WALL/DOOR/WINDOW/COUNTER/STAIRS/PILLAR/PLANT/LABEL, `resource_id uuid?` (required iff TABLE), `label text?`, `x/y/width/height int`, `rotation` 0/90/180/270, `sort_order` | Unique `(layout_id, resource_id)`. Trigger: writes only while the parent layout is DRAFT. |
 
-All four are RLS-forced with no client grants; every read and write goes through `app.*` functions. The drawing is
+| `rate_rules` (busy-hour prices, migration `20261120000100`) | `venue_id`, `zone_id?` (null = whole venue; same-venue composite FK), `label 1-40`, `weekdays smallint[]` (0=Sun..6), `starts_local/ends_local time` (end > start; "24:00" stored as 23:59:59.999999), `adjustment_bps -5000..10000, <> 0`, `status` ACTIVE/ARCHIVED, `created_by`, `archived_at` | Partial index on active rules per venue; trigger: only ACTIVE -> ARCHIVED, never deleted. `app.price_for` applies the rule in force at the booking start (area rule beats venue rule, then the larger adjustment) to the table-time base; the snapshot records `base_before_busy_paise` and `busy_rule {id,label,adjustment_bps}`. |
+
+All these tables are RLS-forced with no client grants; every read and write goes through `app.*` functions. The drawing is
 presentation only: availability stays per table (inventory_claims exclusion), quotes read `resource_rates`, and an area
 price (`app.partner_set_zone_price`) is an ordinary new rate version per table.
 

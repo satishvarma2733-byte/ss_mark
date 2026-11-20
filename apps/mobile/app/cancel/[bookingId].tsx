@@ -1,18 +1,20 @@
-// C10 native: cancel a confirmed booking. The refund shown is the server's preview; confirming sends it back, and if
-// the database clock now gives a different refund (the cutoff passed) nothing is cancelled and the new amount is shown.
-// One Idempotency-Key per confirmation, so a retry after a lost response cannot cancel or refund twice.
+// C10 native: cancel a confirmed booking - Figma "A · Customer mobile · Review cancellation" (94:11328). The refund shown
+// is the server's preview; confirming sends it back, and if the database clock now gives a different refund (the cutoff
+// passed) nothing is cancelled and the new amount is shown. One Idempotency-Key per confirmation, so a retry after a
+// lost response cannot cancel or refund twice. "Keep my booking" is the main action; cancelling needs an explicit tick.
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { ActivityIndicator, StyleSheet, Switch, Text, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { ApiError } from "@simply-sit/api-client";
 import {
   CUSTOMER_CANCEL_REASONS, CUSTOMER_CANCEL_REASON_LABEL, cancellationPolicySummary, type BookingDetail, type CancelPreview,
   type CustomerCancelReason
 } from "@simply-sit/contracts";
-import { colors } from "@simply-sit/design-tokens";
-import { Button, Card, Chip, MockBadge, Notice, ui } from "../../components/ui";
+import { colors, spacing } from "@simply-sit/design-tokens";
+import { Screen } from "../../components/shell";
+import { Button, Card, Chip, DetailRow, Divider, MockBadge, Notice, StatusPill, ui } from "../../components/ui";
 import { api } from "../../lib/api";
-import { formatInrPaise, formatIstDateTime, formatIstTime } from "../../lib/format";
+import { formatInrPaise, formatIstDate, formatIstDateTime, formatIstTime } from "../../lib/format";
 import { newIdempotencyKey } from "../../lib/session";
 
 type Terms = Pick<CancelPreview, "window" | "refund_paise" | "retained_paise" | "captured_paise" | "terms_change_at">;
@@ -23,10 +25,12 @@ export default function CancelScreen() {
   const [terms, setTerms] = useState<Terms | null>(null);
   const [version, setVersion] = useState(0);
   const [reason, setReason] = useState<CustomerCancelReason | null>(null);
+  const [understood, setUnderstood] = useState(false);
   const [key, setKey] = useState(newIdempotencyKey);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: "warning" | "error"; text: string } | null>(null);
   const [blocked, setBlocked] = useState(false);
+  const [checkedAt, setCheckedAt] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!api) return;
@@ -35,6 +39,7 @@ export default function CancelScreen() {
       setBooking(b);
       setTerms(p);
       setVersion(p.booking_version);
+      setCheckedAt(b.server_now);
     } catch (e) {
       setBlocked(true);
       setMessage({
@@ -74,6 +79,7 @@ export default function CancelScreen() {
         setTerms(next);
         setVersion(next.booking_version);
         setKey(newIdempotencyKey());
+        setUnderstood(false); // the amounts changed: confirm the new ones
         setMessage({ tone: "warning", text: "The refund has changed because the cancellation deadline passed. Check the new amount and confirm again." });
       } else if (e instanceof ApiError && (e.code === "STALE_VERSION" || e.code === "INVALID_TRANSITION")) {
         setBlocked(true);
@@ -87,53 +93,92 @@ export default function CancelScreen() {
 
   if (!booking || !terms) {
     return (
-      <ScrollView contentContainerStyle={ui.screen}>
-        <Stack.Screen options={{ title: "Cancel booking" }} />
-        {message ? <Notice tone={message.tone}>{message.text}</Notice> : <ActivityIndicator style={{ marginTop: 48 }} color={colors.brandPrimary} accessibilityLabel="Loading cancellation terms" />}
+      <Screen title="Cancel this booking?" back nav="bookings">
+        {message ? <Notice tone={message.tone}>{message.text}</Notice> : <ActivityIndicator color={colors.brandPrimary} accessibilityLabel="Loading cancellation terms" />}
         {blocked ? <Button label="Back to booking" variant="secondary" onPress={toBooking} /> : null}
-      </ScrollView>
+      </Screen>
     );
   }
+  const refund = terms.refund_paise;
+  const retained = terms.retained_paise;
+  const ack = retained > 0
+    ? `I understand my table will be released and ${formatInrPaise(retained)} is not refunded.`
+    : "I understand my table will be released.";
+
   return (
-    <ScrollView contentContainerStyle={ui.screen}>
-      <Stack.Screen options={{ title: "Cancel booking" }} />
+    <Screen title="Cancel this booking?" back nav="bookings"
+      subtitle={`Review only${checkedAt ? ` · ${formatIstDateTime(checkedAt)} IST` : ""} · Not cancelled`}>
       {booking.venue.is_synthetic ? <MockBadge text="Synthetic demo booking - mock refund, no real money" /> : null}
-      <Text style={ui.heading}>{booking.venue.name}</Text>
-      <Text style={ui.body}>
-        {formatIstDateTime(booking.start_at)} - {formatIstTime(booking.end_at)} IST · {booking.table.label} · {booking.public_ref}
-      </Text>
-      <Text style={ui.small}>Policy you accepted: {cancellationPolicySummary(booking.policy_snapshot)}</Text>
       <Card>
-        <Text style={ui.heading}>If you cancel now</Text>
-        <Text style={ui.body}>You paid {formatInrPaise(terms.captured_paise)}</Text>
-        <Text style={ui.price} testID="cancel-refund">Refund {formatInrPaise(terms.refund_paise)}</Text>
-        {terms.retained_paise > 0 ? <Text style={ui.body}>Not refunded {formatInrPaise(terms.retained_paise)}</Text> : null}
-        {terms.window === "EARLY" && terms.terms_change_at ? (
-          <Text style={ui.small}>This refund applies if you cancel before {formatIstDateTime(terms.terms_change_at)} IST.</Text>
-        ) : null}
-        <Text style={ui.small}>Refunds go back to the original payment method and show as in progress until the payment provider confirms them.</Text>
+        <View style={{ gap: 2 }}>
+          <Text style={ui.cardTitle}>{booking.venue.name}</Text>
+          <Text style={ui.small}>{`${booking.table.label} · ${booking.party_size} ${booking.party_size === 1 ? "guest" : "guests"}`}</Text>
+          <Text style={ui.small}>{booking.public_ref}</Text>
+        </View>
+        <Divider />
+        <Text style={ui.body}>{`${formatIstDate(booking.start_at)} · ${formatIstTime(booking.start_at)}–${formatIstTime(booking.end_at)} IST`}</Text>
+        <StatusPill tone="success" label="Confirmed · Still reserved" />
       </Card>
-      {terms.window === "LATE" && terms.refund_paise === 0 ? (
+
+      <Notice tone="warning" title="Your table will be released">
+        <Text style={ui.noticeText}>Confirming removes your reservation and makes your check-in pass invalid. This cannot be undone.</Text>
+      </Notice>
+
+      <Card title="What you’ll get back">
+        <DetailRow label="Original payment" value={formatInrPaise(terms.captured_paise)} />
+        <DetailRow label="Refundable amount" value={formatInrPaise(refund)} />
+        {retained > 0 ? <DetailRow label="Not refunded" value={formatInrPaise(retained)} /> : null}
+        <Divider />
+        <DetailRow label="Refund to your original payment method" value={formatInrPaise(refund)} strong testID="cancel-refund" />
+        {terms.window === "EARLY" && terms.terms_change_at ? (
+          <Text style={ui.small}>{`This refund applies if you cancel before ${formatIstDateTime(terms.terms_change_at)} IST.`}</Text>
+        ) : null}
+        <Text style={ui.small}>A refund request is created when you confirm. It is not an instant credit: it shows as in progress until the payment provider confirms it.</Text>
+      </Card>
+      {terms.window === "LATE" && refund === 0 ? (
         <Notice tone="warning">The cancellation deadline has passed, so cancelling now gives no refund. The table will be released for others.</Notice>
       ) : null}
-      <Text style={ui.body}>Reason (optional)</Text>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-        {CUSTOMER_CANCEL_REASONS.map((code) => (
-          <Chip key={code} label={CUSTOMER_CANCEL_REASON_LABEL[code]} selected={reason === code} onPress={() => chooseReason(code)} testID={`reason-${code}`} />
-        ))}
+
+      <Card title="Your accepted policy">
+        <Text style={ui.body}>{cancellationPolicySummary(booking.policy_snapshot)}</Text>
+        <Text style={ui.small}>These are the terms you accepted when you paid. Later changes to the venue’s policy do not replace them.</Text>
+      </Card>
+
+      <View style={{ gap: spacing.sm }}>
+        <Text style={ui.label}>Reason (optional)</Text>
+        <View style={ui.row}>
+          {CUSTOMER_CANCEL_REASONS.map((code) => (
+            <Chip key={code} label={CUSTOMER_CANCEL_REASON_LABEL[code]} selected={reason === code} onPress={() => chooseReason(code)} testID={`reason-${code}`} />
+          ))}
+        </View>
       </View>
+
       {message ? <Notice tone={message.tone}>{message.text}</Notice> : null}
       {blocked ? (
         <Button label="Back to booking" onPress={toBooking} />
       ) : (
-        <Button
-          label={terms.refund_paise > 0 ? `Cancel and refund ${formatInrPaise(terms.refund_paise)}` : "Cancel without refund"}
-          onPress={() => void confirm()}
-          busy={busy}
-          testID="confirm-cancel"
-        />
+        <>
+          <View style={s.ackRow}>
+            <Switch value={understood} onValueChange={setUnderstood} accessibilityLabel={ack} testID="cancel-understood"
+              trackColor={{ true: colors.brandPrimary, false: colors.brandSand }} />
+            <Text style={[ui.body, { flex: 1 }]}>{ack}</Text>
+          </View>
+          <Button label="Keep my booking" onPress={toBooking} disabled={busy} testID="keep-booking" />
+          <Button
+            label={refund > 0 ? `Confirm cancellation · Refund ${formatInrPaise(refund)}` : "Confirm cancellation · No refund"}
+            variant="secondary"
+            onPress={() => void confirm()}
+            busy={busy}
+            disabled={!understood || busy}
+            testID="confirm-cancel"
+          />
+          <Text style={ui.small}>Nothing is cancelled until you confirm.</Text>
+        </>
       )}
-      <Button label="Keep booking" variant="secondary" onPress={toBooking} disabled={busy} testID="keep-booking" />
-    </ScrollView>
+    </Screen>
   );
 }
+
+const s = StyleSheet.create({
+  ackRow: { flexDirection: "row", alignItems: "center", gap: spacing.md }
+});

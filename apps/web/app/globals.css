@@ -5172,3 +5172,390 @@ tbody tr:hover > td {
 #main:focus {
   outline: none;
 }
+
+/* Seat-map phase 2 (19 Nov 2026): partner floor plan and prices. Figma "C · Partner desktop · Dine-in floor setup"
+   (2067:1575) and "Area and table pricing" (2070:1707). Tokens only, so light and dark both follow the theme. */
+.floor-setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.zone-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  min-width: 0;
+}
+@media (min-width: 900px) {
+  .floor-setup { grid-template-columns: 248px minmax(0, 1fr); }
+}
+/* The drawing gets the width; the side panels sit beside it only on very wide screens. */
+@media (min-width: 700px) and (max-width: 1499px) {
+  .floor-right { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+@media (min-width: 1500px) {
+  .zone-editor { grid-template-columns: minmax(0, 1fr) 300px; }
+  .floor-publish { grid-column: 1 / -1; }
+}
+.floor-left,
+.floor-right,
+.floor-center {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.floor-empty { min-height: 200px; }
+.area-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.area-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.area-row span { color: var(--text-muted); font-size: 12px; }
+.area-row[aria-current="true"] {
+  border: 2px solid var(--action-primary);
+  background: var(--status-success-surface);
+}
+.area-add {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+.chip-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.chip-checks legend:not(.visually-hidden) { width: 100%; margin-bottom: 6px; }
+.chip-checks .choice-pill { cursor: pointer; }
+.chip-checks .choice-pill input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.chip-checks .choice-pill:focus-within { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.floor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+}
+.floor-toolbar-spacer { flex: 1; }
+.floor-snap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.floor-canvas {
+  overflow: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--surface-card);
+  padding: 8px;
+}
+.floor-canvas svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  user-select: none;
+}
+.floor-grid-line { fill: none; stroke: var(--brand-sand); stroke-width: 0.6; opacity: 0.7; }
+.floor-item { cursor: grab; outline: none; }
+.floor-canvas.preview .floor-item { cursor: default; }
+.floor-item rect:first-child { fill: var(--surface-muted); stroke: var(--text-muted); stroke-width: 1.5; }
+.floor-item text {
+  fill: var(--text-primary);
+  font-family: var(--body-font);
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.floor-item text.seats { fill: var(--text-muted); font-size: 10px; font-weight: 500; }
+.floor-item.fx-table rect:first-child { fill: var(--surface-card); stroke: var(--action-primary); stroke-width: 2; }
+.floor-item.fx-table.paused rect:first-child { stroke-dasharray: 5 3; opacity: 0.7; }
+.floor-item.fx-wall rect:first-child { fill: var(--text-muted); stroke: none; }
+.floor-item.fx-window rect:first-child { fill: var(--brand-sage); stroke: none; }
+.floor-item.fx-door rect:first-child { fill: var(--surface-card); stroke: var(--action-primary); stroke-dasharray: 5 3; }
+.floor-item.fx-door text { fill: var(--action-primary); font-size: 11px; }
+.floor-item.fx-counter rect:first-child,
+.floor-item.fx-stairs rect:first-child { fill: var(--status-neutral-surface); stroke: var(--brand-sand); }
+.floor-item.fx-counter text,
+.floor-item.fx-stairs text { fill: var(--text-muted); font-size: 11px; font-weight: 500; }
+.floor-item.fx-pillar rect:first-child { fill: var(--text-muted); stroke: none; }
+.floor-item.fx-plant rect:first-child { fill: var(--map-park); stroke: var(--brand-sage); }
+.floor-item.fx-label rect:first-child { fill: transparent; stroke: var(--brand-sand); stroke-dasharray: 2 3; }
+.floor-canvas.preview .floor-item.fx-label rect:first-child { stroke: none; }
+.floor-item.selected rect:first-child { stroke-width: 3; }
+.floor-item .selection { fill: none; stroke: var(--focus-ring); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.floor-item:focus-visible rect:first-child { stroke: var(--focus-ring); stroke-width: 3; }
+.floor-item.problem rect:first-child { stroke: var(--status-error); stroke-width: 3; fill: var(--status-error-surface); }
+.fixture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 8px;
+}
+.fixture-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 64px;
+  padding: 8px 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.fixture-tile:hover { border-color: var(--action-primary); }
+.fixture-tile:disabled,
+.choice-pill:disabled { opacity: 0.5; cursor: not-allowed; }
+.fixture-swatch {
+  display: block;
+  width: 28px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--status-neutral-surface);
+  border: 1px solid var(--brand-sand);
+}
+.fixture-swatch.fx-wall, .fixture-swatch.fx-pillar { background: var(--text-muted); border: 0; }
+.fixture-swatch.fx-pillar { width: 14px; border-radius: 50%; }
+.fixture-swatch.fx-window { height: 6px; background: var(--brand-sage); border: 0; }
+.fixture-swatch.fx-door { background: transparent; border: 1.5px dashed var(--action-primary); }
+.fixture-swatch.fx-plant { width: 16px; height: 16px; border-radius: 50%; background: var(--map-park); }
+.fixture-swatch.fx-label { background: transparent; border: 1px dotted var(--text-muted); }
+.move-into { display: flex; flex-direction: column; gap: 6px; }
+.table-photo {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-top: 8px;
+  border-radius: var(--radius-card);
+  object-fit: cover;
+}
+.floor-geometry {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+.floor-advanced summary { font-size: 13px; font-weight: 600; cursor: pointer; }
+.floor-advanced[open] summary { margin-bottom: 8px; }
+.floor-publish {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 16px 20px;
+}
+.floor-publish-state {
+  display: flex;
+  flex: 1 1 320px;
+  gap: 10px;
+  align-items: flex-start;
+}
+.floor-publish-state p { margin: 2px 0 0; color: var(--text-muted); font-size: 13px; }
+.floor-publish-state .ok { color: var(--status-success); flex-shrink: 0; }
+.floor-publish-state .warn { color: var(--status-warning); flex-shrink: 0; }
+.floor-publish-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.floor-publish > .book-when { flex-basis: 100%; margin: 0; }
+.price-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius-card);
+  background: var(--surface-canvas);
+}
+.price-row.special { background: var(--status-success-surface); }
+.price-row-name {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.price-row-name span { color: var(--text-muted); font-size: 12px; }
+.price-row-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.price-row > .book-when { flex-basis: 100%; margin: 0; }
+.price-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+}
+.price-input span { color: var(--text-muted); font-size: 13px; }
+.price-input input {
+  width: 72px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+}
+.price-input:focus-within { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.price-input input:focus-visible { outline: none; }
+.price-group { display: flex; flex-direction: column; gap: 8px; }
+.price-group h3 { margin: 8px 0 0; font-size: 14px; }
+.guest-prices li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.guest-prices li:last-child { border-bottom: 0; }
+
+/* Seat-map phase 4 (19 Nov 2026): customer seat map on the venue page. Figma "Customer · Choose seating area and
+   table" (2063:220) and "Table details sheet" (2065:270), laid out for the web. */
+.seat-map-card { gap: 16px; }
+.seat-map-card h2 { margin: 0; }
+.seat-zones { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 2px; }
+.seat-zone {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 150px;
+  padding: 12px;
+  border: 1px solid var(--brand-sand);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+.seat-zone svg { color: var(--text-muted); }
+.seat-zone strong { font-size: 14px; }
+.seat-zone span { color: var(--text-muted); }
+.seat-zone .seat-zone-price { color: var(--action-primary); font-weight: 600; }
+.seat-zone[aria-selected="true"] { border: 2px solid var(--action-primary); background: var(--status-success-surface); }
+.seat-zone[aria-selected="true"] svg { color: var(--action-primary); }
+.seat-starts { margin: 0; padding: 0; border: 0; }
+.seat-starts legend { margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+.seat-starts .choice-pill { cursor: pointer; }
+.seat-starts .choice-pill input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.seat-starts .choice-pill:focus-within { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.seat-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (min-width: 1200px) {
+  .seat-body { grid-template-columns: minmax(0, 1fr) 280px; }
+}
+.seat-floor-wrap { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.seat-summary { font-size: 13px; color: var(--text-muted); }
+.seat-summary strong { color: var(--text-primary); }
+.seat-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; font-size: 12px; color: var(--text-muted); }
+.seat-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.seat-legend .sw { width: 14px; height: 14px; border: 1.5px solid var(--action-primary); border-radius: 4px; background: var(--surface-card); }
+.seat-legend .sw.pick { background: var(--action-primary); }
+.seat-legend .sw.booked { border-color: var(--text-muted); background: var(--surface-muted); }
+.seat-legend .sw.small { border-color: var(--text-muted); border-style: dashed; }
+.seat-floor { display: block; width: 100%; height: auto; border: 2px solid var(--brand-sand); border-radius: 12px; }
+.seat-floor-bg { fill: var(--surface-canvas); }
+.seat-table { cursor: pointer; outline: none; }
+.seat-table rect { stroke-width: 2.5; }
+.seat-table text { font-family: var(--body-font); font-size: 14px; font-weight: 600; fill: var(--text-primary); pointer-events: none; }
+.seat-table text.seats { font-size: 11px; font-weight: 500; fill: var(--text-muted); }
+.seat-table.free rect { fill: var(--surface-card); stroke: var(--action-primary); }
+.seat-table.free:hover rect { fill: var(--status-success-surface); }
+.seat-table.pick rect { fill: var(--action-primary); stroke: var(--action-primary); }
+.seat-table.pick text { fill: var(--on-brand); }
+.seat-table.booked rect { fill: var(--surface-muted); stroke: var(--text-muted); }
+.seat-table.booked text { fill: var(--text-muted); }
+.seat-table.small { opacity: 0.6; }
+.seat-table.small rect { fill: var(--surface-card); stroke: var(--text-muted); stroke-dasharray: 6 4; }
+.seat-table:focus-visible rect { stroke: var(--focus-ring); stroke-width: 4; }
+.seat-fixture rect { fill: var(--surface-muted); stroke: var(--brand-sand); }
+.seat-fixture text { font-family: var(--body-font); font-size: 12px; fill: var(--text-muted); }
+.seat-fixture.fx-wall rect, .seat-fixture.fx-pillar rect { fill: var(--text-muted); stroke: none; }
+.seat-fixture.fx-window rect { fill: var(--brand-sage); stroke: none; }
+.seat-fixture.fx-door rect { fill: var(--surface-card); stroke: var(--action-primary); stroke-dasharray: 5 3; }
+.seat-fixture.fx-door text { fill: var(--action-primary); font-weight: 600; }
+.seat-fixture.fx-plant rect { fill: var(--map-park); stroke: none; }
+.seat-fixture.fx-label rect { fill: transparent; stroke: none; }
+.seat-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--brand-sand);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+}
+.seat-panel-empty { justify-content: center; min-height: 140px; color: var(--text-muted); font-size: 13px; text-align: center; background: var(--surface-canvas); }
+.seat-photo { width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius-card); object-fit: cover; }
+.seat-panel-head { display: flex; justify-content: space-between; gap: 12px; }
+.seat-panel-head h3 { margin: 0; font-size: 18px; }
+.seat-price { display: flex; flex-direction: column; align-items: flex-end; margin: 0; color: var(--action-primary); font-size: 17px; font-weight: 600; }
+.seat-price span { color: var(--text-muted); font-size: 11px; font-weight: 400; }
+.seat-total { display: flex; justify-content: space-between; gap: 12px; margin: 0; padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: 13px; }
+.seat-total strong { font-size: 18px; }
+
+/* Seat-map phase 5 (20 Nov 2026): busy-hour prices on /partner/prices. */
+.busy-form { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+.busy-form h3 { margin: 0; font-size: 15px; }
+.busy-change { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.busy-change .price-input input { width: 48px; }
+.week-strip { display: flex; flex-direction: column; gap: 6px; }
+.week-day { display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
+.week-bar { position: relative; height: 14px; border-radius: 7px; background: var(--surface-canvas); border: 1px solid var(--border-subtle); overflow: hidden; }
+.week-bar i { position: absolute; top: 0; bottom: 0; border-radius: 7px; background: var(--action-primary); opacity: 0.85; }
+.week-bar i.down { background: var(--brand-sand); }

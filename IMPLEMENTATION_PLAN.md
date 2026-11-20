@@ -41,9 +41,13 @@
 ### F. Native app — IN PROGRESS (19 Nov: venue detail, gallery, book/review, checkout, payment status, booking pass and my bookings done and checked on the Android emulator; extension is next)
 - Finish the Figma pass on the remaining Expo screens, add gallery, advanced filters and calendar, verify on a device.
 
-### H. Seat-map booking (zones, floor plans, area prices) — PHASE 1 DONE 19 Nov (data + API; see docs/concepts/seat-map/PLAN.md)
+### H. Seat-map booking (zones, floor plans, area prices) — PHASES 1-5 DONE 20 Nov (see docs/concepts/seat-map/PLAN.md)
 - Phase 1 done: areas, versioned floor drawings, table details, area prices, public seating and seat-map APIs, seed, tests.
-- Next: phase 2 partner floor editor and pricing screens (web, tablet-first), phase 3 customer seat map on mobile, phase 4 web, phase 5 busy-hour pricing. Per-seat booking needs an owner decision.
+- Phase 2 done: partner web pages /partner/floor (floor editor) and /partner/prices (area and table prices), e2e + accessibility.
+- Phase 3 done: customer seat map in the native venue screen (areas, start times, floor map, table sheet), Android emulator.
+- Phase 4 done: customer seat map on the web venue page (areas, start times, SVG floor, table panel -> book).
+- Phase 5 done (20 Nov): busy-hour price rules (partner step 3, server-applied in app.price_for, shown to guests).
+- Open: per-seat booking of communal tables needs an owner decision; the price change needs an independent review before release (CLAUDE.md). Per-seat booking needs an owner decision.
 
 ### G. Production preparation — blocked on the owner
 | Item | Needs |

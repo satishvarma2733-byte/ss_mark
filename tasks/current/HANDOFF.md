@@ -374,3 +374,135 @@ screens use it yet.
 Checks: `pnpm lint` clean; `pnpm typecheck` clean; `pnpm test:unit` 14 files / 85 tests passed (4 new contract tests);
 `pnpm test:integration` 19 files / 187 tests passed (new `tests/integration/seating.test.ts`, 6 tests); `pnpm build`
 passed; `pnpm secrets:check` clean. `pnpm test:e2e` not run. Nothing committed.
+
+## Seat-map phase 2 - partner floor editor and prices (19 November 2026)
+
+- `/partner/floor` (`apps/web/app/partner/floor/`), Figma "Dine-in floor setup" (2067:1575): areas list with add and
+  edit (name, type, floor, features); per-area SVG floor drawing (drag to move with snap to grid, arrow keys nudge,
+  Shift for 1 unit, R rotates, Delete removes; rotate/duplicate/remove toolbar); "Add to the floor" places the area's
+  tables and room items (wall, door, window, counter, stairs, pillar, plant, label); "Move ... here" puts tables that
+  are in no area into the current one; the selected table's shape, features and photo (approved venue photos) save to
+  `PATCH /partner/resources/{id}/details`; exact position fields; live overlap/outside-floor check (`lib/floor-plan.ts`,
+  mirrors `app.layout_problems`; server problems are listed too); Save draft, Discard, Preview as guest, Publish
+  (saves first when needed). New floors start at 600 x 400 units; the side panels sit under the drawing below 1500 px.
+- `/partner/prices` (`apps/web/app/partner/prices/`), Figma "Area and table pricing" (2070:1707): step 1 area prices
+  (`POST /partner/zones/{id}/price`, keep special prices on by default), step 2 per-table prices
+  (`POST /partner/resources/{id}/rates`, marked "Special price" / "Area price" / "Own price"), start right away or
+  from a date and time (IST), "What guests will see" with each area's from-price. Busy-hour step shows "Coming soon".
+- Sidebar: "Floor plan" and "Prices" added for managers and owners (`lib/partner-page.tsx`). Styles appended to
+  `app/globals.css` (tokens only; dark mode checked).
+- Tests: `apps/web/lib/floor-plan.test.ts` (5 unit); `apps/web/e2e/seating.spec.ts` (manager adds an area, moves and
+  places tables, drag creates an overlap that blocks publishing, keyboard nudge clears it, publish, area and special
+  prices, public seating API reflects both); both pages added to the portal and dark-mode accessibility scans.
+- Fixed during verification: the publish bar inherited the card's column layout; a hidden legend made the prices page
+  scroll sideways (reflow-320); price boxes did not follow an area price change; panels lost their "saved" message on
+  refresh (now keyed by id).
+
+## Seat-map phase 3 - customer seat map in the native app (19 November 2026)
+
+- `apps/mobile/components/SeatingSection.tsx` (new), used by `apps/mobile/app/venue/[id].tsx` when the venue has a
+  published floor drawing (`GET /venues/{id}/seating`); otherwise the screen keeps the table list. "Show tables as a
+  list" / "Show the floor map" switch between them; the list is also used while bookings are paused.
+- Area cards (kind icon, from-price, table count); start-time chips = starts at which a table of that area is free
+  for the chosen day, length and party (from the existing availability call); floor map drawn with positioned Views
+  (no native SVG module, so no dev-client rebuild) and coloured from `GET /venues/{id}/seat-map` (free, your pick,
+  booked, too small dashed); every table is a button with a spoken label. Tapping a table opens a bottom sheet: photo
+  when set, area, seats, features, price per hour, this table's free starts (or "Booked at X · free at"), total, and
+  "Hold <table> at <time>", which opens the existing review/quote screen (`/book`) - the hold path is unchanged.
+- API client: `getSeating`, `getSeatMap` (`packages/api-client`).
+- Verified on the Android emulator with Copper Yard: Brewery hall (L01, L02 free at 19:30, bar and entrance shown);
+  sheet for L02 with ₹250.00 total and Hold -> review screen showing Long table L02, 19:30, 1 h; Courtyard with 4
+  guests (C01 free and round, C02 dashed "too small", plant and "Open air" label). Area cards widened so the
+  from-price fits. No hold was created.
+- Not done: web customer seat map (phase 4), busy-hour pricing (phase 5). No automated UI test for the native map
+  (mobile has no UI test runner); covered by the API integration tests and the emulator check above.
+
+Checks: `pnpm lint` clean; `pnpm typecheck` clean; `pnpm test:unit` 15 files / 90 tests; `pnpm test:mobile` exported
+Android and iOS bundles. Phase 2 checks (above) unchanged. Nothing committed.
+
+## Seat-map phase 4 - customer seat map on the web (19 November 2026)
+
+- `apps/web/app/venues/[id]/seat-map.tsx` (client component), shown at the top of the venue page's main column when
+  the venue has a published floor drawing and times were loaded (`app.venue_seating` read server-side). Area tabs with
+  kind, table count and from-price; start-time radio chips (free starts of the area's tables on the chosen date from
+  the "From" time); SVG floor coloured from `GET /api/v1/venues/{id}/seat-map` (free, your pick, booked, too small),
+  tables focusable and operable with Enter/Space, spoken labels; side panel (beside the floor from 1200 px, below it
+  otherwise) with photo, area, seats, features, price, this table's free starts, total and "Hold <table> at <time>",
+  a link to the existing `/venues/{slug}/book` page (sign-in first when signed out, returning to that table and time).
+  The per-table list in "Choose a time" is unchanged. A group too big for every table in the area gets a message.
+- Long table names that would not fit a small table show only their last word on the drawing (web and mobile).
+- Test: `apps/web/e2e/seating.spec.ts` second test (area, start, pick, panel, Hold -> sign-in with the book page as the
+  return path; 5 guests -> "No table in Garden is free for 5 guests"). Both seating tests pass.
+
+Checks: `pnpm lint` clean; web and mobile typecheck clean; `pnpm test:unit` 90 passed; `pnpm build` passed;
+`pnpm test:mobile` exported Android and iOS bundles; `playwright test e2e/seating.spec.ts` 2 passed. The full e2e and
+accessibility suites were not re-run after this phase (phase 2 runs: 53/54, failure explained there). Nothing committed.
+
+## Seat-map phase 5 - busy-hour pricing (20 November 2026)
+
+- Migration `supabase/migrations/20261120000100_busy_hour_rates.sql` (applied locally): `public.rate_rules` (days,
+  local window, -50%..+100%, whole venue or one area; ACTIVE -> ARCHIVED only, never edited or deleted; RLS forced).
+  `app.price_for` now applies the rule in force at the booking start (venue-local weekday and time; area rule beats
+  venue rule, then the larger change) to the table-time base, half-up integer paise; the service fee is not adjusted.
+  The snapshot adds `base_before_busy_paise` and `busy_rule {id, label, adjustment_bps}` (null when none). With no
+  rule the price is identical to before (full integration suite unchanged). Extensions starting inside a window carry
+  the same adjustment (they use `app.price_for`). New: `app.partner_create_rate_rule`, `app.partner_archive_rate_rule`,
+  `app.busy_rule_for`; `app.partner_seating` lists active rules. Rollback steps in the migration header.
+- Routes: `POST /api/v1/partner/venues/{id}/rate-rules` (idempotent), `POST /api/v1/partner/rate-rules/{id}/archive`.
+  Contracts: `rateRuleCreateSchema`; `priceSnapshotSchema` gains the two optional fields (old snapshots still parse).
+- Partner `/partner/prices` step 3: active rules with Stop, a week strip, and an add form (name, all areas or one
+  area, days, from/until IST, more/less and percent, live example on a real table).
+- Guests: web and mobile review screens show "Busy hour · <label> (+20%)" as its own line (table line shows the normal
+  price, so the rows add up); seat-map panels (web and mobile) say "Includes busy-hour price: ...".
+- Known limit: the per-table "₹X for 1 h" in the web/mobile table list is priced at noon for the day (as before), so it
+  can differ from an evening busy-hour price; the quote/review screen always shows the real price before a hold.
+- Tests: `tests/integration/seating.test.ts` busy-hour block (validation and staff refusal; +20% inside / none outside;
+  area -10% beats venue +20%; seat map shows the same price; a held booking keeps its price and rule after archive;
+  rules cannot be updated directly; audit). `apps/web/e2e/seating.spec.ts` extended (owner adds and stops a rule;
+  guest panel shows the +20% total and the "Festival week (+20%)" note).
+- Needs an independent review before release (price calculation change; CLAUDE.md).
+
+Checks: `pnpm lint` clean; `pnpm typecheck` clean; `pnpm test:unit` 90 passed; `pnpm test:integration` 19 files /
+189 passed; `pnpm build` passed; `pnpm test:mobile` exported; `playwright test e2e/seating.spec.ts` 2 passed;
+accessibility portal + dark-mode scans passed; `pnpm secrets:check` clean. Full `pnpm test:e2e`: 54 passed, 1 failed - the same smoke search test as in phase 2 (DEMO Cafe Koramangala pushed off the first results page by ~500 leftover local e2e venues at the same spot; not code-related, CI uses a fresh database).
+Nothing committed.
+
+## Busy-hour pricing - review fixes (20 November 2026)
+
+Independent review (`/code-review high` on `20261120000100_busy_hour_rates.sql`, 9 findings) addressed in
+`supabase/migrations/20261120000200_busy_hour_review_fixes.sql` (applied locally; `app.rate_rule_json` re-applied by
+hand after a same-session edit, so the local DB matches the file):
+- Each booked minute takes the rule covering it (area beats venue, then the larger change); with no rule the
+  arithmetic is unchanged. Snapshot: `busy_rules [{id, adjustment_bps, minutes}]`, no partner label
+  (`busy_rule` from the first format still parses). `app.busy_rule_for` dropped; new `app.rule_covers`.
+- Windows may cross midnight (weekday = day the window starts); "24:00" stored as 00:00 and returned as "24:00";
+  an empty window is refused. `rate_rule_json` adds `overnight`.
+- `app.venue_day_availability` shows the plain table price (`app.plain_price_for`) and returns `has_busy_pricing`;
+  web and mobile lists show a note. Archiving an area archives its rules. `app.seating_editor_state` is the single
+  editor-state definition. `price_for` skips rule work when the venue has no active rule.
+- Guests: shared `busyHourText` (contracts) for "Busy-hour price (+20% for 30 min)" on review/checkout (web, mobile)
+  and the seat-map panels. Extension estimate text now mentions busy-hour prices (the estimate number is still hourly x
+  minutes; the venue's request has the exact price). Partner form accepts overnight windows; the week strip draws the
+  after-midnight tail on the next day.
+
+Checks: `pnpm lint` clean; `pnpm typecheck` clean; `pnpm test:unit` 92 passed; `pnpm test:integration` 19 files / 190
+passed; `pnpm build` passed; `playwright test e2e/seating.spec.ts` 2 passed; portal accessibility scan passed;
+`pnpm test:mobile` exported. Nothing committed.
+
+## Step F, slice 6b - native cancellation review (20 November 2026)
+
+- `apps/mobile/app/cancel/[bookingId].tsx` rebuilt to Figma "A · Customer mobile · Review cancellation" (94:11328) in
+  the shared shell ("Cancel this booking?" · "Review only · <time> IST · Not cancelled"): booking card with
+  "Confirmed · Still reserved", "Your table will be released" warning, "What you’ll get back" (original payment,
+  refundable, not refunded, refund to original method, when the refund amount changes), "Your accepted policy" from
+  the booking's policy snapshot, reason chips, an "I understand ..." switch that enables "Confirm cancellation ·
+  Refund ₹X" (secondary), and "Keep my booking" as the primary action. Cancellation logic, idempotency key handling,
+  CANCELLATION_CHANGED re-confirmation (switch resets) and test ids are unchanged. The frame's split of retained
+  table amount vs platform fee/GST is not shown (the preview API returns totals only).
+- Verified on the Android emulator: booked Copper Yard L02 14:00 through the seat map (SS-YDSD9BS5YU, mock payment),
+  opened Manage booking -> review showed ₹250.00 full refund before 12:00; Confirm stayed disabled until the switch
+  (booking still CONFIRMED), then confirmed -> CANCELLED, back on the booking with the refund in progress.
+- Not done: the post-cancel "Cancellation & refund" tracking screen (94:10690) - the booking screen shows the refund
+  notice instead.
+
+Checks: lint clean; typecheck clean; `pnpm test:unit` 92 passed; `pnpm test:mobile` exported. Nothing committed.

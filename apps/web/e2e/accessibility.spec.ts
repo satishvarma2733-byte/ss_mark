@@ -102,7 +102,7 @@ test("partner, staff and admin portals pass WCAG 2.2 A/AA checks and reflow at 3
   const q = `?venue=${venue.venueId}`;
   const findings: Finding[] = [];
   for (const [path, label] of [
-    [`/partner${q}`, "partner today"], [`/partner/calendar${q}`, "partner calendar"], [`/partner/inventory${q}`, "partner inventory"], [`/partner/closures${q}`, "partner closures"], [`/partner/payouts${q}`, "partner payouts"], [`/partner/incidents/new${q}`, "partner incident"],
+    [`/partner${q}`, "partner today"], [`/partner/calendar${q}`, "partner calendar"], [`/partner/inventory${q}`, "partner inventory"], [`/partner/floor${q}`, "partner floor plan"], [`/partner/prices${q}`, "partner prices"], [`/partner/closures${q}`, "partner closures"], [`/partner/payouts${q}`, "partner payouts"], [`/partner/incidents/new${q}`, "partner incident"],
     [`/partner/venue${q}`, "partner venue"], [`/partner/staff${q}`, "partner staff"], [`/partner/reports${q}`, "partner reports"],
     [`/staff${q}`, "staff arrivals"], ["/admin", "admin"], ["/admin/venues", "admin venues"], ["/admin/support", "admin support"],
     ["/admin/reviews", "admin reviews"], ["/admin/finance/refunds", "admin refunds"], ["/admin/finance/fees", "admin fees"], ["/admin/bookings", "admin bookings"], ["/admin/finance", "admin finance"],
@@ -195,8 +195,8 @@ test("dark mode passes WCAG 2.2 A/AA checks on customer, partner and admin pages
   const q = `?venue=${venue.venueId}`;
   for (const [path, label] of [
     ["/bookings", "bookings"], ["/account", "account"], ["/account/notifications", "notification preferences"], ["/notifications", "notifications"],
-    [`/partner${q}`, "partner today"], [`/partner/calendar${q}`, "partner calendar"], [`/partner/inventory${q}`, "partner inventory"],
-    [`/partner/payouts${q}`, "partner payouts"], [`/partner/staff${q}`, "partner staff"], [`/staff${q}`, "staff arrivals"],
+    [`/partner${q}`, "partner today"], [`/partner/calendar${q}`, "partner calendar"], [`/partner/inventory${q}`, "partner inventory"], [`/partner/floor${q}`, "partner floor plan"],
+    [`/partner/prices${q}`, "partner prices"], [`/partner/payouts${q}`, "partner payouts"], [`/partner/staff${q}`, "partner staff"], [`/staff${q}`, "staff arrivals"],
     ["/admin", "admin"], ["/admin/venues", "admin venues"], ["/admin/bookings", "admin bookings"], ["/admin/finance", "admin finance"],
     ["/admin/finance/refunds", "admin refunds"], ["/admin/support", "admin support"], ["/admin/reviews", "admin reviews"],
     ["/admin/metrics", "admin metrics"], ["/admin/release", "admin release switches"],

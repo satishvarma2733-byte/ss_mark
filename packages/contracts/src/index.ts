@@ -341,7 +341,12 @@ export const priceSnapshotSchema = z.object({
   duration_minutes: z.number().int(),
   rate_version: z.number().int(),
   fee_config_version: z.string(),
-  synthetic: z.boolean()
+  synthetic: z.boolean(),
+  // Busy-hour pricing (phase 5): the table-time base before adjustments, and each rule with the booked minutes it
+  // covered ([] = none). Optional so older snapshots parse; `busy_rule` is the short-lived first format (20 Nov).
+  base_before_busy_paise: z.number().int().optional(),
+  busy_rules: z.array(z.object({ id: z.uuid(), adjustment_bps: z.number().int(), minutes: z.number().int() })).optional(),
+  busy_rule: z.object({ id: z.uuid(), label: z.string(), adjustment_bps: z.number().int() }).nullable().optional()
 });
 export type PriceSnapshot = z.infer<typeof priceSnapshotSchema>;
 
@@ -360,6 +365,8 @@ export const venueAvailabilitySchema = z.object({
     starts: z.array(z.string())
   })),
   reason: z.string().nullable(),
+  // True when the venue has busy-hour prices: the per-table price above is the plain one; the quote has the real one.
+  has_busy_pricing: z.boolean().optional(),
   checked_at: z.string()
 });
 export type VenueAvailability = z.infer<typeof venueAvailabilitySchema>;
@@ -1222,3 +1229,29 @@ export const seatMapSchema = z.object({
   checked_at: z.string()
 });
 export type SeatMap = z.infer<typeof seatMapSchema>;
+
+// Busy-hour pricing rules (seat-map phase 5). The server applies them in app.price_for; clients only show the snapshot.
+export const rateRuleCreateSchema = z.strictObject({
+  zone_id: z.uuid().nullable().optional(),
+  label: z.string().trim().min(1).max(40),
+  weekdays: z.array(z.number().int().min(0).max(6)).min(1).max(7),
+  starts_local: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  ends_local: z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d|24:00)$/),
+  adjustment_bps: z.number().int().min(-5000).max(10000).refine((v) => v !== 0, { message: "A busy-hour rule must change the price." })
+  // An end at or before the start crosses midnight (the weekday is the day the window starts); 24:00 is midnight.
+}).refine((r) => r.ends_local !== r.starts_local, { message: "The window is empty.", path: ["ends_local"] });
+export type RateRule = {
+  id: string; zone_id: string | null; label: string; weekdays: number[]; starts_local: string; ends_local: string;
+  adjustment_bps: number; status: "ACTIVE" | "ARCHIVED"; created_at: string; overnight?: boolean;
+};
+
+// Guest-facing wording for the busy-hour part of a price ("+20% for 30 min"), or null when none applied. Uses only
+// the percentage and minutes; the partner's rule name is never shown to guests.
+export function busyHourText(price: { busy_rules?: { adjustment_bps: number; minutes: number }[] | undefined;
+  busy_rule?: { adjustment_bps: number } | null | undefined; duration_minutes: number }): string | null {
+  const rules = price.busy_rules ?? (price.busy_rule ? [{ adjustment_bps: price.busy_rule.adjustment_bps, minutes: price.duration_minutes }] : []);
+  if (rules.length === 0) return null;
+  return rules
+    .map((r) => `${r.adjustment_bps > 0 ? "+" : "−"}${Math.abs(r.adjustment_bps) / 100}%${r.minutes < price.duration_minutes ? ` for ${r.minutes} min` : ""}`)
+    .join(", ");
+}

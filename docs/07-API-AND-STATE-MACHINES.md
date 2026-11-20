@@ -146,6 +146,8 @@ Resource availability is not a generic DELETE endpoint: historical inventory sta
 | `PUT /partner/zones/{id}/layout-draft` | `{width,height,elements[],expected_version}` (version or null) | 200 draft. Refused whole (422 `problems[]`: duplicate_table, table_in_other_area, table_retired, overlaps_table, outside_canvas, geometry ...). |
 | `POST /partner/zones/{id}/publish-layout` | `{expected_version}` | 200 published. Re-validates, needs at least one table and a current rate for each placed table; archives the previous version. Bookings untouched. |
 | `POST /partner/zones/{id}/price` | `{hourly_paise,effective_from?,keep_custom_prices=true,expected_version}` | 201 `{updated[],kept_custom[]}`: new rate version per table from now/later; tables whose price differs from the previous area price keep it unless `keep_custom_prices=false`. Quotes and bookings keep their snapshot. |
+| `POST /partner/venues/{id}/rate-rules` | `{zone_id?,label,weekdays[],starts_local,ends_local,adjustment_bps}` + Idempotency-Key | 201 rule. Manager/owner (TOTP); -50%..+100%, non-zero; end after start; at most 20 active rules. Applies to quotes made afterwards; the price snapshot names the rule. |
+| `POST /partner/rate-rules/{id}/archive` | - | 200 ARCHIVED. Rules are never edited; quotes and bookings already made keep their price. |
 
 ## 5. Booking and turnover transitions
 

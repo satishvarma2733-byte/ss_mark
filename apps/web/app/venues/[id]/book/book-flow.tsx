@@ -4,7 +4,7 @@
 // accepted policy hash and the total it displayed, so a changed price or rule is refused instead of charged.
 // Layout: the right column of Figma "E · Customer web · Select table and time" (table card, payment summary, action).
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Hold, Quote } from "@simply-sit/contracts";
+import { busyHourText, type Hold, type Quote } from "@simply-sit/contracts";
 import { apiCall, newIdempotencyKey } from "../../../../lib/client-api";
 import { FOOD_RULE_LABEL, formatInrPaise, formatVenueTime } from "../../../../lib/format";
 import { Button, ButtonLink, Card, StatusPill } from "../../../../components/ui";
@@ -152,8 +152,15 @@ export function BookFlow(props: Props) {
                 <dt>
                   Table · {formatInrPaise(price.hourly_paise)} × {hoursLabel(price.duration_minutes)}
                 </dt>
-                <dd>{formatInrPaise(price.base_paise)}</dd>
+                <dd>{formatInrPaise(price.base_before_busy_paise ?? price.base_paise)}</dd>
               </div>
+              {busyHourText(price) ? (
+                // Busy-hour pricing (server-applied): shown as its own line so the rows add up to the total.
+                <div data-testid="busy-line">
+                  <dt>Busy-hour price ({busyHourText(price)})</dt>
+                  <dd>{price.base_paise < (price.base_before_busy_paise ?? price.base_paise) ? "−" : ""}{formatInrPaise(Math.abs(price.base_paise - (price.base_before_busy_paise ?? price.base_paise)))}</dd>
+                </div>
+              ) : null}
               <div>
                 <dt>Platform fee</dt>
                 <dd>{formatInrPaise(price.service_fee_paise)}</dd>

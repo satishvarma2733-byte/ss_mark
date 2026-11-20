@@ -262,7 +262,7 @@ export function ExtendPanel({ initial }: { initial: BookingDetail }) {
               </div>
             </dl>
             <p className="field-hint">
-              {open ? "Price set by the venue for this request." : "Estimate from your booked rate. The venue confirms the exact price when it answers."}
+              {open ? "Price set by the venue for this request." : "Estimate from your booked rate; busy-hour prices can change it. The venue confirms the exact price when it answers."}
             </p>
           </Card>
         ) : null}

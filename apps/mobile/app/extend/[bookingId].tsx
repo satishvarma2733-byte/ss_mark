@@ -237,7 +237,7 @@ export default function ExtendScreen() {
           <DetailRow label="Revised booking total" value={money(paidSoFar + extra)} />
           <Text style={ui.small}>
             {`The original ${formatInrPaise(paidSoFar)} is already paid. Only the extra will be charged. `}
-            {open ? "Price set by the venue for this request." : "Estimate from your booked rate; the venue confirms the exact price when it answers."}
+            {open ? "Price set by the venue for this request." : "Estimate from your booked rate; busy-hour prices can change it. The venue confirms the exact price when it answers."}
           </Text>
         </Card>
       ) : null}

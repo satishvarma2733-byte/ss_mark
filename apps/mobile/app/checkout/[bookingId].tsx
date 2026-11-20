@@ -9,7 +9,7 @@ import { ActivityIndicator, AppState, StyleSheet, Text, View } from "react-nativ
 import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { ApiError } from "@simply-sit/api-client";
-import type { BookingDetail } from "@simply-sit/contracts";
+import { busyHourText, type BookingDetail } from "@simply-sit/contracts";
 import { colors, spacing } from "@simply-sit/design-tokens";
 import { Screen } from "../../components/shell";
 import { Button, Card, DetailRow, Divider, MockBadge, Notice, StatusPill, ui } from "../../components/ui";
@@ -143,7 +143,11 @@ export default function CheckoutScreen() {
 
       <Card title="No surprises at checkout">
         {price.synthetic ? <MockBadge text="Sandbox pricing - no real charge" /> : null}
-        <DetailRow label={`Table · ${formatInrPaise(price.hourly_paise)} × ${durationLabel(price.duration_minutes)}`} value={formatInrPaise(price.base_paise)} />
+        <DetailRow label={`Table · ${formatInrPaise(price.hourly_paise)} × ${durationLabel(price.duration_minutes)}`} value={formatInrPaise(price.base_before_busy_paise ?? price.base_paise)} />
+        {busyHourText(price) ? (
+          <DetailRow label={`Busy-hour price (${busyHourText(price)})`}
+            value={`${price.base_paise < (price.base_before_busy_paise ?? price.base_paise) ? "−" : ""}${formatInrPaise(Math.abs(price.base_paise - (price.base_before_busy_paise ?? price.base_paise)))}`} testID="busy-line" />
+        ) : null}
         <DetailRow label="Platform fee" value={formatInrPaise(price.service_fee_paise)} />
         {price.discount_paise > 0 ? <DetailRow label="Discount" value={`-${formatInrPaise(price.discount_paise)}`} /> : null}
         <DetailRow label="Taxes" value="Not configured" />

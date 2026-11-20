@@ -2,7 +2,7 @@
 // (?venue=, else the first). UI gating only; every API call and database function re-checks membership and role.
 import { ThemeToggle } from "../components/theme-toggle";
 import {
-  Armchair, Bell, CalendarRange, CircleHelp, CircleUserRound, LayoutDashboard, ScanLine, Store, Users, Wallet
+  Armchair, Bell, CalendarRange, CircleHelp, CircleUserRound, IndianRupee, LayoutDashboard, LayoutGrid, ScanLine, Store, Users, Wallet
 } from "lucide-react";
 import type { Me } from "@simply-sit/contracts";
 import { gatePortal, type PortalGate } from "./portal-page";
@@ -29,6 +29,8 @@ const TABS = [
   { path: "/partner/calendar", label: "Calendar", manager: false, icon: CalendarRange },
   { path: "/staff", label: "Arrivals", manager: false, icon: ScanLine },
   { path: "/partner/inventory", label: "Inventory", manager: true, icon: Armchair },
+  { path: "/partner/floor", label: "Floor plan", manager: true, icon: LayoutGrid },
+  { path: "/partner/prices", label: "Prices", manager: true, icon: IndianRupee },
   { path: "/partner/venue", label: "Venue profile", manager: true, icon: Store },
   { path: "/partner/reports", label: "Earnings", manager: true, icon: Wallet },
   { path: "/partner/staff", label: "Team & access", manager: true, icon: Users }

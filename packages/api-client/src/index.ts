@@ -2,8 +2,8 @@
 // a bearer-token getter. Responses are validated with shared contracts. Web pages use cookie sessions instead.
 import {
   CLIENT_VERSION_HEADER, apiErrorSchema, bookingDetailSchema, serviceStatusSchema, type ServiceStatus, notificationPageSchema, notificationReadResultSchema, type NotificationPage, bookingListSchema, cancelPreviewSchema, cancelResultSchema, extensionSchema, healthSchema, reviewSchema, ticketSchema, holdSchema, meSchema, paymentOrderStatusSchema, quoteSchema,
-  venueAvailabilitySchema, venueDetailSchema, venueSearchResultSchema,
-  type BookingDetail, type BookingList, type CancelPreview, type CancelResult, type CustomerCancelReason, type Extension, type Health, type Review, type Ticket, type Hold, type Me, type PaymentOrderStatus, type Quote, type VenueAvailability,
+  seatMapSchema, venueAvailabilitySchema, venueDetailSchema, venueSearchResultSchema, venueSeatingSchema,
+  type BookingDetail, type BookingList, type CancelPreview, type CancelResult, type CustomerCancelReason, type Extension, type Health, type Review, type Ticket, type Hold, type Me, type PaymentOrderStatus, type Quote, type SeatMap, type VenueAvailability, type VenueSeating,
   type VenueDetail, type VenueSearchResult
 } from "@simply-sit/contracts";
 
@@ -122,6 +122,11 @@ export function createSimplySitClient(options: ClientOptions) {
       request("GET", `/api/v1/venues/${encodeURIComponent(venueId)}`, data((value) => venueDetailSchema.parse(value))),
     getAvailability: (venueId: string, q: { date: string; duration_minutes: number; party_size: number }): Promise<VenueAvailability> =>
       request("GET", `/api/v1/venues/${encodeURIComponent(venueId)}/availability${queryString(q)}`, data((value) => venueAvailabilitySchema.parse(value))),
+    // Seat map: the venue's areas and published floor drawings, and each table's state for one start time.
+    getSeating: (venueId: string): Promise<VenueSeating> =>
+      request("GET", `/api/v1/venues/${encodeURIComponent(venueId)}/seating`, data((value) => venueSeatingSchema.parse(value))),
+    getSeatMap: (venueId: string, q: { start_at: string; duration_minutes: number; party_size: number }): Promise<SeatMap> =>
+      request("GET", `/api/v1/venues/${encodeURIComponent(venueId)}/seat-map${queryString(q)}`, data((value) => seatMapSchema.parse(value))),
     getMe: (): Promise<Me> => request("GET", "/api/v1/me", data((value) => meSchema.parse(value)), undefined, true),
     acceptTerms: (termsVersion: string, privacyVersion: string): Promise<Me> =>
       request("POST", "/api/v1/me/terms", data((value) => meSchema.parse(value)),

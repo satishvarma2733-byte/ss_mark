@@ -4,7 +4,7 @@
 // prices are ordinary rate versions, so quotes and bookings already made keep their price.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
-  asAnon, asUser, partnerArchiveZone, partnerCreateZone, partnerPublishLayout, partnerSaveLayoutDraft, partnerSeating, partnerSetTableDetails,
+  asAnon, asUser, createQuote, venueDayAvailability, partnerArchiveRateRule, partnerCreateRateRule, partnerArchiveZone, partnerCreateZone, partnerPublishLayout, partnerSaveLayoutDraft, partnerSeating, partnerSetTableDetails,
   partnerSetZonePrice, partnerUpdateZone, venueSeatMap, venueSeating, type Sql
 } from "@simply-sit/db";
 import { claimsFor, createUser, createVenue, expectDomainError, grantVenueRole, holdTable, istSlot, openDb, type TestUser, type TestVenue } from "./helpers";
@@ -190,5 +190,114 @@ describe("area prices and the seat map", () => {
     const archived = await as(manager)((tx) => partnerArchiveZone(tx, zone.id as string, renamed.version as number));
     expect(archived).toMatchObject({ status: "ARCHIVED" });
     expect((await sql`select count(*)::int as n from public.floor_layouts where zone_id = ${zone.id}::uuid and status = 'DRAFT'`)[0]!.n).toBe(0);
+  });
+});
+
+describe("busy-hour pricing (phase 5)", () => {
+  let busy: TestVenue;
+  let zoneId: string;
+  const quote = (table: number, start: string) => asUser(sql, claimsFor(customer), (tx) =>
+    createQuote(tx, { venue_id: busy.venueId, resource_id: busy.tableIds[table]!, start_at: start, duration_minutes: 60, party_size: 2 }));
+
+  beforeAll(async () => {
+    busy = await createVenue(sql, { tables: [{ capacity: 4, hourlyPaise: 20000 }, { capacity: 4, hourlyPaise: 20000 }] });
+    await grantVenueRole(sql, busy.venueId, manager, "MANAGER");
+    await grantVenueRole(sql, busy.venueId, staff, "STAFF");
+    const zone = await as(manager)((tx) => partnerCreateZone(tx, busy.venueId, { name: "Terrace", kind: "OUTDOOR" }));
+    zoneId = zone.id as string;
+    await as(manager)(async (tx) => partnerSetTableDetails(tx, busy.tableIds[0]!, { zone_id: zoneId, expected_version: await resourceVersion(busy.tableIds[0]!) }));
+  });
+
+  it("validates rules and lets only managers add them", async () => {
+    const every = [0, 1, 2, 3, 4, 5, 6];
+    await expectDomainError(as(staff)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      label: "Evenings", weekdays: every, starts_local: "18:00", ends_local: "22:00", adjustment_bps: 2000 })), "FORBIDDEN");
+    // An end before the start is an overnight window now; an empty window is refused.
+    const empty = await expectDomainError(as(manager)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      label: "Empty", weekdays: every, starts_local: "18:00", ends_local: "18:00", adjustment_bps: 2000 })), "VALIDATION_FAILED");
+    expect(empty).toMatchObject({ field: "time", reason: "empty_window" });
+    await expectDomainError(as(manager)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      label: "Bad time", weekdays: every, starts_local: "25:00", ends_local: "18:00", adjustment_bps: 2000 })), "VALIDATION_FAILED");
+    await expectDomainError(as(manager)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      label: "No change", weekdays: every, starts_local: "18:00", ends_local: "22:00", adjustment_bps: 0 })), "VALIDATION_FAILED");
+    await expectDomainError(as(manager)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      label: "Too much", weekdays: every, starts_local: "18:00", ends_local: "22:00", adjustment_bps: 20000 })), "VALIDATION_FAILED");
+  });
+
+  it("prices quotes inside the window, lets an area rule win, and never changes a booking already made", async () => {
+    const every = [0, 1, 2, 3, 4, 5, 6];
+    const evenings = await as(manager)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      label: "Evenings", weekdays: every, starts_local: "18:00", ends_local: "22:00", adjustment_bps: 2000 }));
+    expect(evenings).toMatchObject({ label: "Evenings", weekdays: every, starts_local: "18:00", ends_local: "22:00", adjustment_bps: 2000, status: "ACTIVE" });
+    await expect(sql`update public.rate_rules set adjustment_bps = 5000 where id = ${evenings.id as string}::uuid`).rejects.toThrow(/IMMUTABLE_RECORD/);
+
+    // Venue-wide +20% from 18:00; nothing at 11:00.
+    const evening = await quote(1, istSlot(4, "19:00"));
+    expect(evening.price_snapshot).toMatchObject({ base_paise: 24000, base_before_busy_paise: 20000,
+      busy_rules: [{ id: evenings.id, adjustment_bps: 2000, minutes: 60 }] });
+    // The partner's rule name is not copied into what guests receive.
+    expect(JSON.stringify(evening.price_snapshot)).not.toContain("Evenings");
+    const morning = await quote(1, istSlot(4, "11:00"));
+    expect(morning.price_snapshot).toMatchObject({ base_paise: 20000, busy_rules: [] });
+    // Starting before the window: only the 30 minutes inside it are adjusted (20000 x (30 x 1.2 + 30) / 60 = 22000).
+    expect((await quote(1, istSlot(4, "17:30"))).price_snapshot).toMatchObject({ base_paise: 22000, busy_rules: [{ adjustment_bps: 2000, minutes: 30 }] });
+
+    // An area rule beats the venue rule for tables in that area (here a terrace discount).
+    await as(manager)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      zone_id: zoneId, label: "Terrace happy hour", weekdays: every, starts_local: "18:00", ends_local: "20:00", adjustment_bps: -1000 }));
+    expect((await quote(0, istSlot(4, "19:00"))).price_snapshot).toMatchObject({ base_paise: 18000, busy_rules: [{ adjustment_bps: -1000, minutes: 60 }] });
+    expect((await quote(0, istSlot(4, "20:30"))).price_snapshot).toMatchObject({ base_paise: 24000, busy_rules: [{ adjustment_bps: 2000, minutes: 60 }] });
+    // Across the area rule's end: 30 min at -10%, then 30 min at +20% (20000 x (30 x 0.9 + 30 x 1.2) / 60 = 21000).
+    expect((await quote(0, istSlot(4, "19:30"))).price_snapshot).toMatchObject({ base_paise: 21000,
+      busy_rules: [{ adjustment_bps: -1000, minutes: 30 }, { adjustment_bps: 2000, minutes: 30 }] });
+
+    // The day list shows the plain table price and says busy-hour prices exist.
+    const day = await asAnon(sql, (tx) => venueDayAvailability(tx, busy.venueId, istSlot(4, "12:00").slice(0, 10), 60, 2));
+    expect(day.has_busy_pricing).toBe(true);
+    expect((day.tables as { price: { base_paise: number } }[]).map((t) => t.price.base_paise)).toEqual([20000, 20000]);
+
+    // The seat map shows the same server price.
+    const map = await asAnon(sql, (tx) => venueSeatMap(tx, busy.venueId, istSlot(4, "19:00"), 60, 2));
+    const prices = Object.fromEntries((map.tables as { resource_id: string; price: { base_paise: number } }[]).map((t) => [t.resource_id, t.price.base_paise]));
+    expect(prices).toEqual({ [busy.tableIds[0]!]: 18000, [busy.tableIds[1]!]: 24000 });
+
+    // A hold made under the rule keeps its price after the rule is archived.
+    const held = await holdTable(sql, customer, busy, istSlot(5, "19:00"), { table: 1 });
+    const heldTotal = held.quote.price_snapshot.total_paise;
+    await expectDomainError(as(staff)((tx) => partnerArchiveRateRule(tx, evenings.id as string)), "FORBIDDEN");
+    expect(await as(manager)((tx) => partnerArchiveRateRule(tx, evenings.id as string))).toMatchObject({ status: "ARCHIVED" });
+    expect(Number((await sql`select total_paise from public.bookings where id = ${held.booking_id}::uuid`)[0]!.total_paise)).toBe(heldTotal);
+    expect((await sql`select price_snapshot -> 'busy_rules' -> 0 ->> 'id' as id from public.bookings where id = ${held.booking_id}::uuid`)[0]!.id).toBe(evenings.id);
+    expect((await quote(1, istSlot(4, "20:30"))).price_snapshot).toMatchObject({ base_paise: 20000, busy_rules: [] });
+    const audit = await sql`select action from public.audit_events where venue_id = ${busy.venueId}::uuid and action like 'rate_rule.%' order by created_at`;
+    expect(audit.map((a) => a.action)).toEqual(["rate_rule.create", "rate_rule.create", "rate_rule.archive"]);
+  });
+
+  it("supports windows across midnight and 'until midnight', and archives an area's rules with the area", async () => {
+    // An overnight window that starts the day before applies in the early morning of the next day.
+    const morningSlot = istSlot(6, "08:30");
+    const dayBefore = (new Date(Date.parse(morningSlot) + 330 * 60_000).getUTCDay() + 6) % 7;
+    const night = await as(manager)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      label: "Night owls", weekdays: [dayBefore], starts_local: "20:00", ends_local: "09:00", adjustment_bps: 5000 }));
+    expect(night).toMatchObject({ starts_local: "20:00", ends_local: "09:00", overnight: true });
+    // 08:30-09:30: 30 min inside the tail (+50%), 30 min after it (20000 x (30 x 1.5 + 30) / 60 = 25000).
+    expect((await quote(1, morningSlot)).price_snapshot).toMatchObject({ base_paise: 25000, busy_rules: [{ adjustment_bps: 5000, minutes: 30 }] });
+    await as(manager)((tx) => partnerArchiveRateRule(tx, night.id as string));
+
+    const late = await as(manager)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      label: "Late", weekdays: [0, 1, 2, 3, 4, 5, 6], starts_local: "21:00", ends_local: "24:00", adjustment_bps: 1000 }));
+    expect(late).toMatchObject({ ends_local: "24:00", overnight: false });
+    await expectDomainError(as(manager)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      label: "Empty", weekdays: [1], starts_local: "18:00", ends_local: "18:00", adjustment_bps: 1000 })), "VALIDATION_FAILED");
+    await as(manager)((tx) => partnerArchiveRateRule(tx, late.id as string));
+
+    // Archiving an area archives its rules.
+    const patio = await as(manager)((tx) => partnerCreateZone(tx, busy.venueId, { name: "Patio" }));
+    const patioRule = await as(manager)((tx) => partnerCreateRateRule(tx, busy.venueId, {
+      zone_id: patio.id as string, label: "Patio sun", weekdays: [0], starts_local: "12:00", ends_local: "15:00", adjustment_bps: 1000 }));
+    await as(manager)((tx) => partnerArchiveZone(tx, patio.id as string, patio.version as number));
+    expect((await sql`select status from public.rate_rules where id = ${patioRule.id as string}::uuid`)[0]!.status).toBe("ARCHIVED");
+    const listed = (await as(manager)((tx) => partnerSeating(tx, busy.venueId))).rate_rules as { id: string }[];
+    expect(listed.map((r) => r.id)).not.toContain(patioRule.id);
   });
 });

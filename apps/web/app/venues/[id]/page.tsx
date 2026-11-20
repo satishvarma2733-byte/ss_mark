@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
-import { venueMonogram, type VenueAvailability, type VenueDetail } from "@simply-sit/contracts";
-import { asAnon, getDb, serviceStatus, venueDayAvailability, venueDetail, venueIdBySlug, venueLogo, venuePhotos, venueReviews } from "@simply-sit/db";
+import { venueMonogram, type VenueAvailability, type VenueDetail, type VenueSeating } from "@simply-sit/contracts";
+import { asAnon, getDb, serviceStatus, venueDayAvailability, venueDetail, venueIdBySlug, venueLogo, venuePhotos, venueReviews, venueSeating } from "@simply-sit/db";
 import { FOOD_RULE_LABEL, formatInrPaise, formatVenueTime, istInstant, venueLocalDate } from "../../../lib/format";
 import { tagLabel } from "../../../lib/labels";
 import { WEEKDAYS } from "../../../lib/venues";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { Button, Card, DatePicker, ImageGallery, TimeSelector } from "../../../components/ui";
+import { SeatMapPicker } from "./seat-map";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,11 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
       availabilityError = true;
     }
   }
+  // Seat map (phase 4): only when the venue has a published floor drawing; the per-table list stays beside it.
+  const seating = availability
+    ? ((await asAnon(db, (tx) => venueSeating(tx, venueId)).catch(() => null)) as VenueSeating | null)
+    : null;
+  const hasMap = !!seating?.zones.some((z) => z.layout);
   const dates = Array.from({ length: 14 }, (_, i) => venueLocalDate(330, Date.now() + i * 86_400_000));
 
   return (
@@ -172,10 +178,17 @@ export default async function VenuePage({ params, searchParams }: { params: Prom
           </div>
           );
         })}
+        {availability?.has_busy_pricing ? (
+          <p className="food-note" data-testid="busy-pricing-note">Prices above are the usual table price. Busy-hour prices apply at some times and are shown before you hold.</p>
+        ) : null}
         <p className="food-note">Times are shown in IST and are checked again when you hold the table.</p>
       </Card>
         </div>
         <div className="venue-main">
+      {hasMap && seating && availability ? (
+        <SeatMapPicker venueId={venueId} slug={venue.slug} timezone={venue.timezone} seating={seating} availability={availability}
+          duration={duration} party={party} fromInstant={fromInstant} />
+      ) : null}
       <Card aria-labelledby="food-heading">
         <h2 id="food-heading">Food and house rules</h2>
         <p>

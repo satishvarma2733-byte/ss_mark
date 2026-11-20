@@ -1,6 +1,6 @@
 # Seating zones, floor plans and table pricing - plan
 
-Status: phase 1 (data and API) built 19 November 2026; see tasks/current/HANDOFF.md. Phases 2-6 not started. Concept images (Google Flow, Nano Banana Pro) are in this
+Status: phase 1 (data and API) phase 2 (partner floor editor and prices) phase 3 (native customer seat map) phase 4 (web customer seat map) built 19 November 2026 and phase 5 (busy-hour pricing) built 20 November 2026; see tasks/current/HANDOFF.md. Phase 6 (per-seat booking) needs an owner decision. Concept images (Google Flow, Nano Banana Pro) are in this
 folder and are mood references, not final designs; the Figma file stays the design source.
 
 | Image | What it shows |

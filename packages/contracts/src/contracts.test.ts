@@ -177,3 +177,21 @@ describe("seating contracts (seat-map phase 1)", async () => {
     expect(tableDetailsSchema.safeParse({ shape: "TRIANGLE", expected_version: 3 }).success).toBe(false);
   });
 });
+
+describe("busy-hour wording", async () => {
+  const { busyHourText, rateRuleCreateSchema } = await import("./index");
+  it("describes the adjustment without the partner's rule name", () => {
+    expect(busyHourText({ duration_minutes: 60, busy_rules: [] })).toBeNull();
+    expect(busyHourText({ duration_minutes: 60, busy_rules: [{ adjustment_bps: 2000, minutes: 60 }] })).toBe("+20%");
+    expect(busyHourText({ duration_minutes: 240, busy_rules: [{ adjustment_bps: 2000, minutes: 235 }] })).toBe("+20% for 235 min");
+    expect(busyHourText({ duration_minutes: 60, busy_rules: [{ adjustment_bps: -1000, minutes: 30 }, { adjustment_bps: 2000, minutes: 15 }] }))
+      .toBe("−10% for 30 min, +20% for 15 min");
+    expect(busyHourText({ duration_minutes: 60, busy_rule: { adjustment_bps: 2000 } })).toBe("+20%");
+  });
+  it("accepts windows across midnight and refuses empty ones", () => {
+    const base = { label: "Late", weekdays: [6], adjustment_bps: 2000 };
+    expect(rateRuleCreateSchema.safeParse({ ...base, starts_local: "22:00", ends_local: "02:00" }).success).toBe(true);
+    expect(rateRuleCreateSchema.safeParse({ ...base, starts_local: "00:00", ends_local: "24:00" }).success).toBe(true);
+    expect(rateRuleCreateSchema.safeParse({ ...base, starts_local: "18:00", ends_local: "18:00" }).success).toBe(false);
+  });
+});

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, StyleSheet, Switch, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ApiError } from "@simply-sit/api-client";
-import type { Quote } from "@simply-sit/contracts";
+import { busyHourText, type Quote } from "@simply-sit/contracts";
 import { colors, radius, spacing } from "@simply-sit/design-tokens";
 import { Screen } from "../components/shell";
 import { Button, Card, DetailRow, Divider, MockBadge, Notice, StatusPill, fonts, ui } from "../components/ui";
@@ -184,7 +184,11 @@ export default function BookScreen() {
         <>
           <Card>
             {price.synthetic ? <MockBadge text="Sandbox pricing - no real charge" /> : null}
-            <DetailRow label={`${tableLabel} · ${durationLabel(price.duration_minutes)}`} value={formatInrPaise(price.base_paise)} />
+            <DetailRow label={`${tableLabel} · ${durationLabel(price.duration_minutes)}`} value={formatInrPaise(price.base_before_busy_paise ?? price.base_paise)} />
+            {busyHourText(price) ? (
+              <DetailRow label={`Busy-hour price (${busyHourText(price)})`}
+                value={`${price.base_paise < (price.base_before_busy_paise ?? price.base_paise) ? "−" : ""}${formatInrPaise(Math.abs(price.base_paise - (price.base_before_busy_paise ?? price.base_paise)))}`} testID="busy-line" />
+            ) : null}
             <DetailRow label="Platform fee" value={formatInrPaise(price.service_fee_paise)} />
             {price.discount_paise > 0 ? <DetailRow label="Discount" value={`-${formatInrPaise(price.discount_paise)}`} /> : null}
             <DetailRow label="Taxes" value="Not configured" />
